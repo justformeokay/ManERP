@@ -1,0 +1,215 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Requests\PurchaseOrderRequest;
+use App\Models\Product;
+use App\Models\Project;
+use App\Models\PurchaseOrder;
+use App\Models\Supplier;
+use App\Models\Warehouse;
+use App\Services\StockService;
+use Illuminate\Http\Request;
+
+class PurchaseOrderController extends Controller
+{
+    public function __construct(private StockService $stockService) {}
+
+    public function index(Request $request)
+    {
+        $orders = PurchaseOrder::query()
+            ->with(['supplier', 'warehouse'])
+            ->search($request->input('search'))
+            ->when($request->input('status'), fn($q, $s) => $q->where('status', $s))
+            ->latest()
+            ->paginate(15)
+            ->withQueryString();
+
+        return view('purchasing.index', compact('orders'));
+    }
+
+    public function create()
+    {
+        return view('purchasing.form', [
+            'order'      => new PurchaseOrder(['status' => 'draft', 'order_date' => now()]),
+            'suppliers'  => Supplier::active()->orderBy('name')->get(),
+            'warehouses' => Warehouse::active()->orderBy('name')->get(),
+            'projects'   => Project::where('status', 'active')->orderBy('name')->get(),
+            'products'   => Product::active()->orderBy('name')->get(),
+        ]);
+    }
+
+    public function store(PurchaseOrderRequest $request)
+    {
+        $data = $request->validated();
+
+        $order = PurchaseOrder::create([
+            'supplier_id'  => $data['supplier_id'],
+            'warehouse_id' => $data['warehouse_id'],
+            'project_id'   => $data['project_id'] ?? null,
+            'order_date'   => $data['order_date'],
+            'expected_date'=> $data['expected_date'] ?? null,
+            'tax_amount'   => $data['tax_amount'] ?? 0,
+            'notes'        => $data['notes'] ?? null,
+            'status'       => 'draft',
+        ]);
+
+        foreach ($data['items'] as $item) {
+            $total = $item['quantity'] * $item['unit_price'];
+            $order->items()->create([
+                'product_id' => $item['product_id'],
+                'quantity'   => $item['quantity'],
+                'unit_price' => $item['unit_price'],
+                'total'      => $total,
+            ]);
+        }
+
+        $order->recalculateTotals();
+
+        return redirect()->route('purchasing.show', $order)->with('success', 'Purchase order created.');
+    }
+
+    public function show(PurchaseOrder $order)
+    {
+        $order->load(['supplier', 'warehouse', 'project', 'creator', 'items.product']);
+
+        return view('purchasing.show', compact('order'));
+    }
+
+    public function edit(PurchaseOrder $order)
+    {
+        if ($order->status !== 'draft') {
+            return redirect()->route('purchasing.show', $order)
+                ->with('error', 'Only draft orders can be edited.');
+        }
+
+        $order->load('items');
+
+        return view('purchasing.form', [
+            'order'      => $order,
+            'suppliers'  => Supplier::active()->orderBy('name')->get(),
+            'warehouses' => Warehouse::active()->orderBy('name')->get(),
+            'projects'   => Project::where('status', 'active')->orderBy('name')->get(),
+            'products'   => Product::active()->orderBy('name')->get(),
+        ]);
+    }
+
+    public function update(PurchaseOrderRequest $request, PurchaseOrder $order)
+    {
+        if ($order->status !== 'draft') {
+            return redirect()->route('purchasing.show', $order)
+                ->with('error', 'Only draft orders can be edited.');
+        }
+
+        $data = $request->validated();
+
+        $order->update([
+            'supplier_id'  => $data['supplier_id'],
+            'warehouse_id' => $data['warehouse_id'],
+            'project_id'   => $data['project_id'] ?? null,
+            'order_date'   => $data['order_date'],
+            'expected_date'=> $data['expected_date'] ?? null,
+            'tax_amount'   => $data['tax_amount'] ?? 0,
+            'notes'        => $data['notes'] ?? null,
+        ]);
+
+        $order->items()->delete();
+
+        foreach ($data['items'] as $item) {
+            $total = $item['quantity'] * $item['unit_price'];
+            $order->items()->create([
+                'product_id' => $item['product_id'],
+                'quantity'   => $item['quantity'],
+                'unit_price' => $item['unit_price'],
+                'total'      => $total,
+            ]);
+        }
+
+        $order->recalculateTotals();
+
+        return redirect()->route('purchasing.show', $order)->with('success', 'Purchase order updated.');
+    }
+
+    /**
+     * Confirm a draft PO (no stock movement yet, just status change).
+     */
+    public function confirm(PurchaseOrder $order)
+    {
+        if ($order->status !== 'draft') {
+            return back()->with('error', 'Only draft orders can be confirmed.');
+        }
+
+        $order->update(['status' => 'confirmed']);
+
+        return back()->with('success', 'Purchase order confirmed.');
+    }
+
+    /**
+     * Receive items: stock IN via StockService.
+     */
+    public function receive(Request $request, PurchaseOrder $order)
+    {
+        if (!in_array($order->status, ['confirmed', 'partial'])) {
+            return back()->with('error', 'Order must be confirmed before receiving.');
+        }
+
+        $request->validate([
+            'receive'              => ['required', 'array', 'min:1'],
+            'receive.*.item_id'    => ['required', 'exists:purchase_order_items,id'],
+            'receive.*.quantity'   => ['required', 'numeric', 'min:0'],
+        ]);
+
+        $order->load('items');
+        $receivedAny = false;
+
+        foreach ($request->input('receive') as $row) {
+            $qty = (float) $row['quantity'];
+            if ($qty <= 0) continue;
+
+            $item = $order->items->firstWhere('id', $row['item_id']);
+            if (!$item) continue;
+
+            $remaining = $item->quantity - $item->received_quantity;
+            $qty = min($qty, $remaining);
+            if ($qty <= 0) continue;
+
+            // Stock IN
+            $this->stockService->processMovement([
+                'product_id'     => $item->product_id,
+                'warehouse_id'   => $order->warehouse_id,
+                'type'           => 'in',
+                'quantity'       => $qty,
+                'reference_type' => 'purchase_order',
+                'reference_id'   => $order->id,
+                'notes'          => "Received from {$order->number}",
+            ]);
+
+            $item->increment('received_quantity', $qty);
+            $receivedAny = true;
+        }
+
+        if (!$receivedAny) {
+            return back()->with('error', 'No items were received.');
+        }
+
+        // Update status
+        $order->refresh()->load('items');
+        $order->update([
+            'status' => $order->isFullyReceived() ? 'received' : 'partial',
+        ]);
+
+        return back()->with('success', 'Items received and stock updated.');
+    }
+
+    public function destroy(PurchaseOrder $order)
+    {
+        if ($order->status !== 'draft') {
+            return back()->with('error', 'Only draft orders can be deleted.');
+        }
+
+        $order->items()->delete();
+        $order->delete();
+
+        return redirect()->route('purchasing.index')->with('success', 'Purchase order deleted.');
+    }
+}
