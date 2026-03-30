@@ -26,7 +26,7 @@
             </div>
             <p class="mt-1 text-sm text-gray-500">{{ $order->supplier->name ?? '—' }} {{ $order->supplier->company ? '— ' . $order->supplier->company : '' }}</p>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 flex-wrap">
             @if($order->status === 'draft')
                 <form method="POST" action="{{ route('purchasing.confirm', $order) }}" class="inline"
                       onsubmit="return confirm('Confirm this purchase order?')">
@@ -43,6 +43,14 @@
                       onsubmit="return confirm('Delete this purchase order?')">
                     @csrf @method('DELETE')
                     @include('components.button', ['label' => 'Delete', 'type' => 'danger', 'buttonType' => 'submit'])
+                </form>
+            @endif
+
+            @if(!in_array($order->status, ['received', 'cancelled']))
+                <form method="POST" action="{{ route('purchasing.cancel', $order) }}" class="inline"
+                      onsubmit="return confirm('Cancel this purchase order?{{ in_array($order->status, ['partial']) ? ' Received stock will be reversed.' : '' }}')">
+                    @csrf
+                    @include('components.button', ['label' => 'Cancel PO', 'type' => 'danger', 'buttonType' => 'submit'])
                 </form>
             @endif
         </div>
@@ -124,6 +132,33 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <p class="text-sm font-medium text-green-800">All items have been received and stocked.</p>
+                    </div>
+                </div>
+            @elseif($order->status === 'partial')
+                <div class="rounded-2xl bg-amber-50 p-4 shadow-sm ring-1 ring-amber-100">
+                    <div class="flex items-center gap-3">
+                        <svg class="h-5 w-5 text-amber-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p class="text-sm font-medium text-amber-800">Some items have been received. Fill in quantities below to receive more.</p>
+                    </div>
+                </div>
+            @elseif($order->status === 'confirmed')
+                <div class="rounded-2xl bg-blue-50 p-4 shadow-sm ring-1 ring-blue-100">
+                    <div class="flex items-center gap-3">
+                        <svg class="h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <p class="text-sm font-medium text-blue-800">Order confirmed — enter quantities below to receive items into stock.</p>
+                    </div>
+                </div>
+            @elseif($order->status === 'cancelled')
+                <div class="rounded-2xl bg-red-50 p-4 shadow-sm ring-1 ring-red-100">
+                    <div class="flex items-center gap-3">
+                        <svg class="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        <p class="text-sm font-medium text-red-800">This purchase order has been cancelled.</p>
                     </div>
                 </div>
             @endif

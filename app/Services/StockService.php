@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\InventoryStock;
 use App\Models\StockMovement;
+use App\Models\StockTransfer;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
@@ -52,6 +53,77 @@ class StockService
                 'notes'          => $data['notes'] ?? null,
                 'created_by'     => $data['created_by'] ?? null,
             ]);
+        });
+    }
+
+    /**
+     * Execute a stock transfer between two warehouses.
+     */
+    public function executeTransfer(StockTransfer $transfer): void
+    {
+        DB::transaction(function () use ($transfer) {
+            // OUT from source warehouse
+            $this->processMovement([
+                'product_id'     => $transfer->product_id,
+                'warehouse_id'   => $transfer->from_warehouse_id,
+                'type'           => 'out',
+                'quantity'       => $transfer->quantity,
+                'reference_type' => 'stock_transfer',
+                'reference_id'   => $transfer->id,
+                'notes'          => "Transfer out → {$transfer->toWarehouse->name} ({$transfer->number})",
+                'created_by'     => $transfer->created_by,
+            ]);
+
+            // IN to destination warehouse
+            $this->processMovement([
+                'product_id'     => $transfer->product_id,
+                'warehouse_id'   => $transfer->to_warehouse_id,
+                'type'           => 'in',
+                'quantity'       => $transfer->quantity,
+                'reference_type' => 'stock_transfer',
+                'reference_id'   => $transfer->id,
+                'notes'          => "Transfer in ← {$transfer->fromWarehouse->name} ({$transfer->number})",
+                'created_by'     => $transfer->created_by,
+            ]);
+
+            $transfer->update([
+                'status'       => 'completed',
+                'completed_at' => now(),
+            ]);
+        });
+    }
+
+    /**
+     * Reverse a completed transfer (for cancellation).
+     */
+    public function reverseTransfer(StockTransfer $transfer): void
+    {
+        DB::transaction(function () use ($transfer) {
+            // IN back to source
+            $this->processMovement([
+                'product_id'     => $transfer->product_id,
+                'warehouse_id'   => $transfer->from_warehouse_id,
+                'type'           => 'in',
+                'quantity'       => $transfer->quantity,
+                'reference_type' => 'stock_transfer_cancel',
+                'reference_id'   => $transfer->id,
+                'notes'          => "Transfer reversed — {$transfer->number}",
+                'created_by'     => auth()->id(),
+            ]);
+
+            // OUT from destination
+            $this->processMovement([
+                'product_id'     => $transfer->product_id,
+                'warehouse_id'   => $transfer->to_warehouse_id,
+                'type'           => 'out',
+                'quantity'       => $transfer->quantity,
+                'reference_type' => 'stock_transfer_cancel',
+                'reference_id'   => $transfer->id,
+                'notes'          => "Transfer reversed — {$transfer->number}",
+                'created_by'     => auth()->id(),
+            ]);
+
+            $transfer->update(['status' => 'cancelled']);
         });
     }
 }

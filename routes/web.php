@@ -14,6 +14,7 @@ use App\Http\Controllers\SalesOrderController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\StockTransferController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WarehouseController;
@@ -62,6 +63,9 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('products', ProductController::class)->except(['show']);
         Route::get('stocks', [StockController::class, 'index'])->name('stocks.index');
         Route::resource('movements', StockMovementController::class)->only(['index', 'create', 'store']);
+        Route::resource('transfers', StockTransferController::class)->only(['index', 'create', 'store', 'destroy']);
+        Route::post('transfers/{transfer}/execute', [StockTransferController::class, 'execute'])->name('transfers.execute');
+        Route::post('transfers/{transfer}/cancel', [StockTransferController::class, 'cancel'])->name('transfers.cancel');
     });
 
     // Manufacturing
@@ -103,10 +107,11 @@ Route::middleware(['auth'])->group(function () {
     // Reports (accessible by all authenticated users)
     Route::prefix('reports')->name('reports.')->group(function () {
         Route::get('/', [ReportController::class, 'index'])->name('index');
-        Route::get('/sales', [ReportController::class, 'sales'])->name('sales');
-        Route::get('/purchasing', [ReportController::class, 'purchasing'])->name('purchasing');
-        Route::get('/inventory', [ReportController::class, 'inventory'])->name('inventory');
-        Route::get('/manufacturing', [ReportController::class, 'manufacturing'])->name('manufacturing');
+        Route::get('/sales', [ReportController::class, 'salesReport'])->name('sales');
+        Route::get('/purchasing', [ReportController::class, 'purchasingReport'])->name('purchasing');
+        Route::get('/inventory', [ReportController::class, 'inventoryReport'])->name('inventory');
+        Route::get('/manufacturing', [ReportController::class, 'manufacturingReport'])->name('manufacturing');
+        Route::get('/export', [ReportController::class, 'export'])->name('export');
     });
 
     /*

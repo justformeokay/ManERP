@@ -157,12 +157,39 @@
         <div class="lg:col-span-2">
 
             @if($order->status === 'confirmed')
+                <div class="mb-6 rounded-2xl bg-blue-50 p-4 shadow-sm ring-1 ring-blue-100">
+                    <div class="flex items-center gap-3">
+                        <svg class="h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <p class="text-sm font-medium text-blue-800">Order confirmed — stock has been deducted. Ready to deliver.</p>
+                    </div>
+                </div>
+            @elseif($order->status === 'shipped')
+                <div class="mb-6 rounded-2xl bg-sky-50 p-4 shadow-sm ring-1 ring-sky-100">
+                    <div class="flex items-center gap-3">
+                        <svg class="h-5 w-5 text-sky-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8" />
+                        </svg>
+                        <p class="text-sm font-medium text-sky-800">Order shipped / delivered — ready to be invoiced.</p>
+                    </div>
+                </div>
+            @elseif($order->status === 'completed')
                 <div class="mb-6 rounded-2xl bg-green-50 p-4 shadow-sm ring-1 ring-green-100">
                     <div class="flex items-center gap-3">
                         <svg class="h-5 w-5 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        <p class="text-sm font-medium text-green-800">Order confirmed — stock has been deducted from inventory.</p>
+                        <p class="text-sm font-medium text-green-800">Order completed — invoiced and fulfilled.</p>
+                    </div>
+                </div>
+            @elseif($order->status === 'cancelled')
+                <div class="mb-6 rounded-2xl bg-red-50 p-4 shadow-sm ring-1 ring-red-100">
+                    <div class="flex items-center gap-3">
+                        <svg class="h-5 w-5 text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        <p class="text-sm font-medium text-red-800">This order has been cancelled. Stock has been restored.</p>
                     </div>
                 </div>
             @endif

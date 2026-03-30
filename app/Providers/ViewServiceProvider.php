@@ -70,6 +70,12 @@ class ViewServiceProvider extends ServiceProvider
                 'active' => 'inventory.movements.*',
                 'icon' => $svg('M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4'),
             ],
+            [
+                'label' => 'Stock Transfers',
+                'url' => route('inventory.transfers.index'),
+                'active' => 'inventory.transfers.*',
+                'icon' => $svg('M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4'),
+            ],
             ['heading' => 'Manufacturing'],
             [
                 'label' => 'Bill of Materials',

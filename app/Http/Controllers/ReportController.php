@@ -303,6 +303,7 @@ class ReportController extends Controller
             'sales' => $this->exportSales($range),
             'purchasing' => $this->exportPurchasing($range),
             'inventory' => $this->exportInventory(),
+            'manufacturing' => $this->exportManufacturing($range),
             default => back(),
         };
     }
@@ -395,6 +396,28 @@ class ReportController extends Controller
         }, $filename, [
             'Content-Type' => 'text/csv',
         ]);
+    }
+
+    private function exportManufacturing(array $range): StreamedResponse
+    {
+        $orders = ManufacturingOrder::with('product')
+            ->whereBetween('created_at', $range)
+            ->where('status', '!=', 'cancelled')
+            ->orderBy('created_at')
+            ->get();
+
+        return $this->streamCsv('manufacturing_report.csv', ['Order #', 'Product', 'Status', 'Planned Qty', 'Produced Qty', 'Created'], function () use ($orders) {
+            foreach ($orders as $order) {
+                yield [
+                    $order->number,
+                    $order->product->name ?? '—',
+                    $order->status,
+                    $order->planned_quantity,
+                    $order->produced_quantity,
+                    $order->created_at->format('Y-m-d'),
+                ];
+            }
+        });
     }
 
     private function resolveDateRange(Request $request): array

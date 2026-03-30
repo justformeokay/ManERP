@@ -96,9 +96,31 @@
                                 </a>
                                 @if($order->status === 'draft')
                                     <a href="{{ route('purchasing.edit', $order) }}"
-                                       class="inline-flex items-center rounded-lg px-2.5 py-1.5 text-xs font-medium text-primary-700 bg-primary-50 hover:bg-primary-100 transition">
+                                       class="inline-flex items-center rounded-lg px-2.5 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 transition">
                                         Edit
                                     </a>
+                                    <form method="POST" action="{{ route('purchasing.confirm', $order) }}" class="inline"
+                                          onsubmit="return confirm('Confirm PO {{ $order->number }}?')">
+                                        @csrf
+                                        <button type="submit" class="inline-flex items-center rounded-lg px-2.5 py-1.5 text-xs font-medium text-green-700 bg-green-50 hover:bg-green-100 transition">
+                                            Confirm
+                                        </button>
+                                    </form>
+                                @endif
+                                @if(in_array($order->status, ['confirmed', 'partial']))
+                                    <a href="{{ route('purchasing.show', $order) }}"
+                                       class="inline-flex items-center rounded-lg px-2.5 py-1.5 text-xs font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 transition">
+                                        Receive
+                                    </a>
+                                @endif
+                                @if(!in_array($order->status, ['received', 'cancelled']))
+                                    <form method="POST" action="{{ route('purchasing.cancel', $order) }}" class="inline"
+                                          onsubmit="return confirm('Cancel PO {{ $order->number }}?')">
+                                        @csrf
+                                        <button type="submit" class="inline-flex items-center rounded-lg px-2.5 py-1.5 text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 transition">
+                                            Cancel
+                                        </button>
+                                    </form>
                                 @endif
                             </td>
                         </tr>
