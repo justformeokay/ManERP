@@ -54,10 +54,11 @@
         <div x-data="{ open: false }" class="relative">
             <button @click="open = !open" class="flex items-center gap-2 rounded-xl p-1.5 hover:bg-gray-100 transition">
                 <div class="h-8 w-8 rounded-lg bg-primary-600 flex items-center justify-center text-white text-sm font-semibold">
-                    {{ substr(auth()->user()->name ?? 'A', 0, 1) }}
+                    {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                 </div>
                 <div class="hidden sm:block text-left">
-                    <p class="text-sm font-medium text-gray-700">{{ auth()->user()->name ?? 'Admin' }}</p>
+                    <p class="text-sm font-medium text-gray-700">{{ auth()->user()->name }}</p>
+                    <p class="text-xs text-gray-500">{{ ucfirst(auth()->user()->role) }}</p>
                 </div>
                 <svg class="hidden sm:block h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
@@ -66,10 +67,16 @@
 
             <div x-show="open" @click.away="open = false" x-cloak
                  class="absolute right-0 mt-2 w-48 rounded-xl bg-white shadow-lg ring-1 ring-black/5 overflow-hidden">
-                <a href="#" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50">Profile</a>
-                <a href="#" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50">Settings</a>
+                <div class="px-4 py-3 border-b border-gray-100">
+                    <p class="text-sm font-medium text-gray-900">{{ auth()->user()->name }}</p>
+                    <p class="text-xs text-gray-500">{{ auth()->user()->email }}</p>
+                </div>
+                <a href="{{ route('profile.edit') }}" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50">Profile Settings</a>
+                @if(auth()->user()->isAdmin())
+                    <a href="{{ route('settings.index') }}" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50">System Settings</a>
+                @endif
                 <div class="border-t border-gray-100"></div>
-                <form method="POST" action="{{ route('logout') ?? '#' }}">
+                <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit" class="block w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50">
                         Sign Out

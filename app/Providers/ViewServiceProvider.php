@@ -41,6 +41,12 @@ class ViewServiceProvider extends ServiceProvider
             ],
             ['heading' => 'Inventory'],
             [
+                'label' => 'Categories',
+                'url' => route('inventory.categories.index'),
+                'active' => 'inventory.categories.*',
+                'icon' => $svg('M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z'),
+            ],
+            [
                 'label' => 'Products',
                 'url' => route('inventory.products.index'),
                 'active' => 'inventory.products.*',
@@ -91,17 +97,20 @@ class ViewServiceProvider extends ServiceProvider
                 'active' => 'reports.*',
                 'icon' => $svg('M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z'),
             ],
+            ['heading' => 'Administration', 'admin_only' => true],
             [
                 'label' => 'Settings',
                 'url' => route('settings.index'),
                 'active' => 'settings.index',
                 'icon' => $svg('M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4'),
+                'admin_only' => true,
             ],
             [
                 'label' => 'Users',
                 'url' => route('settings.users.index'),
                 'active' => 'settings.users.*',
                 'icon' => $svg('M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z'),
+                'admin_only' => true,
             ],
         ];
     }

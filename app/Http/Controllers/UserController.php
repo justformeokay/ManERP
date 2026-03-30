@@ -14,6 +14,7 @@ class UserController extends Controller
         $users = User::query()
             ->search($request->search)
             ->when($request->role, fn($q, $v) => $q->where('role', $v))
+            ->when($request->status, fn($q, $v) => $q->where('status', $v))
             ->latest()
             ->paginate(15)
             ->withQueryString();
@@ -23,7 +24,9 @@ class UserController extends Controller
 
     public function create()
     {
-        return view('users.form', ['user' => new User(['role' => 'staff', 'is_active' => true])]);
+        return view('users.form', [
+            'user' => new User(['role' => User::ROLE_STAFF, 'status' => User::STATUS_ACTIVE])
+        ]);
     }
 
     public function store(Request $request)
@@ -34,10 +37,8 @@ class UserController extends Controller
             'password' => ['required', 'confirmed', Password::defaults()],
             'role' => ['required', Rule::in(User::roleOptions())],
             'phone' => 'nullable|string|max:30',
-            'is_active' => 'boolean',
+            'status' => ['required', Rule::in(User::statusOptions())],
         ]);
-
-        $validated['is_active'] = $request->boolean('is_active');
 
         User::create($validated);
 
@@ -57,13 +58,16 @@ class UserController extends Controller
             'password' => ['nullable', 'confirmed', Password::defaults()],
             'role' => ['required', Rule::in(User::roleOptions())],
             'phone' => 'nullable|string|max:30',
-            'is_active' => 'boolean',
+            'status' => ['required', Rule::in(User::statusOptions())],
         ]);
-
-        $validated['is_active'] = $request->boolean('is_active');
 
         if (empty($validated['password'])) {
             unset($validated['password']);
+        }
+
+        // Prevent admin from deactivating themselves
+        if ($user->id === auth()->id() && $validated['status'] !== User::STATUS_ACTIVE) {
+            return back()->with('error', 'You cannot deactivate your own account.');
         }
 
         $user->update($validated);
@@ -75,6 +79,10 @@ class UserController extends Controller
     {
         if ($user->id === 1) {
             return back()->with('error', 'Cannot delete the primary admin user.');
+        }
+        
+        if ($user->id === auth()->id()) {
+            return back()->with('error', 'You cannot delete your own account.');
         }
 
         $user->delete();

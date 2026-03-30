@@ -39,8 +39,15 @@
                     <option value="{{ $role }}" @selected(request('role') === $role)>{{ ucfirst($role) }}</option>
                 @endforeach
             </select>
+            <select name="status" onchange="this.form.submit()"
+                class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition">
+                <option value="">All Status</option>
+                @foreach(\App\Models\User::statusOptions() as $status)
+                    <option value="{{ $status }}" @selected(request('status') === $status)>{{ ucfirst($status) }}</option>
+                @endforeach
+            </select>
             @include('components.button', ['label' => 'Search', 'type' => 'secondary', 'buttonType' => 'submit'])
-            @if(request()->hasAny(['search', 'role']))
+            @if(request()->hasAny(['search', 'role', 'status']))
                 <a href="{{ route('settings.users.index') }}" class="text-sm text-gray-500 hover:text-gray-700">Clear</a>
             @endif
         </form>
@@ -80,9 +87,9 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4">
-                                <span class="inline-flex items-center gap-1.5 text-xs font-medium {{ $user->is_active ? 'text-green-700' : 'text-red-600' }}">
-                                    <span class="h-1.5 w-1.5 rounded-full {{ $user->is_active ? 'bg-green-500' : 'bg-red-400' }}"></span>
-                                    {{ $user->is_active ? 'Active' : 'Inactive' }}
+                                <span class="inline-flex items-center gap-1.5 text-xs font-medium {{ $user->isActive() ? 'text-green-700' : 'text-red-600' }}">
+                                    <span class="h-1.5 w-1.5 rounded-full {{ $user->isActive() ? 'bg-green-500' : 'bg-red-400' }}"></span>
+                                    {{ ucfirst($user->status) }}
                                 </span>
                             </td>
                             <td class="px-6 py-4 text-sm text-gray-500">{{ $user->created_at->format('M d, Y') }}</td>
