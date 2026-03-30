@@ -217,11 +217,11 @@
                     <div class="px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition">
                         <div class="flex items-center gap-3">
                             <div class="h-9 w-9 rounded-full bg-orange-100 flex items-center justify-center text-sm font-bold text-orange-700">
-                                {{ strtoupper(substr($order->client->name ?? 'N', 0, 1)) }}
+                                {{ strtoupper(substr($order->supplier->name ?? 'N', 0, 1)) }}
                             </div>
                             <div>
-                                <p class="text-sm font-medium text-gray-900">{{ $order->order_number }}</p>
-                                <p class="text-xs text-gray-500">{{ $order->client->name ?? 'N/A' }}</p>
+                                <p class="text-sm font-medium text-gray-900">{{ $order->number }}</p>
+                                <p class="text-xs text-gray-500">{{ $order->supplier->name ?? 'N/A' }}</p>
                             </div>
                         </div>
                         <div class="text-right">

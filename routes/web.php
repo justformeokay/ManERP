@@ -14,7 +14,9 @@ use App\Http\Controllers\SalesOrderController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\WarehouseController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -46,6 +48,10 @@ Route::middleware(['auth'])->group(function () {
 
     // CRM
     Route::resource('clients', ClientController::class)->except(['show']);
+
+    // Master Data
+    Route::resource('warehouses', WarehouseController::class)->except(['show']);
+    Route::resource('suppliers', SupplierController::class)->except(['show']);
     
     // Projects
     Route::resource('projects', ProjectController::class);

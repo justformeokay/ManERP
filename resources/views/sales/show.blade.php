@@ -25,7 +25,7 @@
             </div>
             <p class="mt-1 text-sm text-gray-500">{{ $order->client->name ?? '—' }} {{ $order->client->company ? '— ' . $order->client->company : '' }}</p>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 flex-wrap">
             @if($order->status === 'draft')
                 <form method="POST" action="{{ route('sales.confirm', $order) }}" class="inline"
                       onsubmit="return confirm('Confirm this order? Stock will be deducted from inventory.')">
@@ -42,6 +42,40 @@
                       onsubmit="return confirm('Delete this sales order?')">
                     @csrf @method('DELETE')
                     @include('components.button', ['label' => 'Delete', 'type' => 'danger', 'buttonType' => 'submit'])
+                </form>
+            @endif
+
+            @if(in_array($order->status, ['confirmed', 'processing']))
+                <form method="POST" action="{{ route('sales.deliver', $order) }}" class="inline"
+                      onsubmit="return confirm('Mark this order as shipped/delivered?')">
+                    @csrf
+                    @include('components.button', [
+                        'label' => 'Mark Delivered',
+                        'type' => 'primary',
+                        'buttonType' => 'submit',
+                        'icon' => '<svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8" /></svg>',
+                    ])
+                </form>
+            @endif
+
+            @if(in_array($order->status, ['confirmed', 'shipped']))
+                <form method="POST" action="{{ route('sales.invoice', $order) }}" class="inline"
+                      onsubmit="return confirm('Invoice this order and mark as completed?')">
+                    @csrf
+                    @include('components.button', [
+                        'label' => 'Invoice & Complete',
+                        'type' => 'primary',
+                        'buttonType' => 'submit',
+                        'icon' => '<svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>',
+                    ])
+                </form>
+            @endif
+
+            @if(!in_array($order->status, ['completed', 'cancelled']))
+                <form method="POST" action="{{ route('sales.cancel', $order) }}" class="inline"
+                      onsubmit="return confirm('Cancel this order?{{ in_array($order->status, ['confirmed','processing','shipped']) ? ' Stock will be restored.' : '' }}')">
+                    @csrf
+                    @include('components.button', ['label' => 'Cancel Order', 'type' => 'danger', 'buttonType' => 'submit'])
                 </form>
             @endif
         </div>

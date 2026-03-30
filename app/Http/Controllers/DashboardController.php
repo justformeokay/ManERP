@@ -41,7 +41,7 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
-        $recentPurchases = PurchaseOrder::with('client')
+        $recentPurchases = PurchaseOrder::with('supplier')
             ->latest()
             ->take(5)
             ->get();

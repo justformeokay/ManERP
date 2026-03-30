@@ -201,6 +201,37 @@ class PurchaseOrderController extends Controller
         return back()->with('success', 'Items received and stock updated.');
     }
 
+    /**
+     * Cancel a purchase order. Reverse stock if items were already received.
+     */
+    public function cancel(PurchaseOrder $order)
+    {
+        if (in_array($order->status, ['received', 'cancelled'])) {
+            return back()->with('error', 'This order cannot be cancelled.');
+        }
+
+        // Reverse any partially received stock
+        $order->load('items');
+        foreach ($order->items as $item) {
+            if ($item->received_quantity > 0) {
+                $this->stockService->processMovement([
+                    'product_id'     => $item->product_id,
+                    'warehouse_id'   => $order->warehouse_id,
+                    'type'           => 'out',
+                    'quantity'       => $item->received_quantity,
+                    'reference_type' => 'purchase_order_cancel',
+                    'reference_id'   => $order->id,
+                    'notes'          => "Stock reversed — cancelled {$order->number}",
+                ]);
+                $item->update(['received_quantity' => 0]);
+            }
+        }
+
+        $order->update(['status' => 'cancelled']);
+
+        return back()->with('success', 'Purchase order cancelled.');
+    }
+
     public function destroy(PurchaseOrder $order)
     {
         if ($order->status !== 'draft') {

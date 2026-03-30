@@ -96,6 +96,20 @@ class ManufacturingOrderController extends Controller
         $order->load('bom.items');
         $ratio = $quantity / max(1, $order->bom->output_quantity);
 
+        // Pre-validate ALL materials before consuming any
+        foreach ($order->bom->items as $item) {
+            $consumeQty = round($item->quantity * $ratio, 4);
+            $available = $item->product->inventoryStocks()
+                ->where('warehouse_id', $order->warehouse_id)
+                ->value('quantity') ?? 0;
+
+            if ($available < $consumeQty) {
+                return back()->withErrors([
+                    'quantity' => "Insufficient stock for {$item->product->name}. Available: {$available}, Required: {$consumeQty}",
+                ]);
+            }
+        }
+
         try {
             // Consume raw materials
             foreach ($order->bom->items as $item) {

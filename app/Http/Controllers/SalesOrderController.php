@@ -181,6 +181,69 @@ class SalesOrderController extends Controller
         return back()->with('success', 'Order confirmed and stock has been deducted.');
     }
 
+    /**
+     * Mark order as delivered (shipped).
+     */
+    public function deliver(SalesOrder $order)
+    {
+        if (!in_array($order->status, ['confirmed', 'processing'])) {
+            return back()->with('error', 'Only confirmed or processing orders can be delivered.');
+        }
+
+        $order->update(['status' => 'shipped']);
+
+        return back()->with('success', 'Order marked as shipped / delivered.');
+    }
+
+    /**
+     * Mark order as invoiced (completed).
+     */
+    public function invoice(SalesOrder $order)
+    {
+        if (!in_array($order->status, ['confirmed', 'shipped'])) {
+            return back()->with('error', 'Only confirmed or shipped orders can be invoiced.');
+        }
+
+        $order->update(['status' => 'completed']);
+
+        return back()->with('success', 'Order invoiced and marked as completed.');
+    }
+
+    /**
+     * Cancel an order and restore stock if previously confirmed.
+     */
+    public function cancel(SalesOrder $order)
+    {
+        if (in_array($order->status, ['completed', 'cancelled'])) {
+            return back()->with('error', 'This order cannot be cancelled.');
+        }
+
+        $wasConfirmed = in_array($order->status, ['confirmed', 'processing', 'shipped']);
+
+        if ($wasConfirmed) {
+            $order->load('items');
+            foreach ($order->items as $item) {
+                $this->stockService->processMovement([
+                    'product_id'     => $item->product_id,
+                    'warehouse_id'   => $order->warehouse_id,
+                    'type'           => 'in',
+                    'quantity'       => $item->quantity,
+                    'reference_type' => 'sales_order_cancel',
+                    'reference_id'   => $order->id,
+                    'notes'          => "Stock restored — cancelled {$order->number}",
+                ]);
+            }
+        }
+
+        $order->update(['status' => 'cancelled']);
+
+        $msg = $wasConfirmed
+            ? 'Order cancelled and stock has been restored.'
+            : 'Order cancelled.';
+
+        return back()->with('success', $msg);
+    }
+
     public function destroy(SalesOrder $order)
     {
         if ($order->status !== 'draft') {
