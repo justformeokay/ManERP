@@ -6,8 +6,8 @@
 <div class="space-y-6">
     {{-- Page Header --}}
     <div>
-        <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p class="mt-1 text-sm text-gray-500">Selamat datang kembali, {{ auth()->user()->name }}! Berikut ringkasan bisnis Anda.</p>
+        <h1 class="text-2xl font-bold text-gray-900">{{ __('messages.dashboard') }}</h1>
+        <p class="mt-1 text-sm text-gray-500">{{ str_replace('{name}', auth()->user()->name, __('messages.welcome_back')) }}</p>
     </div>
 
     {{-- Stats Cards --}}
@@ -22,7 +22,7 @@
                 </div>
                 <div>
                     <p class="text-2xl font-bold text-gray-900">{{ number_format($stats['total_clients']) }}</p>
-                    <p class="text-xs text-gray-500">Total Klien</p>
+                    <p class="text-xs text-gray-500">{{ __('messages.total_clients') }}</p>
                 </div>
             </div>
         </div>
@@ -37,7 +37,7 @@
                 </div>
                 <div>
                     <p class="text-2xl font-bold text-gray-900">{{ number_format($stats['total_products']) }}</p>
-                    <p class="text-xs text-gray-500">Total Produk</p>
+                    <p class="text-xs text-gray-500">{{ __('messages.total_products') }}</p>
                 </div>
             </div>
         </div>
@@ -52,7 +52,7 @@
                 </div>
                 <div>
                     <p class="text-2xl font-bold text-gray-900">{{ number_format($stats['sales_orders']) }}</p>
-                    <p class="text-xs text-gray-500">Order Penjualan</p>
+                    <p class="text-xs text-gray-500">{{ __('messages.sales_orders') }}</p>
                 </div>
             </div>
         </div>
@@ -67,7 +67,7 @@
                 </div>
                 <div>
                     <p class="text-2xl font-bold text-gray-900">{{ number_format($stats['purchase_orders']) }}</p>
-                    <p class="text-xs text-gray-500">Order Pembelian</p>
+                    <p class="text-xs text-gray-500">{{ __('messages.purchase_orders') }}</p>
                 </div>
             </div>
         </div>
@@ -83,7 +83,7 @@
                 </div>
                 <div>
                     <p class="text-2xl font-bold text-gray-900">{{ number_format($stats['pending_manufacturing']) }}</p>
-                    <p class="text-xs text-gray-500">Produksi Pending</p>
+                    <p class="text-xs text-gray-500">{{ __('messages.pending_manufacturing') }}</p>
                 </div>
             </div>
         </div>
@@ -98,7 +98,7 @@
                 </div>
                 <div>
                     <p class="text-2xl font-bold text-gray-900">{{ number_format($stats['low_stock_items']) }}</p>
-                    <p class="text-xs text-gray-500">Stok Menipis</p>
+                    <p class="text-xs text-gray-500">{{ __('messages.low_stock_items') }}</p>
                 </div>
             </div>
         </div>
@@ -109,7 +109,7 @@
         <div class="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-6 text-white shadow-lg">
             <div class="flex justify-between items-start mb-4">
                 <div>
-                    <p class="text-blue-100 text-sm">Total Pendapatan</p>
+                    <p class="text-blue-100 text-sm">{{ __('messages.total_revenue') }}</p>
                     <p class="text-3xl font-bold mt-1">Rp {{ number_format($salesStats['total_revenue'], 0, ',', '.') }}</p>
                 </div>
                 <div class="bg-white/20 rounded-xl p-2">
@@ -120,43 +120,43 @@
             </div>
             <div class="flex gap-6 text-sm">
                 <div>
-                    <p class="text-blue-200">Bulan Ini</p>
+                    <p class="text-blue-200">{{ __('messages.this_month') }}</p>
                     <p class="font-semibold">Rp {{ number_format($salesStats['this_month'], 0, ',', '.') }}</p>
                 </div>
                 <div>
-                    <p class="text-blue-200">Order Pending</p>
-                    <p class="font-semibold">{{ $salesStats['pending_orders'] }} orders</p>
+                    <p class="text-blue-200">{{ __('messages.pending_orders_count') }}</p>
+                    <p class="font-semibold">{{ $salesStats['pending_orders'] }} {{ __('messages.pending') }}</p>
                 </div>
             </div>
         </div>
 
         {{-- Quick Actions --}}
         <div class="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm ring-1 ring-gray-100">
-            <h3 class="font-semibold text-gray-900 mb-4">Aksi Cepat</h3>
+            <h3 class="font-semibold text-gray-900 mb-4">{{ __('messages.quick_actions') }}</h3>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <a href="{{ route('sales.create') }}" class="flex flex-col items-center gap-2 p-4 rounded-xl bg-gray-50 hover:bg-blue-50 hover:text-blue-600 transition group">
                     <svg class="h-6 w-6 text-gray-400 group-hover:text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                     </svg>
-                    <span class="text-sm font-medium text-gray-700 group-hover:text-blue-600">Order Baru</span>
+                    <span class="text-sm font-medium text-gray-700 group-hover:text-blue-600">{{ __('messages.new_order') }}</span>
                 </a>
                 <a href="{{ route('inventory.products.create') }}" class="flex flex-col items-center gap-2 p-4 rounded-xl bg-gray-50 hover:bg-green-50 hover:text-green-600 transition group">
                     <svg class="h-6 w-6 text-gray-400 group-hover:text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                     </svg>
-                    <span class="text-sm font-medium text-gray-700 group-hover:text-green-600">Produk Baru</span>
+                    <span class="text-sm font-medium text-gray-700 group-hover:text-green-600">{{ __('messages.new_product') }}</span>
                 </a>
                 <a href="{{ route('clients.create') }}" class="flex flex-col items-center gap-2 p-4 rounded-xl bg-gray-50 hover:bg-purple-50 hover:text-purple-600 transition group">
                     <svg class="h-6 w-6 text-gray-400 group-hover:text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                     </svg>
-                    <span class="text-sm font-medium text-gray-700 group-hover:text-purple-600">Klien Baru</span>
+                    <span class="text-sm font-medium text-gray-700 group-hover:text-purple-600">{{ __('messages.new_client') }}</span>
                 </a>
                 <a href="{{ route('reports.index') }}" class="flex flex-col items-center gap-2 p-4 rounded-xl bg-gray-50 hover:bg-orange-50 hover:text-orange-600 transition group">
                     <svg class="h-6 w-6 text-gray-400 group-hover:text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                     </svg>
-                    <span class="text-sm font-medium text-gray-700 group-hover:text-orange-600">Lihat Laporan</span>
+                    <span class="text-sm font-medium text-gray-700 group-hover:text-orange-600">{{ __('messages.view_reports') }}</span>
                 </a>
             </div>
         </div>
@@ -167,8 +167,8 @@
         {{-- Recent Sales Orders --}}
         <div class="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-                <h3 class="font-semibold text-gray-900">Order Penjualan Terbaru</h3>
-                <a href="{{ route('sales.index') }}" class="text-sm text-blue-600 hover:text-blue-700 font-medium">Lihat Semua</a>
+                <h3 class="font-semibold text-gray-900">{{ __('messages.recent_sales_orders') }}</h3>
+                <a href="{{ route('sales.index') }}" class="text-sm text-blue-600 hover:text-blue-700 font-medium">{{ __('messages.view_all') }}</a>
             </div>
             <div class="divide-y divide-gray-50">
                 @forelse($recentSales as $order)
@@ -200,7 +200,7 @@
                         <svg class="mx-auto h-8 w-8 text-gray-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
-                        <p class="text-sm">Belum ada order penjualan</p>
+                        <p class="text-sm">{{ __('messages.no_sales_orders') }}</p>
                     </div>
                 @endforelse
             </div>
@@ -209,8 +209,8 @@
         {{-- Recent Purchase Orders --}}
         <div class="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-                <h3 class="font-semibold text-gray-900">Order Pembelian Terbaru</h3>
-                <a href="{{ route('purchasing.index') }}" class="text-sm text-blue-600 hover:text-blue-700 font-medium">Lihat Semua</a>
+                <h3 class="font-semibold text-gray-900">{{ __('messages.recent_purchase_orders') }}</h3>
+                <a href="{{ route('purchasing.index') }}" class="text-sm text-blue-600 hover:text-blue-700 font-medium">{{ __('messages.view_all') }}</a>
             </div>
             <div class="divide-y divide-gray-50">
                 @forelse($recentPurchases as $order)
@@ -242,7 +242,7 @@
                         <svg class="mx-auto h-8 w-8 text-gray-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
-                        <p class="text-sm">Belum ada order pembelian</p>
+                        <p class="text-sm">{{ __('messages.no_purchase_orders') }}</p>
                     </div>
                 @endforelse
             </div>
@@ -257,19 +257,19 @@
                 <svg class="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
-                <h3 class="font-semibold text-gray-900">Peringatan Stok Menipis</h3>
+                <h3 class="font-semibold text-gray-900">{{ __('messages.low_stock_warning') }}</h3>
             </div>
-            <a href="{{ route('inventory.stocks.index') }}" class="text-sm text-blue-600 hover:text-blue-700 font-medium">Kelola Stok</a>
+            <a href="{{ route('inventory.stocks.index') }}" class="text-sm text-blue-600 hover:text-blue-700 font-medium">{{ __('messages.manage_stock') }}</a>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Produk</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">SKU</th>
-                        <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Stok</th>
-                        <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Min. Stok</th>
-                        <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ __('messages.product_column') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{{ __('messages.sku') }}</th>
+                        <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase">{{ __('messages.stock') }}</th>
+                        <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase">{{ __('messages.min_stock') }}</th>
+                        <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase">{{ __('messages.status') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -281,7 +281,7 @@
                         <td class="px-6 py-4 text-sm text-right text-gray-500">{{ number_format($stock->product->min_stock ?? 0) }}</td>
                         <td class="px-6 py-4 text-right">
                             <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium bg-red-100 text-red-700">
-                                Stok Rendah
+                                {{ __('messages.low_stock_badge') }}
                             </span>
                         </td>
                     </tr>

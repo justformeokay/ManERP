@@ -149,4 +149,37 @@ return [
     'confirm_delete' => 'Are you sure you want to delete this :item?',
     'no_data' => 'No data available.',
     'error_occurred' => 'An error occurred. Please try again.',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Dashboard
+    |--------------------------------------------------------------------------
+    */
+    'youre_logged_in' => "You're logged in!",
+    'welcome' => 'Welcome',
+    'welcome_back' => "Welcome back, {name}! Here's your business summary.",
+    'total_clients' => 'Total Clients',
+    'total_products' => 'Total Products',
+    'pending_manufacturing' => 'Pending Manufacturing',
+    'low_stock_items' => 'Low Stock',
+    'total_revenue' => 'Total Revenue',
+    'this_month' => 'This Month',
+    'pending_orders_count' => 'Pending Orders',
+    'quick_actions' => 'Quick Actions',
+    'new_order' => 'New Order',
+    'new_product' => 'New Product',
+    'new_client' => 'New Client',
+    'view_reports' => 'View Reports',
+    'recent_sales_orders' => 'Recent Sales Orders',
+    'view_all' => 'View All',
+    'no_sales_orders' => 'No sales orders yet',
+    'recent_purchase_orders' => 'Recent Purchase Orders',
+    'no_purchase_orders' => 'No purchase orders yet',
+    'low_stock_warning' => 'Low Stock Alert',
+    'manage_stock' => 'Manage Stock',
+    'sku' => 'SKU',
+    'stock' => 'Stock',
+    'min_stock' => 'Min. Stock',
+    'low_stock_badge' => 'Low Stock',
+    'product_column' => 'Product',
 ];

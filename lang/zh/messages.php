@@ -149,4 +149,37 @@ return [
     'confirm_delete' => '您确定要删除此 :item 吗？',
     'no_data' => '没有可用数据。',
     'error_occurred' => '发生错误，请重试。',
+
+    /*
+    |--------------------------------------------------------------------------
+    | 仪表板
+    |--------------------------------------------------------------------------
+    */
+    'youre_logged_in' => '您已登录！',
+    'welcome' => '欢迎',
+    'welcome_back' => '欢迎回来，{name}！以下是您的业务摘要。',
+    'total_clients' => '总客户',
+    'total_products' => '总产品',
+    'pending_manufacturing' => '待处理制造',
+    'low_stock_items' => '库存紧张',
+    'total_revenue' => '总收入',
+    'this_month' => '本月',
+    'pending_orders_count' => '待处理订单',
+    'quick_actions' => '快速操作',
+    'new_order' => '新订单',
+    'new_product' => '新产品',
+    'new_client' => '新客户',
+    'view_reports' => '查看报告',
+    'recent_sales_orders' => '最近销售订单',
+    'view_all' => '查看全部',
+    'no_sales_orders' => '暂无销售订单',
+    'recent_purchase_orders' => '最近采购订单',
+    'no_purchase_orders' => '暂无采购订单',
+    'low_stock_warning' => '库存紧张警告',
+    'manage_stock' => '管理库存',
+    'sku' => 'SKU',
+    'stock' => '库存',
+    'min_stock' => '最小库存',
+    'low_stock_badge' => '库存紧张',
+    'product_column' => '产品',
 ];
