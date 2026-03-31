@@ -14,6 +14,8 @@ use App\Http\Controllers\BomController;
 use App\Http\Controllers\ManufacturingOrderController;
 use App\Http\Controllers\SalesOrderController;
 use App\Http\Controllers\PurchaseOrderController;
+use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\StockTransferController;
@@ -184,6 +186,19 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/{purchaseOrder}/cancel', [PurchaseOrderController::class, 'cancel'])->name('cancel')->middleware('permission:purchasing.delete');
     });
 
+    // Finance - Invoices & Payments
+    Route::prefix('finance')->name('finance.')->group(function () {
+        Route::prefix('invoices')->name('invoices.')->group(function () {
+            Route::get('/', [InvoiceController::class, 'index'])->name('index')->middleware('permission:finance.view');
+            Route::get('/create', [InvoiceController::class, 'create'])->name('create')->middleware('permission:finance.create');
+            Route::post('/', [InvoiceController::class, 'store'])->name('store')->middleware('permission:finance.create');
+            Route::get('/{invoice}', [InvoiceController::class, 'show'])->name('show')->middleware('permission:finance.view');
+            Route::post('/{invoice}/cancel', [InvoiceController::class, 'cancel'])->name('cancel')->middleware('permission:finance.delete');
+        });
+
+        Route::post('/payments', [PaymentController::class, 'store'])->name('payments.store')->middleware('permission:finance.create');
+    });
+
     // Reports
     Route::prefix('reports')->name('reports.')->middleware('permission:reports.view')->group(function () {
         Route::get('/', [ReportController::class, 'index'])->name('index');
@@ -191,6 +206,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/purchasing', [ReportController::class, 'purchasingReport'])->name('purchasing');
         Route::get('/inventory', [ReportController::class, 'inventoryReport'])->name('inventory');
         Route::get('/manufacturing', [ReportController::class, 'manufacturingReport'])->name('manufacturing');
+        Route::get('/finance', [ReportController::class, 'financeReport'])->name('finance');
         Route::get('/export', [ReportController::class, 'export'])->name('export');
     });
 

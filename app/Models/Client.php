@@ -27,6 +27,11 @@ class Client extends Model
         return $this->hasMany(SalesOrder::class);
     }
 
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
     // Scopes
     public function scopeActive($query)
     {

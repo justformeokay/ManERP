@@ -45,6 +45,7 @@
         <a href="{{ route('reports.purchasing', request()->query()) }}" class="rounded-xl bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-gray-100 hover:bg-gray-50 transition-colors">Purchasing Report</a>
         <a href="{{ route('reports.inventory') }}" class="rounded-xl bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-gray-100 hover:bg-gray-50 transition-colors">Inventory Report</a>
         <a href="{{ route('reports.manufacturing', request()->query()) }}" class="rounded-xl bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-gray-100 hover:bg-gray-50 transition-colors">Manufacturing Report</a>
+        <a href="{{ route('reports.finance', request()->query()) }}" class="rounded-xl bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-gray-100 hover:bg-gray-50 transition-colors">Finance Report</a>
     </div>
 
     {{-- Summary Cards --}}

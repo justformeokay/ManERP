@@ -218,7 +218,7 @@ class SalesOrderController extends Controller
     }
 
     /**
-     * Mark order as invoiced (completed).
+     * Redirect to create invoice from this sales order.
      */
     public function invoice(SalesOrder $order)
     {
@@ -226,11 +226,12 @@ class SalesOrderController extends Controller
             return back()->with('error', 'Only confirmed or shipped orders can be invoiced.');
         }
 
-        $oldData = $order->toArray();
-        $order->update(['status' => 'completed']);
-        $this->logAction($order, 'invoice', "Sales order {$order->number} invoiced", $oldData);
+        if ($order->invoices()->exists()) {
+            return redirect()->route('finance.invoices.show', $order->invoices()->first())
+                ->with('info', 'Invoice already exists for this order.');
+        }
 
-        return back()->with('success', 'Order invoiced and marked as completed.');
+        return redirect()->route('finance.invoices.create', ['sales_order' => $order->id]);
     }
 
     /**

@@ -31,6 +31,7 @@ class User extends Authenticatable
         'sales'         => 'Sales Orders',
         'purchasing'    => 'Purchase Orders',
         'manufacturing' => 'Manufacturing',
+        'finance'       => 'Finance (Invoices & Payments)',
         'reports'       => 'Reports',
     ];
 

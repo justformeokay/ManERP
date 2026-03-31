@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\InventoryStock;
+use App\Models\Invoice;
 use App\Models\ManufacturingOrder;
+use App\Models\Payment;
 use App\Models\Product;
 use App\Models\PurchaseOrder;
 use App\Models\SalesOrder;
@@ -291,6 +293,59 @@ class ReportController extends Controller
 
         return view('reports.manufacturing', compact(
             'totalOrders', 'byStatus', 'productionByProduct'
+        ));
+    }
+
+    public function financeReport(Request $request)
+    {
+        $range = $this->resolveDateRange($request);
+
+        $totalRevenue = Invoice::whereBetween('invoice_date', $range)
+            ->whereNotIn('status', ['draft', 'cancelled'])
+            ->sum('total_amount');
+
+        $totalPaid = Invoice::whereBetween('invoice_date', $range)
+            ->whereNotIn('status', ['draft', 'cancelled'])
+            ->sum('paid_amount');
+
+        $totalOutstanding = $totalRevenue - $totalPaid;
+
+        $invoiceCount = Invoice::whereBetween('invoice_date', $range)
+            ->whereNotIn('status', ['draft', 'cancelled'])
+            ->count();
+
+        $byStatus = Invoice::whereBetween('invoice_date', $range)
+            ->select('status', DB::raw('COUNT(*) as count'), DB::raw('SUM(total_amount) as total'))
+            ->groupBy('status')
+            ->orderByDesc('total')
+            ->get();
+
+        $recentPayments = Payment::with(['invoice.client'])
+            ->whereBetween('payment_date', $range)
+            ->orderByDesc('payment_date')
+            ->limit(15)
+            ->get();
+
+        $topClients = DB::table('invoices')
+            ->join('clients', 'clients.id', '=', 'invoices.client_id')
+            ->whereNotIn('invoices.status', ['draft', 'cancelled'])
+            ->whereBetween('invoices.invoice_date', $range)
+            ->whereNull('invoices.deleted_at')
+            ->select(
+                'clients.name',
+                'clients.company',
+                DB::raw('COUNT(*) as invoice_count'),
+                DB::raw('SUM(invoices.total_amount) as total_billed'),
+                DB::raw('SUM(invoices.paid_amount) as total_paid')
+            )
+            ->groupBy('clients.id', 'clients.name', 'clients.company')
+            ->orderByDesc('total_billed')
+            ->limit(10)
+            ->get();
+
+        return view('reports.finance', compact(
+            'totalRevenue', 'totalPaid', 'totalOutstanding', 'invoiceCount',
+            'byStatus', 'recentPayments', 'topClients'
         ));
     }
 
