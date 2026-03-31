@@ -28,6 +28,8 @@ use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\LanguageController;
+use App\Http\Controllers\PDFController;
+use App\Http\Controllers\ApprovalController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -269,6 +271,33 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/manufacturing', [ReportController::class, 'manufacturingReport'])->name('manufacturing');
         Route::get('/finance', [ReportController::class, 'financeReport'])->name('finance');
         Route::get('/export', [ReportController::class, 'export'])->name('export');
+    });
+
+    // PDF Generation
+    Route::prefix('pdf')->name('pdf.')->group(function () {
+        Route::get('/invoice/{id}', [PDFController::class, 'invoice'])->name('invoice')->middleware('permission:finance.view');
+        Route::get('/po/{id}', [PDFController::class, 'purchaseOrder'])->name('po')->middleware('permission:inventory.view');
+        Route::get('/bill/{id}', [PDFController::class, 'supplierBill'])->name('bill')->middleware('permission:finance.view');
+    });
+
+    // Approval Workflow
+    Route::prefix('approvals')->name('approvals.')->group(function () {
+        Route::get('/', [ApprovalController::class, 'index'])->name('index');
+        Route::get('/{approval}', [ApprovalController::class, 'show'])->name('show');
+        Route::post('/{approval}/approve', [ApprovalController::class, 'approve'])->name('approve');
+        Route::post('/{approval}/reject', [ApprovalController::class, 'reject'])->name('reject');
+        Route::post('/{approval}/cancel', [ApprovalController::class, 'cancel'])->name('cancel');
+        Route::post('/{approval}/resubmit', [ApprovalController::class, 'resubmit'])->name('resubmit');
+        
+        // Admin: Flow Configuration
+        Route::get('/admin/flows', [ApprovalController::class, 'flows'])->name('flows')->middleware('admin');
+        Route::get('/admin/flows/{flow}/edit', [ApprovalController::class, 'editFlow'])->name('flows.edit')->middleware('admin');
+        Route::put('/admin/flows/{flow}', [ApprovalController::class, 'updateFlow'])->name('flows.update')->middleware('admin');
+        
+        // Admin: Role Management
+        Route::get('/admin/roles', [ApprovalController::class, 'roles'])->name('roles')->middleware('admin');
+        Route::get('/admin/roles/{role}/edit', [ApprovalController::class, 'editRole'])->name('roles.edit')->middleware('admin');
+        Route::put('/admin/roles/{role}', [ApprovalController::class, 'updateRole'])->name('roles.update')->middleware('admin');
     });
 
     /*

@@ -135,4 +135,36 @@ class User extends Authenticatable
     {
         return $query->where('status', self::STATUS_ACTIVE);
     }
+
+    // ── Approval Roles ──────────────────────────────────────────────
+
+    public function approvalRoles(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(ApprovalRole::class, 'approval_role_user')
+            ->withTimestamps();
+    }
+
+    /**
+     * Check if user has a specific approval role.
+     */
+    public function hasApprovalRole(int|string $roleIdOrSlug): bool
+    {
+        if ($this->isAdmin()) {
+            return true; // Admins can approve anything
+        }
+
+        if (is_numeric($roleIdOrSlug)) {
+            return $this->approvalRoles()->where('approval_roles.id', $roleIdOrSlug)->exists();
+        }
+
+        return $this->approvalRoles()->where('slug', $roleIdOrSlug)->exists();
+    }
+
+    /**
+     * Get approval role IDs for this user.
+     */
+    public function getApprovalRoleIds(): array
+    {
+        return $this->approvalRoles()->pluck('approval_roles.id')->toArray();
+    }
 }
