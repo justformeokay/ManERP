@@ -60,7 +60,7 @@
                 <div>
                     <label for="manager_id" class="block text-sm font-medium text-gray-700 mb-1">Project Manager</label>
                     <select id="manager_id" name="manager_id"
-                        class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition @error('manager_id') border-red-300 @enderror">
+                        class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition @error('manager_id') @enderror">
                         <option value="">No manager assigned</option>
                         @foreach($users as $user)
                             <option value="{{ $user->id }}" @selected(old('manager_id', $project->manager_id) == $user->id)>
