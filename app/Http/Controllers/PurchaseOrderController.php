@@ -11,10 +11,15 @@ use App\Models\User;
 use App\Models\Warehouse;
 use App\Notifications\PurchaseOrderReceivedNotification;
 use App\Services\StockService;
+use App\Traits\Auditable;
 use Illuminate\Http\Request;
 
 class PurchaseOrderController extends Controller
 {
+    use Auditable;
+
+    protected string $model = 'purchasing';
+
     public function __construct(private StockService $stockService) {}
 
     public function index(Request $request)
@@ -68,6 +73,7 @@ class PurchaseOrderController extends Controller
         }
 
         $order->recalculateTotals();
+        $this->logCreate($order);
 
         return redirect()->route('purchasing.show', $order)->with('success', 'Purchase order created.');
     }
@@ -105,6 +111,7 @@ class PurchaseOrderController extends Controller
         }
 
         $data = $request->validated();
+        $oldData = $order->getOriginal();
 
         $order->update([
             'supplier_id'  => $data['supplier_id'],
@@ -129,6 +136,7 @@ class PurchaseOrderController extends Controller
         }
 
         $order->recalculateTotals();
+        $this->logUpdate($order, $oldData);
 
         return redirect()->route('purchasing.show', $order)->with('success', 'Purchase order updated.');
     }
@@ -142,7 +150,9 @@ class PurchaseOrderController extends Controller
             return back()->with('error', 'Only draft orders can be confirmed.');
         }
 
+        $oldData = $order->toArray();
         $order->update(['status' => 'confirmed']);
+        $this->logAction($order, 'confirm', "Purchase order {$order->number} confirmed", $oldData);
 
         return back()->with('success', 'Purchase order confirmed.');
     }
@@ -196,11 +206,13 @@ class PurchaseOrderController extends Controller
         }
 
         // Update status
+        $oldData = $order->toArray();
         $order->refresh()->load('items');
         $isFullyReceived = $order->isFullyReceived();
         $order->update([
             'status' => $isFullyReceived ? 'received' : 'partial',
         ]);
+        $this->logAction($order, 'receive', "Purchase order {$order->number} items received", $oldData);
 
         // Notify admin users when fully received
         if ($isFullyReceived) {
@@ -240,7 +252,9 @@ class PurchaseOrderController extends Controller
             }
         }
 
+        $oldData = $order->toArray();
         $order->update(['status' => 'cancelled']);
+        $this->logAction($order, 'cancel', "Purchase order {$order->number} cancelled", $oldData);
 
         return back()->with('success', 'Purchase order cancelled.');
     }
@@ -251,6 +265,7 @@ class PurchaseOrderController extends Controller
             return back()->with('error', 'Only draft orders can be deleted.');
         }
 
+        $this->logDelete($order);
         $order->items()->delete();
         $order->delete();
 

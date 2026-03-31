@@ -10,10 +10,15 @@ use App\Models\User;
 use App\Models\Warehouse;
 use App\Notifications\ManufacturingOrderCompletedNotification;
 use App\Services\StockService;
+use App\Traits\Auditable;
 use Illuminate\Http\Request;
 
 class ManufacturingOrderController extends Controller
 {
+    use Auditable;
+
+    protected string $model = 'manufacturing';
+
     public function __construct(private StockService $stockService) {}
 
     public function index(Request $request)
@@ -47,7 +52,8 @@ class ManufacturingOrderController extends Controller
         $data['product_id'] = $bom->product_id;
         $data['created_by'] = auth()->id();
 
-        ManufacturingOrder::create($data);
+        $order = ManufacturingOrder::create($data);
+        $this->logCreate($order);
 
         return redirect()->route('manufacturing.orders.index')->with('success', 'Manufacturing order created successfully.');
     }
@@ -74,8 +80,10 @@ class ManufacturingOrderController extends Controller
         $data = $request->validated();
         $bom = BillOfMaterial::findOrFail($data['bom_id']);
         $data['product_id'] = $bom->product_id;
+        $oldData = $order->getOriginal();
 
         $order->update($data);
+        $this->logUpdate($order, $oldData);
 
         return redirect()->route('manufacturing.orders.index')->with('success', 'Manufacturing order updated successfully.');
     }
@@ -89,7 +97,9 @@ class ManufacturingOrderController extends Controller
             return back()->withErrors(['status' => 'Only draft orders can be confirmed.']);
         }
 
+        $oldData = $order->toArray();
         $order->update(['status' => 'confirmed']);
+        $this->logAction($order, 'confirm', "Manufacturing order {$order->number} confirmed", $oldData);
 
         return back()->with('success', 'Manufacturing order confirmed successfully.');
     }
@@ -178,13 +188,16 @@ class ManufacturingOrderController extends Controller
             }
         }
 
+        $oldData = $order->toArray();
         $order->save();
+        $this->logAction($order, 'produce', "Manufacturing order {$order->number} produced {$quantity} units", $oldData);
 
         return back()->with('success', "Produced {$quantity} units successfully.");
     }
 
     public function destroy(ManufacturingOrder $order)
     {
+        $this->logDelete($order);
         $order->delete();
 
         return redirect()->route('manufacturing.orders.index')->with('success', 'Manufacturing order deleted successfully.');

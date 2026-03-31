@@ -11,10 +11,15 @@ use App\Models\User;
 use App\Models\Warehouse;
 use App\Notifications\SalesOrderConfirmedNotification;
 use App\Services\StockService;
+use App\Traits\Auditable;
 use Illuminate\Http\Request;
 
 class SalesOrderController extends Controller
 {
+    use Auditable;
+
+    protected string $model = 'sales';
+
     public function __construct(private StockService $stockService) {}
 
     public function index(Request $request)
@@ -72,6 +77,7 @@ class SalesOrderController extends Controller
         }
 
         $order->recalculateTotals();
+        $this->logCreate($order);
 
         return redirect()->route('sales.show', $order)->with('success', 'Sales order created successfully.');
     }
@@ -109,6 +115,7 @@ class SalesOrderController extends Controller
         }
 
         $data = $request->validated();
+        $oldData = $order->getOriginal();
 
         $order->update([
             'client_id'    => $data['client_id'],
@@ -138,6 +145,7 @@ class SalesOrderController extends Controller
         }
 
         $order->recalculateTotals();
+        $this->logUpdate($order, $oldData);
 
         return redirect()->route('sales.show', $order)->with('success', 'Sales order updated successfully.');
     }
@@ -179,7 +187,9 @@ class SalesOrderController extends Controller
             ]);
         }
 
+        $oldData = $order->toArray();
         $order->update(['status' => 'confirmed']);
+        $this->logAction($order, 'confirm', "Sales order {$order->number} confirmed", $oldData);
 
         // Notify admin users
         $order->load('client');
@@ -200,7 +210,9 @@ class SalesOrderController extends Controller
             return back()->with('error', 'Only confirmed or processing orders can be delivered.');
         }
 
+        $oldData = $order->toArray();
         $order->update(['status' => 'shipped']);
+        $this->logAction($order, 'deliver', "Sales order {$order->number} delivered", $oldData);
 
         return back()->with('success', 'Order marked as shipped / delivered.');
     }
@@ -214,7 +226,9 @@ class SalesOrderController extends Controller
             return back()->with('error', 'Only confirmed or shipped orders can be invoiced.');
         }
 
+        $oldData = $order->toArray();
         $order->update(['status' => 'completed']);
+        $this->logAction($order, 'invoice', "Sales order {$order->number} invoiced", $oldData);
 
         return back()->with('success', 'Order invoiced and marked as completed.');
     }
@@ -245,7 +259,9 @@ class SalesOrderController extends Controller
             }
         }
 
+        $oldData = $order->toArray();
         $order->update(['status' => 'cancelled']);
+        $this->logAction($order, 'cancel', "Sales order {$order->number} cancelled", $oldData);
 
         $msg = $wasConfirmed
             ? 'Order cancelled and stock has been restored.'
@@ -260,6 +276,7 @@ class SalesOrderController extends Controller
             return back()->with('error', 'Only draft orders can be deleted.');
         }
 
+        $this->logDelete($order);
         $order->items()->delete();
         $order->delete();
 

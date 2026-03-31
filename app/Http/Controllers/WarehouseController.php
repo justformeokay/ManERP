@@ -3,10 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Warehouse;
+use App\Traits\Auditable;
 use Illuminate\Http\Request;
 
 class WarehouseController extends Controller
 {
+    use Auditable;
+
+    protected string $model = 'warehouses';
     public function index(Request $request)
     {
         $warehouses = Warehouse::query()
@@ -46,7 +50,8 @@ class WarehouseController extends Controller
             Warehouse::where('is_default', true)->update(['is_default' => false]);
         }
 
-        Warehouse::create($validated);
+        $warehouse = Warehouse::create($validated);
+        $this->logCreate($warehouse);
 
         return redirect()->route('warehouses.index')->with('success', 'Warehouse created successfully.');
     }
@@ -72,7 +77,9 @@ class WarehouseController extends Controller
             Warehouse::where('is_default', true)->update(['is_default' => false]);
         }
 
+        $oldData = $warehouse->getOriginal();
         $warehouse->update($validated);
+        $this->logUpdate($warehouse, $oldData);
 
         return redirect()->route('warehouses.index')->with('success', 'Warehouse updated successfully.');
     }
@@ -82,6 +89,8 @@ class WarehouseController extends Controller
         if ($warehouse->inventoryStocks()->exists()) {
             return back()->with('error', 'Cannot delete warehouse that has inventory stock.');
         }
+
+        $this->logDelete($warehouse);
 
         $warehouse->delete();
 

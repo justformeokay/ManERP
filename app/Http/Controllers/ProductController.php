@@ -5,10 +5,14 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ProductRequest;
 use App\Models\Category;
 use App\Models\Product;
+use App\Traits\Auditable;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
+    use Auditable;
+
+    protected string $model = 'products';
     public function index(Request $request)
     {
         $products = Product::query()
@@ -36,7 +40,8 @@ class ProductController extends Controller
 
     public function store(ProductRequest $request)
     {
-        Product::create($request->validated());
+        $product = Product::create($request->validated());
+        $this->logCreate($product);
 
         return redirect()->route('inventory.products.index')->with('success', 'Product created successfully.');
     }
@@ -51,13 +56,16 @@ class ProductController extends Controller
 
     public function update(ProductRequest $request, Product $product)
     {
+        $oldData = $product->getOriginal();
         $product->update($request->validated());
+        $this->logUpdate($product, $oldData);
 
         return redirect()->route('inventory.products.index')->with('success', 'Product updated successfully.');
     }
 
     public function destroy(Product $product)
     {
+        $this->logDelete($product);
         $product->delete();
 
         return redirect()->route('inventory.products.index')->with('success', 'Product deleted successfully.');

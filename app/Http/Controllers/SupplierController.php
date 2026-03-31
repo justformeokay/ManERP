@@ -3,11 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\Supplier;
+use App\Traits\Auditable;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class SupplierController extends Controller
 {
+    use Auditable;
+
+    protected string $model = 'suppliers';
     public function index(Request $request)
     {
         $suppliers = Supplier::query()
@@ -42,7 +46,8 @@ class SupplierController extends Controller
             'notes'   => 'nullable|string|max:2000',
         ]);
 
-        Supplier::create($validated);
+        $supplier = Supplier::create($validated);
+        $this->logCreate($supplier);
 
         return redirect()->route('suppliers.index')->with('success', 'Supplier created successfully.');
     }
@@ -67,7 +72,9 @@ class SupplierController extends Controller
             'notes'   => 'nullable|string|max:2000',
         ]);
 
+        $oldData = $supplier->getOriginal();
         $supplier->update($validated);
+        $this->logUpdate($supplier, $oldData);
 
         return redirect()->route('suppliers.index')->with('success', 'Supplier updated successfully.');
     }
@@ -78,6 +85,7 @@ class SupplierController extends Controller
             return back()->with('error', 'Cannot delete supplier that has purchase orders.');
         }
 
+        $this->logDelete($supplier);
         $supplier->delete();
 
         return redirect()->route('suppliers.index')->with('success', 'Supplier deleted successfully.');

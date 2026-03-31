@@ -5,10 +5,14 @@ namespace App\Http\Controllers;
 use App\Http\Requests\BomRequest;
 use App\Models\BillOfMaterial;
 use App\Models\Product;
+use App\Traits\Auditable;
 use Illuminate\Http\Request;
 
 class BomController extends Controller
 {
+    use Auditable;
+
+    protected string $model = 'manufacturing';
     public function index(Request $request)
     {
         $boms = BillOfMaterial::query()
@@ -38,6 +42,8 @@ class BomController extends Controller
             $bom->items()->create($item);
         }
 
+        $this->logCreate($bom);
+
         return redirect()->route('manufacturing.boms.index')->with('success', 'Bill of Materials created successfully.');
     }
 
@@ -60,6 +66,7 @@ class BomController extends Controller
 
     public function update(BomRequest $request, BillOfMaterial $bom)
     {
+        $oldData = $bom->getOriginal();
         $bom->update($request->safe()->except('items'));
 
         // Sync items: delete existing, recreate
@@ -68,11 +75,14 @@ class BomController extends Controller
             $bom->items()->create($item);
         }
 
+        $this->logUpdate($bom, $oldData);
+
         return redirect()->route('manufacturing.boms.index')->with('success', 'Bill of Materials updated successfully.');
     }
 
     public function destroy(BillOfMaterial $bom)
     {
+        $this->logDelete($bom);
         $bom->delete();
 
         return redirect()->route('manufacturing.boms.index')->with('success', 'Bill of Materials deleted successfully.');

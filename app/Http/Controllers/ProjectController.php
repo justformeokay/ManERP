@@ -6,10 +6,14 @@ use App\Http\Requests\ProjectRequest;
 use App\Models\Client;
 use App\Models\Project;
 use App\Models\User;
+use App\Traits\Auditable;
 use Illuminate\Http\Request;
 
 class ProjectController extends Controller
 {
+    use Auditable;
+
+    protected string $model = 'projects';
     public function index(Request $request)
     {
         $projects = Project::with('client')
@@ -36,7 +40,8 @@ class ProjectController extends Controller
 
     public function store(ProjectRequest $request)
     {
-        Project::create($request->validated());
+        $project = Project::create($request->validated());
+        $this->logCreate($project);
 
         return redirect()->route('projects.index')->with('success', 'Project created successfully.');
     }
@@ -59,13 +64,16 @@ class ProjectController extends Controller
 
     public function update(ProjectRequest $request, Project $project)
     {
+        $oldData = $project->getOriginal();
         $project->update($request->validated());
+        $this->logUpdate($project, $oldData);
 
         return redirect()->route('projects.index')->with('success', 'Project updated successfully.');
     }
 
     public function destroy(Project $project)
     {
+        $this->logDelete($project);
         $project->delete();
 
         return redirect()->route('projects.index')->with('success', 'Project deleted successfully.');

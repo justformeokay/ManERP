@@ -3,10 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Traits\Auditable;
 use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
+    use Auditable;
+
+    protected string $model = 'categories';
     public function index(Request $request)
     {
         $categories = Category::query()
@@ -42,7 +46,8 @@ class CategoryController extends Controller
             $validated['slug'] = str($validated['name'])->slug();
         }
 
-        Category::create($validated);
+        $category = Category::create($validated);
+        $this->logCreate($category);
 
         return redirect()->route('inventory.categories.index')->with('success', 'Category created successfully.');
     }
@@ -69,7 +74,9 @@ class CategoryController extends Controller
             $validated['slug'] = str($validated['name'])->slug();
         }
 
+        $oldData = $category->getOriginal();
         $category->update($validated);
+        $this->logUpdate($category, $oldData);
 
         return redirect()->route('inventory.categories.index')->with('success', 'Category updated successfully.');
     }
@@ -84,6 +91,7 @@ class CategoryController extends Controller
             return back()->with('error', 'Cannot delete category with subcategories. Please delete subcategories first.');
         }
 
+        $this->logDelete($category);
         $category->delete();
 
         return redirect()->route('inventory.categories.index')->with('success', 'Category deleted successfully.');

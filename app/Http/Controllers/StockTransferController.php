@@ -6,10 +6,15 @@ use App\Models\Product;
 use App\Models\StockTransfer;
 use App\Models\Warehouse;
 use App\Services\StockService;
+use App\Traits\Auditable;
 use Illuminate\Http\Request;
 
 class StockTransferController extends Controller
 {
+    use Auditable;
+
+    protected string $model = 'inventory';
+
     public function __construct(private StockService $stockService) {}
 
     public function index(Request $request)
@@ -58,6 +63,7 @@ class StockTransferController extends Controller
         if ($request->boolean('execute')) {
             try {
                 $this->stockService->executeTransfer($transfer);
+                $this->logAction($transfer, 'transfer', "Transfer {$transfer->number} created and executed");
                 return redirect()
                     ->route('inventory.transfers.index')
                     ->with('success', "Transfer {$transfer->number} created and completed.");
@@ -66,6 +72,8 @@ class StockTransferController extends Controller
                 return back()->withInput()->withErrors(['quantity' => $e->getMessage()]);
             }
         }
+
+        $this->logCreate($transfer);
 
         return redirect()
             ->route('inventory.transfers.index')
@@ -79,7 +87,9 @@ class StockTransferController extends Controller
         }
 
         try {
+            $oldData = $transfer->toArray();
             $this->stockService->executeTransfer($transfer);
+            $this->logAction($transfer, 'transfer', "Transfer {$transfer->number} executed", $oldData);
             return back()->with('success', "Transfer {$transfer->number} completed successfully.");
         } catch (\InvalidArgumentException $e) {
             return back()->withErrors(['stock' => $e->getMessage()]);
@@ -94,11 +104,15 @@ class StockTransferController extends Controller
 
         try {
             if ($transfer->status === 'completed') {
+                $oldData = $transfer->toArray();
                 $this->stockService->reverseTransfer($transfer);
+                $this->logAction($transfer, 'cancel', "Transfer {$transfer->number} cancelled and reversed", $oldData);
                 return back()->with('success', "Transfer {$transfer->number} cancelled and stock reversed.");
             }
 
+            $oldData = $transfer->toArray();
             $transfer->update(['status' => 'cancelled']);
+            $this->logAction($transfer, 'cancel', "Transfer {$transfer->number} cancelled", $oldData);
             return back()->with('success', "Transfer {$transfer->number} cancelled.");
         } catch (\InvalidArgumentException $e) {
             return back()->withErrors(['stock' => $e->getMessage()]);
@@ -111,6 +125,7 @@ class StockTransferController extends Controller
             return back()->with('error', 'Only pending transfers can be deleted.');
         }
 
+        $this->logDelete($transfer);
         $transfer->delete();
 
         return redirect()

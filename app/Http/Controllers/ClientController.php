@@ -4,10 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ClientRequest;
 use App\Models\Client;
+use App\Traits\Auditable;
 use Illuminate\Http\Request;
 
 class ClientController extends Controller
 {
+    use Auditable;
+
+    protected string $model = 'clients';
     public function index(Request $request)
     {
         $clients = Client::query()
@@ -30,7 +34,8 @@ class ClientController extends Controller
 
     public function store(ClientRequest $request)
     {
-        Client::create($request->validated());
+        $client = Client::create($request->validated());
+        $this->logCreate($client);
 
         return redirect()->route('clients.index')->with('success', 'Client created successfully.');
     }
@@ -42,13 +47,16 @@ class ClientController extends Controller
 
     public function update(ClientRequest $request, Client $client)
     {
+        $oldData = $client->getOriginal();
         $client->update($request->validated());
+        $this->logUpdate($client, $oldData);
 
         return redirect()->route('clients.index')->with('success', 'Client updated successfully.');
     }
 
     public function destroy(Client $client)
     {
+        $this->logDelete($client);
         $client->delete();
 
         return redirect()->route('clients.index')->with('success', 'Client deleted successfully.');

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DashboardController;
@@ -200,6 +201,12 @@ Route::middleware(['auth'])->group(function () {
     */
     Route::middleware(['admin'])->group(function () {
         
+        // Audit Logs
+        Route::prefix('audit-logs')->name('audit-logs.')->group(function () {
+            Route::get('/', [AuditLogController::class, 'index'])->name('index');
+            Route::get('/{activityLog}', [AuditLogController::class, 'show'])->name('show');
+        });
+
         // Settings
         Route::prefix('settings')->name('settings.')->group(function () {
             Route::get('/', [SettingsController::class, 'index'])->name('index');

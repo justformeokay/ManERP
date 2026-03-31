@@ -48,6 +48,8 @@ class StockMovementController extends Controller
     {
         try {
             $this->stockService->processMovement($request->validated());
+            $data = $request->validated();
+            audit_log('inventory', $data['type'] === 'in' ? 'create' : 'transfer', "Manual stock {$data['type']} for product #{$data['product_id']}", null, $data);
 
             return redirect()
                 ->route('inventory.movements.index')
