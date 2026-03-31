@@ -38,7 +38,7 @@ class User extends Authenticatable
 
     public const PERMISSION_ACTIONS = ['view', 'create', 'edit', 'delete'];
 
-    protected $fillable = ['name', 'email', 'password', 'role', 'permissions', 'phone', 'status'];
+    protected $fillable = ['name', 'email', 'password', 'role', 'permissions', 'phone', 'status', 'locale'];
 
     protected $hidden = ['password', 'remember_token'];
 

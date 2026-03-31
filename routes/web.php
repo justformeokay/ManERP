@@ -26,6 +26,7 @@ use App\Http\Controllers\StockTransferController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WarehouseController;
+use App\Http\Controllers\LanguageController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -39,6 +40,13 @@ Route::get('/', function () {
     }
     return redirect()->route('login');
 });
+
+/*
+|--------------------------------------------------------------------------
+| Language Switcher (accessible to all)
+|--------------------------------------------------------------------------
+*/
+Route::get('/lang/{locale}', [LanguageController::class, 'switch'])->name('language.switch');
 
 /*
 |--------------------------------------------------------------------------

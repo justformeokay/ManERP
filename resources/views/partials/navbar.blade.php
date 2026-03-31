@@ -17,7 +17,7 @@
                 </svg>
                 <input
                     type="search"
-                    placeholder="Search anything..."
+                    placeholder="{{ __('messages.search_placeholder') }}"
                     class="w-full rounded-xl border border-gray-200 bg-gray-50 py-2 pl-10 pr-4 text-sm text-gray-700 placeholder-gray-400 focus:border-primary-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary-500 transition"
                 />
             </div>
@@ -47,11 +47,11 @@
             <div x-show="open" @click.away="open = false" x-cloak
                  class="absolute right-0 mt-2 w-80 rounded-xl bg-white shadow-lg ring-1 ring-black/5 overflow-hidden">
                 <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-                    <p class="text-sm font-semibold text-gray-900">Notifications</p>
+                    <p class="text-sm font-semibold text-gray-900">{{ __('messages.notifications') }}</p>
                     @if($unreadCount > 0)
                         <form method="POST" action="{{ route('notifications.readAll') }}">
                             @csrf
-                            <button type="submit" class="text-xs text-blue-600 hover:text-blue-800 font-medium">Mark all read</button>
+                            <button type="submit" class="text-xs text-blue-600 hover:text-blue-800 font-medium">{{ __('messages.mark_all_read') }}</button>
                         </form>
                     @endif
                 </div>
@@ -84,15 +84,53 @@
                     @empty
                         <div class="px-4 py-6 text-center">
                             <svg class="mx-auto h-8 w-8 text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-                            <p class="mt-2 text-sm text-gray-500">No new notifications</p>
+                            <p class="mt-2 text-sm text-gray-500">{{ __('messages.no_notifications') }}</p>
                         </div>
                     @endforelse
                 </div>
                 @if($unreadCount > 0)
                     <div class="border-t border-gray-100 px-4 py-2.5">
-                        <a href="{{ route('notifications.index') }}" class="block text-center text-xs font-medium text-blue-600 hover:text-blue-800">View all notifications</a>
+                        <a href="{{ route('notifications.index') }}" class="block text-center text-xs font-medium text-blue-600 hover:text-blue-800">{{ __('messages.view_all_notifications') }}</a>
                     </div>
                 @endif
+            </div>
+        </div>
+
+        {{-- Language Switcher --}}
+        @php
+            $currentLocale = app()->getLocale();
+            $locales = [
+                'en' => ['flag' => '🇺🇸', 'name' => 'English'],
+                'id' => ['flag' => '🇮🇩', 'name' => 'Bahasa Indonesia'],
+                'zh' => ['flag' => '🇨🇳', 'name' => '中文'],
+            ];
+        @endphp
+        <div x-data="{ open: false }" class="relative">
+            <button @click="open = !open" class="flex items-center gap-1.5 rounded-xl px-2.5 py-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition">
+                <span class="text-base">{{ $locales[$currentLocale]['flag'] }}</span>
+                <span class="hidden sm:inline text-sm">{{ $locales[$currentLocale]['name'] }}</span>
+                <svg class="h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+            </button>
+
+            <div x-show="open" @click.away="open = false" x-cloak
+                 class="absolute right-0 mt-2 w-48 rounded-xl bg-white shadow-lg ring-1 ring-black/5 overflow-hidden">
+                <div class="px-4 py-2.5 border-b border-gray-100">
+                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">{{ __('messages.language') }}</p>
+                </div>
+                @foreach($locales as $code => $locale)
+                    <a href="{{ route('language.switch', $code) }}"
+                       class="flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-gray-50 transition {{ $currentLocale === $code ? 'bg-primary-50 text-primary-700' : 'text-gray-700' }}">
+                        <span class="text-lg">{{ $locale['flag'] }}</span>
+                        <span>{{ $locale['name'] }}</span>
+                        @if($currentLocale === $code)
+                            <svg class="ml-auto h-4 w-4 text-primary-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                        @endif
+                    </a>
+                @endforeach
             </div>
         </div>
 
@@ -117,15 +155,15 @@
                     <p class="text-sm font-medium text-gray-900">{{ auth()->user()->name }}</p>
                     <p class="text-xs text-gray-500">{{ auth()->user()->email }}</p>
                 </div>
-                <a href="{{ route('profile.edit') }}" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50">Profile Settings</a>
+                <a href="{{ route('profile.edit') }}" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50">{{ __('messages.profile_settings') }}</a>
                 @if(auth()->user()->isAdmin())
-                    <a href="{{ route('settings.index') }}" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50">System Settings</a>
+                    <a href="{{ route('settings.index') }}" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50">{{ __('messages.system_settings') }}</a>
                 @endif
                 <div class="border-t border-gray-100"></div>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit" class="block w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50">
-                        Sign Out
+                        {{ __('messages.sign_out') }}
                     </button>
                 </form>
             </div>
