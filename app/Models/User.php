@@ -18,7 +18,25 @@ class User extends Authenticatable
     public const STATUS_ACTIVE = 'active';
     public const STATUS_INACTIVE = 'inactive';
 
-    protected $fillable = ['name', 'email', 'password', 'role', 'phone', 'status'];
+    /**
+     * Permission modules — each module supports: view, create, edit, delete
+     */
+    public const PERMISSION_MODULES = [
+        'clients'       => 'CRM / Clients',
+        'projects'      => 'Projects',
+        'products'      => 'Products & Categories',
+        'warehouses'    => 'Warehouses',
+        'inventory'     => 'Inventory & Transfers',
+        'suppliers'     => 'Suppliers',
+        'sales'         => 'Sales Orders',
+        'purchasing'    => 'Purchase Orders',
+        'manufacturing' => 'Manufacturing',
+        'reports'       => 'Reports',
+    ];
+
+    public const PERMISSION_ACTIONS = ['view', 'create', 'edit', 'delete'];
+
+    protected $fillable = ['name', 'email', 'password', 'role', 'permissions', 'phone', 'status'];
 
     protected $hidden = ['password', 'remember_token'];
 
@@ -27,6 +45,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'permissions' => 'array',
         ];
     }
 
@@ -43,6 +62,51 @@ class User extends Authenticatable
     public function isActive(): bool
     {
         return $this->status === self::STATUS_ACTIVE;
+    }
+
+    /**
+     * Check if the user has a specific permission (e.g. "sales.view").
+     * Admins always have all permissions.
+     */
+    public function hasPermission(string $permission): bool
+    {
+        if ($this->isAdmin()) {
+            return true;
+        }
+
+        return in_array($permission, $this->permissions ?? [], true);
+    }
+
+    /**
+     * Check if user can access any action within a module.
+     */
+    public function hasModuleAccess(string $module): bool
+    {
+        if ($this->isAdmin()) {
+            return true;
+        }
+
+        foreach (self::PERMISSION_ACTIONS as $action) {
+            if ($this->hasPermission("{$module}.{$action}")) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Get all available permissions as flat array.
+     */
+    public static function allPermissions(): array
+    {
+        $perms = [];
+        foreach (self::PERMISSION_MODULES as $module => $label) {
+            foreach (self::PERMISSION_ACTIONS as $action) {
+                $perms[] = "{$module}.{$action}";
+            }
+        }
+        return $perms;
     }
 
     public static function roleOptions(): array

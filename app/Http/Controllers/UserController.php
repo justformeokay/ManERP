@@ -38,7 +38,14 @@ class UserController extends Controller
             'role' => ['required', Rule::in(User::roleOptions())],
             'phone' => 'nullable|string|max:30',
             'status' => ['required', Rule::in(User::statusOptions())],
+            'permissions' => 'nullable|array',
+            'permissions.*' => ['string', Rule::in(User::allPermissions())],
         ]);
+
+        // Admin gets null permissions (= all access), staff gets explicit list
+        $validated['permissions'] = $validated['role'] === User::ROLE_ADMIN
+            ? null
+            : ($validated['permissions'] ?? []);
 
         User::create($validated);
 
@@ -59,6 +66,8 @@ class UserController extends Controller
             'role' => ['required', Rule::in(User::roleOptions())],
             'phone' => 'nullable|string|max:30',
             'status' => ['required', Rule::in(User::statusOptions())],
+            'permissions' => 'nullable|array',
+            'permissions.*' => ['string', Rule::in(User::allPermissions())],
         ]);
 
         if (empty($validated['password'])) {
@@ -69,6 +78,11 @@ class UserController extends Controller
         if ($user->id === auth()->id() && $validated['status'] !== User::STATUS_ACTIVE) {
             return back()->with('error', 'You cannot deactivate your own account.');
         }
+
+        // Admin gets null permissions (= all access), staff gets explicit list
+        $validated['permissions'] = $validated['role'] === User::ROLE_ADMIN
+            ? null
+            : ($validated['permissions'] ?? []);
 
         $user->update($validated);
 

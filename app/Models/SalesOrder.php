@@ -15,7 +15,7 @@ class SalesOrder extends Model
     protected $fillable = [
         'client_id', 'warehouse_id', 'project_id', 'status',
         'order_date', 'delivery_date', 'subtotal', 'tax_amount',
-        'discount', 'total', 'notes',
+        'discount', 'total', 'notes', 'created_by',
     ];
 
     protected function casts(): array

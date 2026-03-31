@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ProjectRequest;
 use App\Models\Client;
 use App\Models\Project;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class ProjectController extends Controller
@@ -29,6 +30,7 @@ class ProjectController extends Controller
         return view('projects.form', [
             'project' => new Project(['status' => 'draft']),
             'clients' => Client::active()->orderBy('name')->get(['id', 'name']),
+            'users'   => User::active()->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
@@ -51,6 +53,7 @@ class ProjectController extends Controller
         return view('projects.form', [
             'project' => $project,
             'clients' => Client::active()->orderBy('name')->get(['id', 'name']),
+            'users'   => User::active()->orderBy('name')->get(['id', 'name']),
         ]);
     }
 

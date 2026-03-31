@@ -25,6 +25,12 @@
             <p class="mt-1 text-sm text-gray-500">{{ $order->product->name ?? '—' }}</p>
         </div>
         <div class="flex items-center gap-2">
+            @if($order->status === 'draft')
+                <form method="POST" action="{{ route('manufacturing.orders.confirm', $order) }}" class="inline">
+                    @csrf
+                    @include('components.button', ['label' => 'Confirm Order', 'type' => 'primary', 'buttonType' => 'submit'])
+                </form>
+            @endif
             @include('components.button', ['label' => 'Edit', 'type' => 'secondary', 'href' => route('manufacturing.orders.edit', $order)])
             <form method="POST" action="{{ route('manufacturing.orders.destroy', $order) }}" class="inline"
                   onsubmit="return confirm('Delete this manufacturing order?')">

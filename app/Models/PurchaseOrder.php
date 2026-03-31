@@ -15,7 +15,7 @@ class PurchaseOrder extends Model
     protected $fillable = [
         'supplier_id', 'warehouse_id', 'project_id', 'status',
         'order_date', 'expected_date', 'subtotal', 'tax_amount',
-        'total', 'notes',
+        'total', 'notes', 'created_by',
     ];
 
     protected function casts(): array

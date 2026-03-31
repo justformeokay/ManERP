@@ -7,7 +7,9 @@ use App\Models\Product;
 use App\Models\Project;
 use App\Models\PurchaseOrder;
 use App\Models\Supplier;
+use App\Models\User;
 use App\Models\Warehouse;
+use App\Notifications\PurchaseOrderReceivedNotification;
 use App\Services\StockService;
 use Illuminate\Http\Request;
 
@@ -52,6 +54,7 @@ class PurchaseOrderController extends Controller
             'tax_amount'   => $data['tax_amount'] ?? 0,
             'notes'        => $data['notes'] ?? null,
             'status'       => 'draft',
+            'created_by'   => auth()->id(),
         ]);
 
         foreach ($data['items'] as $item) {
@@ -194,9 +197,19 @@ class PurchaseOrderController extends Controller
 
         // Update status
         $order->refresh()->load('items');
+        $isFullyReceived = $order->isFullyReceived();
         $order->update([
-            'status' => $order->isFullyReceived() ? 'received' : 'partial',
+            'status' => $isFullyReceived ? 'received' : 'partial',
         ]);
+
+        // Notify admin users when fully received
+        if ($isFullyReceived) {
+            $order->load('supplier');
+            $admins = User::where('is_admin', true)->get();
+            foreach ($admins as $admin) {
+                $admin->notify(new PurchaseOrderReceivedNotification($order));
+            }
+        }
 
         return back()->with('success', 'Items received and stock updated.');
     }

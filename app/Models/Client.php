@@ -22,6 +22,11 @@ class Client extends Model
         return $this->hasMany(Project::class);
     }
 
+    public function salesOrders(): HasMany
+    {
+        return $this->hasMany(SalesOrder::class);
+    }
+
     // Scopes
     public function scopeActive($query)
     {

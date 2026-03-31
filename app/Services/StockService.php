@@ -3,8 +3,12 @@
 namespace App\Services;
 
 use App\Models\InventoryStock;
+use App\Models\Product;
 use App\Models\StockMovement;
 use App\Models\StockTransfer;
+use App\Models\User;
+use App\Models\Warehouse;
+use App\Notifications\LowStockNotification;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
@@ -41,6 +45,9 @@ class StockService
             }
 
             $stock->update(['quantity' => $newQuantity]);
+
+            // Check for low stock and notify admins
+            $this->checkLowStock($data['product_id'], $data['warehouse_id'], $newQuantity);
 
             return StockMovement::create([
                 'product_id'     => $data['product_id'],
@@ -125,5 +132,39 @@ class StockService
 
             $transfer->update(['status' => 'cancelled']);
         });
+    }
+
+    /**
+     * Check if stock is low after a movement and notify admin users.
+     */
+    private function checkLowStock(int $productId, int $warehouseId, float $newQuantity): void
+    {
+        $product = Product::find($productId);
+
+        if (!$product || $product->min_stock <= 0 || $newQuantity > $product->min_stock) {
+            return;
+        }
+
+        $warehouse = Warehouse::find($warehouseId);
+        $warehouseName = $warehouse->name ?? 'Unknown';
+
+        // Notify all active admin users
+        $admins = User::where('role', User::ROLE_ADMIN)
+            ->where('status', User::STATUS_ACTIVE)
+            ->get();
+
+        foreach ($admins as $admin) {
+            // Avoid duplicate notifications for same product+warehouse within last hour
+            $exists = $admin->notifications()
+                ->where('type', LowStockNotification::class)
+                ->where('created_at', '>=', now()->subHour())
+                ->whereJsonContains('data->product_id', $product->id)
+                ->whereJsonContains('data->warehouse', $warehouseName)
+                ->exists();
+
+            if (!$exists) {
+                $admin->notify(new LowStockNotification($product, $warehouseName, $newQuantity));
+            }
+        }
     }
 }

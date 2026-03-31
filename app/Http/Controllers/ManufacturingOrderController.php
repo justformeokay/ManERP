@@ -6,7 +6,9 @@ use App\Http\Requests\ManufacturingOrderRequest;
 use App\Models\BillOfMaterial;
 use App\Models\ManufacturingOrder;
 use App\Models\Project;
+use App\Models\User;
 use App\Models\Warehouse;
+use App\Notifications\ManufacturingOrderCompletedNotification;
 use App\Services\StockService;
 use Illuminate\Http\Request;
 
@@ -43,6 +45,7 @@ class ManufacturingOrderController extends Controller
         $data = $request->validated();
         $bom = BillOfMaterial::findOrFail($data['bom_id']);
         $data['product_id'] = $bom->product_id;
+        $data['created_by'] = auth()->id();
 
         ManufacturingOrder::create($data);
 
@@ -75,6 +78,20 @@ class ManufacturingOrderController extends Controller
         $order->update($data);
 
         return redirect()->route('manufacturing.orders.index')->with('success', 'Manufacturing order updated successfully.');
+    }
+
+    /**
+     * Confirm a draft manufacturing order.
+     */
+    public function confirm(ManufacturingOrder $order)
+    {
+        if ($order->status !== 'draft') {
+            return back()->withErrors(['status' => 'Only draft orders can be confirmed.']);
+        }
+
+        $order->update(['status' => 'confirmed']);
+
+        return back()->with('success', 'Manufacturing order confirmed successfully.');
     }
 
     /**
@@ -152,6 +169,13 @@ class ManufacturingOrderController extends Controller
         if ($order->produced_quantity >= $order->planned_quantity) {
             $order->status = 'done';
             $order->actual_end = now();
+            
+            // Notify admin users when manufacturing order is completed
+            $order->load('product');
+            $admins = User::where('is_admin', true)->get();
+            foreach ($admins as $admin) {
+                $admin->notify(new ManufacturingOrderCompletedNotification($order));
+            }
         }
 
         $order->save();

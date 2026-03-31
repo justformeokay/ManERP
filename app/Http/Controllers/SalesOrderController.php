@@ -7,7 +7,9 @@ use App\Models\Client;
 use App\Models\Product;
 use App\Models\Project;
 use App\Models\SalesOrder;
+use App\Models\User;
 use App\Models\Warehouse;
+use App\Notifications\SalesOrderConfirmedNotification;
 use App\Services\StockService;
 use Illuminate\Http\Request;
 
@@ -53,6 +55,7 @@ class SalesOrderController extends Controller
             'discount'     => $data['discount'] ?? 0,
             'notes'        => $data['notes'] ?? null,
             'status'       => 'draft',
+            'created_by'   => auth()->id(),
         ]);
 
         foreach ($data['items'] as $item) {
@@ -177,6 +180,13 @@ class SalesOrderController extends Controller
         }
 
         $order->update(['status' => 'confirmed']);
+
+        // Notify admin users
+        $order->load('client');
+        $admins = User::where('is_admin', true)->get();
+        foreach ($admins as $admin) {
+            $admin->notify(new SalesOrderConfirmedNotification($order));
+        }
 
         return back()->with('success', 'Order confirmed and stock has been deducted.');
     }

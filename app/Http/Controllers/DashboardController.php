@@ -28,7 +28,7 @@ class DashboardController extends Controller
 
         // Sales stats
         $salesStats = [
-            'total_revenue' => SalesOrder::where('status', 'invoiced')->sum('total') ?? 0,
+            'total_revenue' => SalesOrder::where('status', 'completed')->sum('total') ?? 0,
             'pending_orders' => SalesOrder::whereIn('status', ['draft', 'confirmed'])->count(),
             'this_month' => SalesOrder::whereMonth('created_at', now()->month)
                 ->whereYear('created_at', now()->year)

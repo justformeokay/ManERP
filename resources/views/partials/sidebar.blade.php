@@ -12,16 +12,24 @@
     <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1">
         @foreach($sidebarMenu ?? [] as $item)
             @if(isset($item['heading']))
-                {{-- Check if this is admin-only heading --}}
+                {{-- Check admin-only heading --}}
                 @if(isset($item['admin_only']) && $item['admin_only'] && (!auth()->check() || !auth()->user()->isAdmin()))
+                    @continue
+                @endif
+                {{-- Check permission-gated heading --}}
+                @if(isset($item['permission']) && auth()->check() && !auth()->user()->hasModuleAccess($item['permission']))
                     @continue
                 @endif
                 <p x-show="sidebarOpen" x-cloak class="px-3 pt-4 pb-1 text-xs font-semibold uppercase tracking-wider text-gray-500">
                     {{ $item['heading'] }}
                 </p>
             @else
-                {{-- Check if this is admin-only item --}}
+                {{-- Check admin-only item --}}
                 @if(isset($item['admin_only']) && $item['admin_only'] && (!auth()->check() || !auth()->user()->isAdmin()))
+                    @continue
+                @endif
+                {{-- Check permission-gated item --}}
+                @if(isset($item['permission']) && auth()->check() && !auth()->user()->hasModuleAccess($item['permission']))
                     @continue
                 @endif
                 <a

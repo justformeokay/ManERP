@@ -178,14 +178,14 @@
                                 {{ strtoupper(substr($order->client->name ?? 'N', 0, 1)) }}
                             </div>
                             <div>
-                                <p class="text-sm font-medium text-gray-900">{{ $order->order_number }}</p>
+                                <p class="text-sm font-medium text-gray-900">{{ $order->number }}</p>
                                 <p class="text-xs text-gray-500">{{ $order->client->name ?? 'N/A' }}</p>
                             </div>
                         </div>
                         <div class="text-right">
                             <p class="text-sm font-semibold text-gray-900">Rp {{ number_format($order->total ?? 0, 0, ',', '.') }}</p>
                             <span class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium
-                                @if($order->status === 'invoiced') bg-green-100 text-green-700
+                                @if($order->status === 'completed') bg-green-100 text-green-700
                                 @elseif($order->status === 'draft') bg-gray-100 text-gray-600
                                 @elseif($order->status === 'confirmed') bg-blue-100 text-blue-700
                                 @elseif($order->status === 'cancelled') bg-red-100 text-red-700
