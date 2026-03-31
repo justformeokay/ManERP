@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\ChartOfAccount;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -34,9 +35,29 @@ class DatabaseSeeder extends Seeder
                     'sales.view' => true, 'sales.create' => true, 'sales.edit' => true, 'sales.delete' => true,
                     'purchasing.view' => true, 'purchasing.create' => true, 'purchasing.edit' => true, 'purchasing.delete' => true,
                     'finance.view' => true, 'finance.create' => true, 'finance.edit' => true, 'finance.delete' => true,
+                    'accounting.view' => true, 'accounting.create' => true, 'accounting.edit' => true, 'accounting.delete' => true,
                     'reports.view' => true,
                 ],
             ]
         );
+
+        // Seed default Chart of Accounts
+        $accounts = [
+            ['code' => '1100', 'name' => 'Cash & Bank', 'type' => 'asset'],
+            ['code' => '1200', 'name' => 'Accounts Receivable', 'type' => 'asset'],
+            ['code' => '1300', 'name' => 'Inventory', 'type' => 'asset'],
+            ['code' => '2000', 'name' => 'Accounts Payable', 'type' => 'liability'],
+            ['code' => '3000', 'name' => "Owner's Equity", 'type' => 'equity'],
+            ['code' => '4000', 'name' => 'Revenue', 'type' => 'revenue'],
+            ['code' => '5000', 'name' => 'Cost of Goods Sold', 'type' => 'expense'],
+            ['code' => '6000', 'name' => 'Operating Expenses', 'type' => 'expense'],
+        ];
+
+        foreach ($accounts as $acc) {
+            ChartOfAccount::firstOrCreate(
+                ['code' => $acc['code']],
+                ['name' => $acc['name'], 'type' => $acc['type'], 'is_active' => true]
+            );
+        }
     }
 }

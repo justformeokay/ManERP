@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\AccountingReportController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ChartOfAccountController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NotificationController;
@@ -15,6 +17,7 @@ use App\Http\Controllers\ManufacturingOrderController;
 use App\Http\Controllers\SalesOrderController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\JournalEntryController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SettingsController;
@@ -197,6 +200,28 @@ Route::middleware(['auth'])->group(function () {
         });
 
         Route::post('/payments', [PaymentController::class, 'store'])->name('payments.store')->middleware('permission:finance.create');
+    });
+
+    // Accounting - Chart of Accounts, Journal Entries, Ledger, Trial Balance
+    Route::prefix('accounting')->name('accounting.')->group(function () {
+        Route::prefix('coa')->name('coa.')->group(function () {
+            Route::get('/', [ChartOfAccountController::class, 'index'])->name('index')->middleware('permission:accounting.view');
+            Route::get('/create', [ChartOfAccountController::class, 'create'])->name('create')->middleware('permission:accounting.create');
+            Route::post('/', [ChartOfAccountController::class, 'store'])->name('store')->middleware('permission:accounting.create');
+            Route::get('/{account}/edit', [ChartOfAccountController::class, 'edit'])->name('edit')->middleware('permission:accounting.edit');
+            Route::put('/{account}', [ChartOfAccountController::class, 'update'])->name('update')->middleware('permission:accounting.edit');
+            Route::delete('/{account}', [ChartOfAccountController::class, 'destroy'])->name('destroy')->middleware('permission:accounting.delete');
+        });
+
+        Route::prefix('journals')->name('journals.')->group(function () {
+            Route::get('/', [JournalEntryController::class, 'index'])->name('index')->middleware('permission:accounting.view');
+            Route::get('/create', [JournalEntryController::class, 'create'])->name('create')->middleware('permission:accounting.create');
+            Route::post('/', [JournalEntryController::class, 'store'])->name('store')->middleware('permission:accounting.create');
+            Route::get('/{journal}', [JournalEntryController::class, 'show'])->name('show')->middleware('permission:accounting.view');
+        });
+
+        Route::get('/ledger', [AccountingReportController::class, 'ledger'])->name('ledger')->middleware('permission:accounting.view');
+        Route::get('/trial-balance', [AccountingReportController::class, 'trialBalance'])->name('trial-balance')->middleware('permission:accounting.view');
     });
 
     // Reports

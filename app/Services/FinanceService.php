@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\DB;
 
 class FinanceService
 {
+    public function __construct(private AccountingService $accountingService) {}
+
     /**
      * Create an invoice from a confirmed/shipped/completed sales order.
      */
@@ -44,6 +46,9 @@ class FinanceService
             // Mark sales order as completed
             $salesOrder->update(['status' => 'completed']);
 
+            // Auto-create journal entry: Debit AR, Credit Revenue
+            $this->createInvoiceJournal($invoice);
+
             return $invoice;
         });
     }
@@ -68,6 +73,9 @@ class FinanceService
             $invoice->save();
             $invoice->recalculateStatus();
 
+            // Auto-create journal entry: Debit Cash/Bank, Credit AR
+            $this->createPaymentJournal($invoice, $payment);
+
             return $payment;
         });
     }
@@ -84,5 +92,51 @@ class FinanceService
                 'paid_amount' => 0,
             ]);
         });
+    }
+
+    /**
+     * Auto-create journal entry for an invoice: Debit AR, Credit Revenue.
+     */
+    private function createInvoiceJournal(Invoice $invoice): void
+    {
+        $ar = $this->accountingService->resolveAccount(AccountingService::ACCOUNTS_RECEIVABLE);
+        $revenue = $this->accountingService->resolveAccount(AccountingService::REVENUE);
+
+        if (!$ar || !$revenue) {
+            return; // COA not seeded yet — skip silently
+        }
+
+        $this->accountingService->createJournalEntry(
+            $invoice->invoice_number,
+            $invoice->invoice_date,
+            "Invoice {$invoice->invoice_number} issued",
+            [
+                ['account_id' => $ar->id, 'debit' => $invoice->total_amount, 'credit' => 0],
+                ['account_id' => $revenue->id, 'debit' => 0, 'credit' => $invoice->total_amount],
+            ]
+        );
+    }
+
+    /**
+     * Auto-create journal entry for a payment: Debit Cash/Bank, Credit AR.
+     */
+    private function createPaymentJournal(Invoice $invoice, Payment $payment): void
+    {
+        $cash = $this->accountingService->resolveAccount(AccountingService::CASH_BANK);
+        $ar = $this->accountingService->resolveAccount(AccountingService::ACCOUNTS_RECEIVABLE);
+
+        if (!$cash || !$ar) {
+            return; // COA not seeded yet — skip silently
+        }
+
+        $this->accountingService->createJournalEntry(
+            'PMT-' . $invoice->invoice_number,
+            $payment->payment_date,
+            "Payment received for {$invoice->invoice_number}",
+            [
+                ['account_id' => $cash->id, 'debit' => $payment->amount, 'credit' => 0],
+                ['account_id' => $ar->id, 'debit' => 0, 'credit' => $payment->amount],
+            ]
+        );
     }
 }
