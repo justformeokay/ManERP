@@ -1,21 +1,21 @@
 @extends('layouts.app')
 
-@section('title', 'CRM / Clients')
+@section('title', __('messages.crm_clients_title'))
 
 @section('breadcrumbs')
-    <a href="{{ route('dashboard') }}" class="hover:text-gray-700">Dashboard</a>
+    <a href="{{ route('dashboard') }}" class="hover:text-gray-700">{{ __('messages.dashboard') }}</a>
     <span class="mx-1">/</span>
-    <span class="text-gray-900 font-medium">Clients</span>
+    <span class="text-gray-900 font-medium">{{ __('messages.clients_heading') }}</span>
 @endsection
 
 @section('page-header')
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900">Clients</h1>
-            <p class="mt-1 text-sm text-gray-500">Manage your customers, leads, and prospects.</p>
+            <h1 class="text-2xl font-bold text-gray-900">{{ __('messages.clients_heading') }}</h1>
+            <p class="mt-1 text-sm text-gray-500">{{ __('messages.clients_subtitle') }}</p>
         </div>
         @include('components.button', [
-            'label' => 'Add Client',
+            'label' => __('messages.add_client'),
             'type' => 'primary',
             'href' => route('clients.create'),
             'icon' => '<svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>',
@@ -32,25 +32,25 @@
                     type="search"
                     name="search"
                     value="{{ request('search') }}"
-                    placeholder="Search by name, company, email, or code..."
+                    placeholder="{{ __('messages.search_clients_placeholder') }}"
                     class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 placeholder-gray-400 focus:border-primary-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary-500 transition"
                 />
             </div>
             <select name="status" class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
-                <option value="">All Status</option>
-                <option value="active" @selected(request('status') === 'active')>Active</option>
-                <option value="inactive" @selected(request('status') === 'inactive')>Inactive</option>
+                <option value="">{{ __('messages.all_status') }}</option>
+                <option value="active" @selected(request('status') === 'active')>{{ __('messages.active') }}</option>
+                <option value="inactive" @selected(request('status') === 'inactive')>{{ __('messages.inactive') }}</option>
             </select>
             <select name="type" class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
-                <option value="">All Types</option>
-                <option value="customer" @selected(request('type') === 'customer')>Customer</option>
-                <option value="lead" @selected(request('type') === 'lead')>Lead</option>
-                <option value="prospect" @selected(request('type') === 'prospect')>Prospect</option>
+                <option value="">{{ __('messages.all_types') }}</option>
+                <option value="customer" @selected(request('type') === 'customer')>{{ __('messages.customer') }}</option>
+                <option value="lead" @selected(request('type') === 'lead')>{{ __('messages.lead') }}</option>
+                <option value="prospect" @selected(request('type') === 'prospect')>{{ __('messages.prospect') }}</option>
             </select>
             <div class="flex gap-2">
-                @include('components.button', ['label' => 'Filter', 'type' => 'secondary', 'buttonType' => 'submit'])
+                @include('components.button', ['label' => __('messages.filter'), 'type' => 'secondary', 'buttonType' => 'submit'])
                 @if(request()->hasAny(['search', 'status', 'type']))
-                    @include('components.button', ['label' => 'Clear', 'type' => 'ghost', 'href' => route('clients.index')])
+                    @include('components.button', ['label' => __('messages.clear'), 'type' => 'ghost', 'href' => route('clients.index')])
                 @endif
             </div>
         </form>
@@ -62,12 +62,12 @@
             <table class="min-w-full divide-y divide-gray-100">
                 <thead class="bg-gray-50/50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Client</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Contact</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Type</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Created</th>
-                        <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">Actions</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.client_column') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.contact') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.type') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.status') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.created') }}</th>
+                        <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.actions') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50">
@@ -98,7 +98,7 @@
                                     };
                                 @endphp
                                 <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 {{ $typeBadge }}">
-                                    {{ ucfirst($client->type) }}
+                                    {{ __('messages.' . $client->type) }}
                                 </span>
                             </td>
                             <td class="whitespace-nowrap px-6 py-4">
@@ -106,7 +106,7 @@
                                     {{ $client->status === 'active'
                                         ? 'bg-green-50 text-green-700 ring-green-600/20'
                                         : 'bg-gray-100 text-gray-600 ring-gray-500/20' }}">
-                                    {{ ucfirst($client->status) }}
+                                    {{ $client->status === 'active' ? __('messages.active') : __('messages.inactive') }}
                                 </span>
                             </td>
                             <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
@@ -115,12 +115,12 @@
                             <td class="whitespace-nowrap px-6 py-4 text-right text-sm space-x-1">
                                 <a href="{{ route('clients.edit', $client) }}"
                                    class="inline-flex items-center rounded-lg px-2.5 py-1.5 text-xs font-medium text-primary-700 bg-primary-50 hover:bg-primary-100 transition">
-                                    Edit
+                                    {{ __('messages.edit') }}
                                 </a>
-                                <form method="POST" action="{{ route('clients.destroy', $client) }}" class="inline" onsubmit="return confirm('Delete client {{ $client->name }}?')">
+                                <form method="POST" action="{{ route('clients.destroy', $client) }}" class="inline" onsubmit="return confirm('{{ __('messages.delete_client_confirm', ['name' => $client->name]) }}')">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="inline-flex items-center rounded-lg px-2.5 py-1.5 text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 transition">
-                                        Delete
+                                        {{ __('messages.delete') }}
                                     </button>
                                 </form>
                             </td>
@@ -132,9 +132,9 @@
                                     <svg class="h-12 w-12 text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                                     </svg>
-                                    <p class="mt-2 text-sm text-gray-500">No clients found.</p>
+                                    <p class="mt-2 text-sm text-gray-500">{{ __('messages.no_clients_found') }}</p>
                                     <a href="{{ route('clients.create') }}" class="mt-3 text-sm font-medium text-primary-600 hover:text-primary-700">
-                                        + Add your first client
+                                        {{ __('messages.add_your_first_client') }}
                                     </a>
                                 </div>
                             </td>

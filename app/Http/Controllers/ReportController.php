@@ -57,7 +57,7 @@ class ReportController extends Controller
 
         // Purchases last 6 months
         $purchaseTrend = PurchaseOrder::select(
-                DB::raw("strftime('%Y-%m', order_date) as month"),
+                DB::raw("DATE_FORMAT(order_date, '%Y-%m') as month"),
                 DB::raw('SUM(total) as total')
             )
             ->where('order_date', '>=', now()->subMonths(5)->startOfMonth())
@@ -190,7 +190,7 @@ class ReportController extends Controller
             ->get();
 
         $monthlySeries = PurchaseOrder::select(
-                DB::raw("strftime('%Y-%m', order_date) as month"),
+                DB::raw("DATE_FORMAT(order_date, '%Y-%m') as month"),
                 DB::raw('COUNT(*) as count'),
                 DB::raw('SUM(total) as total')
             )

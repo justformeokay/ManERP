@@ -182,4 +182,176 @@ return [
     'min_stock' => 'Min. Stock',
     'low_stock_badge' => 'Low Stock',
     'product_column' => 'Product',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Sales Order Form
+    |--------------------------------------------------------------------------
+    */
+    'new_sales_order' => 'New Sales Order',
+    'edit_sales_order' => 'Edit :number',
+    'create_new_sales_order_for_client' => 'Create a new sales order for a client.',
+    'update_order_details' => 'Update order details and items.',
+    'order_details' => 'Order Details',
+    'order_date' => 'Order Date',
+    'delivery_date' => 'Delivery Date',
+    'select_client' => 'Select client...',
+    'select_warehouse' => 'Select warehouse...',
+    'select_product' => 'Select product...',
+    'none_option' => '— None —',
+    'order_items' => 'Order Items',
+    'add_item' => 'Add Item',
+    'qty' => 'Qty',
+    'unit_price' => 'Unit Price',
+    'insufficient_stock' => '— Insufficient!',
+    'line_total' => 'Line total:',
+    'no_items_added' => 'No items added yet. Click "Add Item" to start.',
+    'optional_order_notes' => 'Optional order notes...',
+    'summary' => 'Summary',
+    'grand_total' => 'Grand Total',
+    'stock_warning_message' => 'Warning: Some items exceed available stock. Order can be saved as draft but cannot be confirmed.',
+    'create_order' => 'Create Order',
+    'update_order' => 'Update Order',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Clients Page
+    |--------------------------------------------------------------------------
+    */
+    'crm_clients_title' => 'CRM / Clients',
+    'clients_heading' => 'Clients',
+    'clients_subtitle' => 'Manage your customers, leads, and prospects.',
+    'add_client' => 'Add Client',
+    'search_clients_placeholder' => 'Search by name, company, email, or code...',
+    'all_status' => 'All Status',
+    'all_types' => 'All Types',
+    'filter' => 'Filter',
+    'clear' => 'Clear',
+    'client_column' => 'Client',
+    'contact' => 'Contact',
+    'type' => 'Type',
+    'created' => 'Created',
+    'customer' => 'Customer',
+    'lead' => 'Lead',
+    'prospect' => 'Prospect',
+    'no_clients_found' => 'No clients found.',
+    'add_your_first_client' => '+ Add your first client',
+    'delete_client_confirm' => 'Delete client :name?',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Projects Page
+    |--------------------------------------------------------------------------
+    */
+    'projects_title' => 'Projects',
+    'projects_heading' => 'Projects',
+    'projects_subtitle' => 'Track and manage client projects.',
+    'new_project' => 'New Project',
+    'search_projects_placeholder' => 'Search by project name, code, or client...',
+    'all_clients' => 'All Clients',
+    'project_column' => 'Project',
+    'timeline' => 'Timeline',
+    'budget' => 'Budget',
+    'view' => 'View',
+    'no_projects_found' => 'No projects found.',
+    'create_your_first_project' => '+ Create your first project',
+    'delete_project_confirm' => 'Delete project :name?',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Clients Form
+    |--------------------------------------------------------------------------
+    */
+    'add_client' => 'Add Client',
+    'edit_client' => 'Edit Client',
+    'fill_in_details_to_create_new_client' => 'Fill in the details to create a new client.',
+    'update_client_information' => 'Update client information.',
+    'basic_information' => 'Basic Information',
+    'full_name' => 'Full name',
+    'company_name' => 'Company name',
+    'tax_id' => 'Tax ID',
+    'tax_identification_number' => 'Tax identification number',
+    'address_label' => 'Address',
+    'street_address' => 'Street address',
+    'city' => 'City',
+    'country' => 'Country',
+    'status_notes' => 'Status & Notes',
+    'internal_notes' => 'Internal notes about this client...',
+    'cancel' => 'Cancel',
+    'create_client' => 'Create Client',
+    'update_client' => 'Update Client',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Products Form
+    |--------------------------------------------------------------------------
+    */
+    'new_product' => 'New Product',
+    'edit_product' => 'Edit Product',
+    'add_new_product_to_catalog' => 'Add a new product to the catalog.',
+    'update_product_details' => 'Update product details.',
+    'product_details' => 'Product Details',
+    'pricing_stock' => 'Pricing & Stock',
+    'no_category' => 'No category',
+    'auto_generated_if_empty' => 'Auto-generated if empty',
+    'product_description_placeholder' => 'Product description...',
+    'cost_price' => 'Cost Price',
+    'sell_price' => 'Sell Price',
+    'min_stock_alert' => 'Min. Stock Alert',
+    'active_product' => 'Active product',
+    'create_product' => 'Create Product',
+    'update_product' => 'Update Product',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Stock Levels Page
+    |--------------------------------------------------------------------------
+    */
+    'stock_levels_subtitle' => 'Current inventory levels across all warehouses.',
+    'new_movement' => 'New Movement',
+    'search_by_product_name_sku' => 'Search by product name or SKU...',
+    'all_warehouses' => 'All Warehouses',
+    'product_column' => 'Product',
+    'warehouse_column' => 'Warehouse',
+    'quantity_column' => 'Quantity',
+    'reserved_column' => 'Reserved',
+    'available_column' => 'Available',
+    'status_column' => 'Status',
+    'low_stock' => 'Low Stock',
+    'in_stock' => 'In Stock',
+    'out_of_stock' => 'Out of Stock',
+    'no_inventory_records_found' => 'No inventory records found.',
+    'record_first_stock_movement' => '+ Record your first stock movement',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Reports Dashboard
+    |--------------------------------------------------------------------------
+    */
+    'reports_dashboard' => 'Reports Dashboard',
+    'reports_dashboard_subtitle' => 'Business overview and key metrics',
+    'last_7_days' => 'Last 7 Days',
+    'last_30_days' => 'Last 30 Days',
+    'last_90_days' => 'Last 90 Days',
+    'last_1_year' => 'Last 1 Year',
+    'custom_range' => 'Custom Range',
+    'apply' => 'Apply',
+    'sales_report' => 'Sales Report',
+    'purchasing_report' => 'Purchasing Report',
+    'inventory_report' => 'Inventory Report',
+    'manufacturing_report' => 'Manufacturing Report',
+    'finance_report' => 'Finance Report',
+    'total_sales' => 'Total Sales',
+    'total_purchases' => 'Total Purchases',
+    'total_orders' => 'Total Orders',
+    'sales_trend_last_7_days' => 'Sales Trend (Last 7 Days)',
+    'purchase_trend_last_6_months' => 'Purchase Trend (Last 6 Months)',
+    'export_csv' => 'Export CSV ↓',
+    'top_selling_products' => 'Top Selling Products',
+    'qty_sold' => 'Qty Sold',
+    'revenue' => 'Revenue',
+    'no_sales_data_period' => 'No sales data for this period',
+    'low_stock_alerts' => 'Low Stock Alerts',
+    'stock_min' => 'Min',
+    'all_stock_levels_healthy' => 'All stock levels are healthy',
 ];

@@ -11,17 +11,19 @@
 @endsection
 
 @section('page-header')
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 w-full">
+        <div class="min-w-0">
             <h1 class="text-2xl font-bold text-gray-900">User Management</h1>
             <p class="mt-1 text-sm text-gray-500">{{ $users->total() }} user(s) total</p>
         </div>
-        @include('components.button', [
-            'label' => 'Add User',
-            'type' => 'primary',
-            'href' => route('settings.users.create'),
-            'icon' => '<svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>',
-        ])
+        <div class="flex-shrink-0">
+            @include('components.button', [
+                'label' => 'Add User',
+                'type' => 'primary',
+                'href' => route('settings.users.create'),
+                'icon' => '<svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>',
+            ])
+        </div>
     </div>
 @endsection
 

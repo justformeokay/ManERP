@@ -1,29 +1,29 @@
 @extends('layouts.app')
 
-@section('title', 'Reports Dashboard')
+@section('title', __('messages.reports_dashboard'))
 
 @section('breadcrumbs')
-    <a href="{{ route('dashboard') }}" class="hover:text-gray-700">Dashboard</a>
+    <a href="{{ route('dashboard') }}" class="hover:text-gray-700">{{ __('messages.dashboard') }}</a>
     <span class="mx-1">/</span>
-    <span class="text-gray-900 font-medium">Reports</span>
+    <span class="text-gray-900 font-medium">{{ __('messages.reports') }}</span>
 @endsection
 
 @section('page-header')
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900">Reports Dashboard</h1>
-            <p class="mt-1 text-sm text-gray-500">Business overview and key metrics</p>
+            <h1 class="text-2xl font-bold text-gray-900">{{ __('messages.reports_dashboard') }}</h1>
+            <p class="mt-1 text-sm text-gray-500">{{ __('messages.reports_dashboard_subtitle') }}</p>
         </div>
         <div class="flex items-center gap-2">
             {{-- Date filter --}}
             <form method="GET" class="flex items-center gap-2" id="filterForm">
                 <select name="period" onchange="toggleCustomDate(this); document.getElementById('filterForm').submit();"
                     class="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
-                    <option value="7" {{ request('period', '30') == '7' ? 'selected' : '' }}>Last 7 Days</option>
-                    <option value="30" {{ request('period', '30') == '30' ? 'selected' : '' }}>Last 30 Days</option>
-                    <option value="90" {{ request('period') == '90' ? 'selected' : '' }}>Last 90 Days</option>
-                    <option value="365" {{ request('period') == '365' ? 'selected' : '' }}>Last 1 Year</option>
-                    <option value="custom" {{ request('period') == 'custom' ? 'selected' : '' }}>Custom Range</option>
+                    <option value="7" {{ request('period', '30') == '7' ? 'selected' : '' }}>{{ __('messages.last_7_days') }}</option>
+                    <option value="30" {{ request('period', '30') == '30' ? 'selected' : '' }}>{{ __('messages.last_30_days') }}</option>
+                    <option value="90" {{ request('period') == '90' ? 'selected' : '' }}>{{ __('messages.last_90_days') }}</option>
+                    <option value="365" {{ request('period') == '365' ? 'selected' : '' }}>{{ __('messages.last_1_year') }}</option>
+                    <option value="custom" {{ request('period') == 'custom' ? 'selected' : '' }}>{{ __('messages.custom_range') }}</option>
                 </select>
                 <div id="customDateFields" class="{{ request('period') == 'custom' ? 'flex' : 'hidden' }} items-center gap-2">
                     <input type="date" name="from" value="{{ request('from', now()->subDays(30)->format('Y-m-d')) }}"
@@ -31,7 +31,7 @@
                     <span class="text-gray-400">–</span>
                     <input type="date" name="to" value="{{ request('to', now()->format('Y-m-d')) }}"
                         class="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
-                    <button type="submit" class="rounded-xl bg-primary-600 px-3 py-2 text-sm font-medium text-white hover:bg-primary-700 transition-colors">Apply</button>
+                    <button type="submit" class="rounded-xl bg-primary-600 px-3 py-2 text-sm font-medium text-white hover:bg-primary-700 transition-colors">{{ __('messages.apply') }}</button>
                 </div>
             </form>
         </div>
@@ -41,35 +41,35 @@
 @section('content')
     {{-- Quick Navigation --}}
     <div class="mb-6 flex flex-wrap gap-2">
-        <a href="{{ route('reports.sales', request()->query()) }}" class="rounded-xl bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-gray-100 hover:bg-gray-50 transition-colors">Sales Report</a>
-        <a href="{{ route('reports.purchasing', request()->query()) }}" class="rounded-xl bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-gray-100 hover:bg-gray-50 transition-colors">Purchasing Report</a>
-        <a href="{{ route('reports.inventory') }}" class="rounded-xl bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-gray-100 hover:bg-gray-50 transition-colors">Inventory Report</a>
-        <a href="{{ route('reports.manufacturing', request()->query()) }}" class="rounded-xl bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-gray-100 hover:bg-gray-50 transition-colors">Manufacturing Report</a>
-        <a href="{{ route('reports.finance', request()->query()) }}" class="rounded-xl bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-gray-100 hover:bg-gray-50 transition-colors">Finance Report</a>
+        <a href="{{ route('reports.sales', request()->query()) }}" class="rounded-xl bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-gray-100 hover:bg-gray-50 transition-colors">{{ __('messages.sales_report') }}</a>
+        <a href="{{ route('reports.purchasing', request()->query()) }}" class="rounded-xl bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-gray-100 hover:bg-gray-50 transition-colors">{{ __('messages.purchasing_report') }}</a>
+        <a href="{{ route('reports.inventory') }}" class="rounded-xl bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-gray-100 hover:bg-gray-50 transition-colors">{{ __('messages.inventory_report') }}</a>
+        <a href="{{ route('reports.manufacturing', request()->query()) }}" class="rounded-xl bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-gray-100 hover:bg-gray-50 transition-colors">{{ __('messages.manufacturing_report') }}</a>
+        <a href="{{ route('reports.finance', request()->query()) }}" class="rounded-xl bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-gray-100 hover:bg-gray-50 transition-colors">{{ __('messages.finance_report') }}</a>
     </div>
 
     {{-- Summary Cards --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         @include('components.stat-card', [
-            'title' => 'Total Sales',
+            'title' => __('messages.total_sales'),
             'value' => number_format($totalSales, 0),
             'iconBg' => 'bg-green-50 text-green-600',
             'icon' => '<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>',
         ])
         @include('components.stat-card', [
-            'title' => 'Total Purchases',
+            'title' => __('messages.total_purchases'),
             'value' => number_format($totalPurchases, 0),
             'iconBg' => 'bg-blue-50 text-blue-600',
             'icon' => '<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" /></svg>',
         ])
         @include('components.stat-card', [
-            'title' => 'Total Products',
+            'title' => __('messages.total_products'),
             'value' => number_format($totalProducts),
             'iconBg' => 'bg-amber-50 text-amber-600',
             'icon' => '<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>',
         ])
         @include('components.stat-card', [
-            'title' => 'Total Orders',
+            'title' => __('messages.total_orders'),
             'value' => number_format($totalOrders),
             'iconBg' => 'bg-purple-50 text-purple-600',
             'icon' => '<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>',
@@ -81,8 +81,8 @@
         {{-- Sales Trend --}}
         <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-base font-semibold text-gray-900">Sales Trend (Last 7 Days)</h3>
-                <a href="{{ route('reports.export', ['type' => 'sales', 'period' => request('period', '30')]) }}" class="text-xs font-medium text-primary-600 hover:text-primary-700">Export CSV ↓</a>
+                <h3 class="text-base font-semibold text-gray-900">{{ __('messages.sales_trend_last_7_days') }}</h3>
+                <a href="{{ route('reports.export', ['type' => 'sales', 'period' => request('period', '30')]) }}" class="text-xs font-medium text-primary-600 hover:text-primary-700">{{ __('messages.export_csv') }}</a>
             </div>
             <div class="h-64">
                 <canvas id="salesChart"></canvas>
@@ -92,8 +92,8 @@
         {{-- Purchase Trend --}}
         <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-base font-semibold text-gray-900">Purchase Trend (Last 6 Months)</h3>
-                <a href="{{ route('reports.export', ['type' => 'purchasing', 'period' => request('period', '30')]) }}" class="text-xs font-medium text-primary-600 hover:text-primary-700">Export CSV ↓</a>
+                <h3 class="text-base font-semibold text-gray-900">{{ __('messages.purchase_trend_last_6_months') }}</h3>
+                <a href="{{ route('reports.export', ['type' => 'purchasing', 'period' => request('period', '30')]) }}" class="text-xs font-medium text-primary-600 hover:text-primary-700">{{ __('messages.export_csv') }}</a>
             </div>
             <div class="h-64">
                 <canvas id="purchaseChart"></canvas>
@@ -106,16 +106,16 @@
         {{-- Top Products --}}
         <div class="rounded-2xl bg-white shadow-sm ring-1 ring-gray-100 overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-100">
-                <h3 class="text-base font-semibold text-gray-900">Top Selling Products</h3>
+                <h3 class="text-base font-semibold text-gray-900">{{ __('messages.top_selling_products') }}</h3>
             </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-100">
                     <thead class="bg-gray-50/50">
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">#</th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Product</th>
-                            <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">Qty Sold</th>
-                            <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">Revenue</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.product_column') }}</th>
+                            <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.qty_sold') }}</th>
+                            <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.revenue') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-50">
@@ -131,7 +131,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="px-6 py-8 text-center text-sm text-gray-400">No sales data for this period</td>
+                                <td colspan="4" class="px-6 py-8 text-center text-sm text-gray-400">{{ __('messages.no_sales_data_period') }}</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -142,17 +142,17 @@
         {{-- Low Stock --}}
         <div class="rounded-2xl bg-white shadow-sm ring-1 ring-gray-100 overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-                <h3 class="text-base font-semibold text-gray-900">Low Stock Alerts</h3>
-                <a href="{{ route('reports.export', ['type' => 'inventory']) }}" class="text-xs font-medium text-primary-600 hover:text-primary-700">Export CSV ↓</a>
+                <h3 class="text-base font-semibold text-gray-900">{{ __('messages.low_stock_alerts') }}</h3>
+                <a href="{{ route('reports.export', ['type' => 'inventory']) }}" class="text-xs font-medium text-primary-600 hover:text-primary-700">{{ __('messages.export_csv') }}</a>
             </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-100">
                     <thead class="bg-gray-50/50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Product</th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Warehouse</th>
-                            <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">Stock</th>
-                            <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">Min</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.product_column') }}</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.warehouse_column') }}</th>
+                            <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.stock') }}</th>
+                            <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.stock_min') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-50">
@@ -171,7 +171,7 @@
                         @empty
                             <tr>
                                 <td colspan="4" class="px-6 py-8 text-center text-sm text-gray-400">
-                                    <span class="text-green-600 font-medium">All stock levels are healthy</span>
+                                    <span class="text-green-600 font-medium">{{ __('messages.all_stock_levels_healthy') }}</span>
                                 </td>
                             </tr>
                         @endforelse

@@ -182,4 +182,175 @@ return [
     'min_stock' => '最小库存',
     'low_stock_badge' => '库存紧张',
     'product_column' => '产品',
+
+    /*
+    |--------------------------------------------------------------------------
+    | 销售订单表单
+    |--------------------------------------------------------------------------
+    */
+    'new_sales_order' => '新销售订单',
+    'edit_sales_order' => '编辑 :number',
+    'create_new_sales_order_for_client' => '为客户创建新销售订单。',
+    'update_order_details' => '更新订单详情和项目。',
+    'order_details' => '订单详情',
+    'order_date' => '订单日期',
+    'delivery_date' => '交货日期',
+    'select_client' => '选择客户...',
+    'select_warehouse' => '选择仓库...',
+    'select_product' => '选择产品...',
+    'none_option' => '— 无 —',
+    'order_items' => '订单项目',
+    'add_item' => '添加项目',
+    'qty' => '数量',
+    'unit_price' => '单价',
+    'insufficient_stock' => '— 库存不足！',
+    'line_total' => '行合计：',
+    'no_items_added' => '尚未添加任何项目。点击"添加项目"开始。',
+    'optional_order_notes' => '可选订单备注...',
+    'summary' => '摘要',
+    'grand_total' => '总计',
+    'stock_warning_message' => '警告：部分项目超出可用库存。订单可以保存为草稿，但不能确认。',
+    'create_order' => '创建订单',
+    'update_order' => '更新订单',
+
+    /*
+    |--------------------------------------------------------------------------
+    | 客户页面
+    |--------------------------------------------------------------------------
+    */
+    'crm_clients_title' => 'CRM / 客户',
+    'clients_heading' => '客户',
+    'clients_subtitle' => '管理您的客户、潜在客户和候选客户。',
+    'add_client' => '添加客户',
+    'search_clients_placeholder' => '按姓名、公司、邮箱或代码搜索...',
+    'all_status' => '所有状态',
+    'all_types' => '所有类型',
+    'filter' => '筛选',
+    'clear' => '清除筛选',
+    'client_column' => '客户',
+    'contact' => '联系方式',
+    'type' => '类型',
+    'created' => '创建时间',
+    'customer' => '客户',
+    'lead' => '潜在客户',
+    'prospect' => '候选客户',
+    'no_clients_found' => '未找到客户。',
+    'add_your_first_client' => '+ 添加您的第一个客户',
+    'delete_client_confirm' => '删除客户 :name？',
+
+    /*
+    |--------------------------------------------------------------------------
+    | 项目页面
+    |--------------------------------------------------------------------------
+    */
+    'projects_title' => '项目',
+    'projects_heading' => '项目',
+    'projects_subtitle' => '跟踪和管理客户项目。',
+    'new_project' => '新项目',
+    'search_projects_placeholder' => '按项目名称、代码或客户搜索...',
+    'all_clients' => '所有客户',
+    'project_column' => '项目',
+    'timeline' => '时间表',
+    'budget' => '预算',
+    'view' => '查看',
+    'no_projects_found' => '未找到项目。',
+    'create_your_first_project' => '+ 创建您的第一个项目',
+    'delete_project_confirm' => '删除项目 :name？',
+
+    /*
+    |--------------------------------------------------------------------------
+    | 客户表单
+    |--------------------------------------------------------------------------
+    */
+    'add_client' => '添加客户',
+    'edit_client' => '编辑客户',
+    'fill_in_details_to_create_new_client' => '填写详信息以创建新客户。',
+    'update_client_information' => '更新客户信息。',
+    'basic_information' => '基本信息',
+    'full_name' => '全名',
+    'company_name' => '公司名称',
+    'tax_id' => '税号',
+    'tax_identification_number' => '税收识别号',
+    'address_label' => '地址',
+    'street_address' => '街道地址',
+    'city' => '城市',
+    'country' => '国家',
+    'status_notes' => '状态与备注',
+    'internal_notes' => '关于此客户的内部备注...',
+    'cancel' => '取消',
+    'create_client' => '创建客户',
+    'update_client' => '更新客户',
+
+    /*
+    |--------------------------------------------------------------------------
+    | 产品表单
+    |--------------------------------------------------------------------------
+    */
+    'new_product' => '新产品',
+    'edit_product' => '编辑产品',
+    'add_new_product_to_catalog' => '向目录添加新产品。',
+    'update_product_details' => '更新产品详情。',
+    'product_details' => '产品详情',
+    'pricing_stock' => '定价与库存',
+    'no_category' => '无分类',
+    'auto_generated_if_empty' => '如果为空则自动生成',
+    'product_description_placeholder' => '产品描述...',
+    'cost_price' => '成本价',
+    'sell_price' => '售价',
+    'min_stock_alert' => '最小库存警告',
+    'active_product' => '活跃产品',
+    'create_product' => '创建产品',
+    'update_product' => '更新产品',
+    /*
+    |--------------------------------------------------------------------------
+    | Stock Levels Page
+    |--------------------------------------------------------------------------
+    */
+    'stock_levels_subtitle' => '所有仓库的当前库存水平。',
+    'new_movement' => '新库存移动',
+    'search_by_product_name_sku' => '按产品名称或 SKU 搜索...',
+    'all_warehouses' => '所有仓库',
+    'product_column' => '产品',
+    'warehouse_column' => '仓库',
+    'quantity_column' => '数量',
+    'reserved_column' => '已预留',
+    'available_column' => '可用',
+    'status_column' => '状态',
+    'low_stock' => '库存不足',
+    'in_stock' => '有货',
+    'out_of_stock' => '缺货',
+    'no_inventory_records_found' => '未找到库存记录。',
+    'record_first_stock_movement' => '+ 记录您的第一条库存移动',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Reports Dashboard
+    |--------------------------------------------------------------------------
+    */
+    'reports_dashboard' => '报表仪表板',
+    'reports_dashboard_subtitle' => '业务概览与关键指标',
+    'last_7_days' => '最近 7 天',
+    'last_30_days' => '最近 30 天',
+    'last_90_days' => '最近 90 天',
+    'last_1_year' => '最近 1 年',
+    'custom_range' => '自定义范围',
+    'apply' => '应用',
+    'sales_report' => '销售报表',
+    'purchasing_report' => '采购报表',
+    'inventory_report' => '库存报表',
+    'manufacturing_report' => '制造报表',
+    'finance_report' => '财务报表',
+    'total_sales' => '总销售额',
+    'total_purchases' => '总采购额',
+    'total_orders' => '总订单数',
+    'sales_trend_last_7_days' => '销售趋势（最近 7 天）',
+    'purchase_trend_last_6_months' => '采购趋势（最近 6 个月）',
+    'export_csv' => '导出 CSV ↓',
+    'top_selling_products' => '热销产品',
+    'qty_sold' => '销售数量',
+    'revenue' => '收入',
+    'no_sales_data_period' => '此期间无销售数据',
+    'low_stock_alerts' => '低库存警告',
+    'stock_min' => '最低',
+    'all_stock_levels_healthy' => '所有库存水平正常',
 ];

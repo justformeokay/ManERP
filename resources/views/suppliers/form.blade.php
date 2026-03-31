@@ -1,28 +1,28 @@
 @extends('layouts.app')
 
-@section('title', isset($supplier) ? 'Edit Supplier' : 'Add Supplier')
+@section('title', $supplier->exists ? 'Edit Supplier' : 'Add Supplier')
 
 @section('breadcrumbs')
     <a href="{{ route('dashboard') }}" class="hover:text-gray-700">Dashboard</a>
     <span class="mx-1">/</span>
     <a href="{{ route('suppliers.index') }}" class="hover:text-gray-700">Suppliers</a>
     <span class="mx-1">/</span>
-    <span class="text-gray-900 font-medium">{{ isset($supplier) ? 'Edit' : 'Create' }}</span>
+    <span class="text-gray-900 font-medium">{{ $supplier->exists ? 'Edit' : 'Create' }}</span>
 @endsection
 
 @section('page-header')
-    <h1 class="text-2xl font-bold text-gray-900">{{ isset($supplier) ? 'Edit Supplier' : 'New Supplier' }}</h1>
-    <p class="mt-1 text-sm text-gray-500">{{ isset($supplier) ? 'Update supplier information.' : 'Add a new supplier to the system.' }}</p>
+    <h1 class="text-2xl font-bold text-gray-900">{{ $supplier->exists ? 'Edit Supplier' : 'New Supplier' }}</h1>
+    <p class="mt-1 text-sm text-gray-500">{{ $supplier->exists ? 'Update supplier information.' : 'Add a new supplier to the system.' }}</p>
 @endsection
 
 @section('content')
     <form method="POST"
-          action="{{ isset($supplier) ? route('suppliers.update', $supplier) : route('suppliers.store') }}"
+          action="{{ $supplier->exists ? route('suppliers.update', $supplier) : route('suppliers.store') }}"
           class="space-y-6">
         @csrf
-        @isset($supplier)
+        @if($supplier->exists)
             @method('PUT')
-        @endisset
+        @endif
 
         <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
             <h3 class="text-base font-semibold text-gray-900 mb-5">Basic Information</h3>
@@ -136,7 +136,7 @@
         {{-- Submit --}}
         <div class="flex items-center justify-end gap-3">
             @include('components.button', ['label' => 'Cancel', 'type' => 'secondary', 'href' => route('suppliers.index')])
-            @include('components.button', ['label' => isset($supplier) ? 'Update Supplier' : 'Create Supplier', 'type' => 'primary', 'buttonType' => 'submit'])
+            @include('components.button', ['label' => $supplier->exists ? 'Update Supplier' : 'Create Supplier', 'type' => 'primary', 'buttonType' => 'submit'])
         </div>
     </form>
 @endsection

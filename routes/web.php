@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AccountingReportController;
+use App\Http\Controllers\AccountsPayableController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\FinancialReportController;
 use App\Http\Controllers\CategoryController;
@@ -209,6 +210,30 @@ Route::middleware(['auth'])->group(function () {
         });
 
         Route::post('/payments', [PaymentController::class, 'store'])->name('payments.store')->middleware('permission:finance.create');
+    });
+
+    // Accounts Payable (AP)
+    Route::prefix('ap')->name('ap.')->middleware('permission:finance.view')->group(function () {
+        // Bills
+        Route::prefix('bills')->name('bills.')->group(function () {
+            Route::get('/', [AccountsPayableController::class, 'index'])->name('index');
+            Route::get('/create', [AccountsPayableController::class, 'create'])->name('create')->middleware('permission:finance.create');
+            Route::post('/', [AccountsPayableController::class, 'store'])->name('store')->middleware('permission:finance.create');
+            Route::get('/{bill}', [AccountsPayableController::class, 'show'])->name('show');
+            Route::get('/{bill}/edit', [AccountsPayableController::class, 'edit'])->name('edit')->middleware('permission:finance.edit');
+            Route::put('/{bill}', [AccountsPayableController::class, 'update'])->name('update')->middleware('permission:finance.edit');
+            Route::delete('/{bill}', [AccountsPayableController::class, 'destroy'])->name('destroy')->middleware('permission:finance.delete');
+            Route::post('/{bill}/post', [AccountsPayableController::class, 'post'])->name('post')->middleware('permission:finance.edit');
+            Route::post('/{bill}/cancel', [AccountsPayableController::class, 'cancel'])->name('cancel')->middleware('permission:finance.delete');
+            Route::get('/{bill}/pay', [AccountsPayableController::class, 'paymentCreate'])->name('pay')->middleware('permission:finance.create');
+            Route::post('/{bill}/pay', [AccountsPayableController::class, 'paymentStore'])->name('pay.store')->middleware('permission:finance.create');
+        });
+        
+        // Payments
+        Route::get('/payments', [AccountsPayableController::class, 'payments'])->name('payments.index');
+        
+        // Reports
+        Route::get('/aging', [AccountsPayableController::class, 'agingReport'])->name('aging');
     });
 
     // Accounting - Chart of Accounts, Journal Entries, Ledger, Trial Balance
