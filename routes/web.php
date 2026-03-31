@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AccountingReportController;
 use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\FinancialReportController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ChartOfAccountController;
 use App\Http\Controllers\ClientController;
@@ -222,6 +223,8 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('/ledger', [AccountingReportController::class, 'ledger'])->name('ledger')->middleware('permission:accounting.view');
         Route::get('/trial-balance', [AccountingReportController::class, 'trialBalance'])->name('trial-balance')->middleware('permission:accounting.view');
+        Route::get('/balance-sheet', [FinancialReportController::class, 'balanceSheet'])->name('balance-sheet')->middleware('permission:accounting.view');
+        Route::get('/profit-loss', [FinancialReportController::class, 'profitLoss'])->name('profit-loss')->middleware('permission:accounting.view');
     });
 
     // Reports

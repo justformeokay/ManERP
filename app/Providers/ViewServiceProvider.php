@@ -159,6 +159,20 @@ class ViewServiceProvider extends ServiceProvider
                 'permission' => 'accounting',
                 'icon' => $svg('M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z'),
             ],
+            [
+                'label' => 'Balance Sheet',
+                'url' => route('accounting.balance-sheet'),
+                'active' => 'accounting.balance-sheet',
+                'permission' => 'accounting',
+                'icon' => $svg('M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3'),
+            ],
+            [
+                'label' => 'Profit & Loss',
+                'url' => route('accounting.profit-loss'),
+                'active' => 'accounting.profit-loss',
+                'permission' => 'accounting',
+                'icon' => $svg('M13 7h8m0 0v8m0-8l-8 8-4-4-6 6'),
+            ],
             ['heading' => 'Analytics', 'permission' => 'reports'],
             [
                 'label' => 'Reports',
