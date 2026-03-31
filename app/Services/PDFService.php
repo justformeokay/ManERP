@@ -160,20 +160,10 @@ class PDFService
     }
 
     /**
-     * Format currency amount.
+     * Format currency amount using the global format_currency() helper.
      */
     public static function formatCurrency(float|string|null $amount, ?string $currency = null): string
     {
-        $amount = (float) ($amount ?? 0);
-        $currency = $currency ?? CompanySetting::getSettings()->currency ?? 'IDR';
-
-        $formatted = number_format($amount, 2, '.', ',');
-
-        return match ($currency) {
-            'IDR' => "Rp {$formatted}",
-            'USD' => "$ {$formatted}",
-            'EUR' => "€ {$formatted}",
-            default => "{$currency} {$formatted}",
-        };
+        return format_currency($amount, $currency);
     }
 }

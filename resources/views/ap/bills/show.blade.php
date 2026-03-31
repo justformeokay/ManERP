@@ -179,25 +179,25 @@
                                     </td>
                                     <td class="px-6 py-4 text-sm text-gray-700">{{ $item->description }}</td>
                                     <td class="px-6 py-4 text-sm text-right text-gray-900">{{ number_format($item->quantity, 2) }}</td>
-                                    <td class="px-6 py-4 text-sm text-right text-gray-900">{{ number_format($item->unit_price, 2) }}</td>
-                                    <td class="px-6 py-4 text-sm text-right font-medium text-gray-900">{{ number_format($item->total, 2) }}</td>
+                                    <td class="px-6 py-4 text-sm text-right text-gray-900">{{ format_currency($item->unit_price) }}</td>
+                                    <td class="px-6 py-4 text-sm text-right font-medium text-gray-900">{{ format_currency($item->total) }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
                         <tfoot class="bg-gray-50/50">
                             <tr>
                                 <td colspan="5" class="px-6 py-3 text-right font-semibold text-gray-900">Subtotal</td>
-                                <td class="px-6 py-3 text-right font-semibold text-gray-900">{{ number_format($bill->subtotal, 2) }}</td>
+                                <td class="px-6 py-3 text-right font-semibold text-gray-900">{{ format_currency($bill->subtotal) }}</td>
                             </tr>
                             @if($bill->tax > 0)
                             <tr>
                                 <td colspan="5" class="px-6 py-2 text-right text-sm text-gray-500">Tax</td>
-                                <td class="px-6 py-2 text-right text-sm text-gray-900">{{ number_format($bill->tax, 2) }}</td>
+                                <td class="px-6 py-2 text-right text-sm text-gray-900">{{ format_currency($bill->tax) }}</td>
                             </tr>
                             @endif
                             <tr>
                                 <td colspan="5" class="px-6 py-3 text-right text-base font-bold text-gray-900">Total</td>
-                                <td class="px-6 py-3 text-right text-base font-bold text-gray-900">{{ number_format($bill->total, 2) }}</td>
+                                <td class="px-6 py-3 text-right text-base font-bold text-gray-900">{{ format_currency($bill->total) }}</td>
                             </tr>
                         </tfoot>
                     </table>
@@ -228,14 +228,14 @@
                                         <td class="px-6 py-4 text-sm text-gray-700">{{ $payment->payment_date->format('M d, Y') }}</td>
                                         <td class="px-6 py-4 text-sm text-gray-700">{{ ucfirst(str_replace('_', ' ', $payment->payment_method)) }}</td>
                                         <td class="px-6 py-4 text-sm text-gray-700">{{ $payment->reference_number ?: '—' }}</td>
-                                        <td class="px-6 py-4 text-sm text-right font-medium text-green-600">{{ number_format($payment->amount, 2) }}</td>
+                                        <td class="px-6 py-4 text-sm text-right font-medium text-green-600">{{ format_currency($payment->amount) }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
                             <tfoot class="bg-gray-50/50">
                                 <tr>
                                     <td colspan="4" class="px-6 py-3 text-right font-semibold text-gray-900">Total Paid</td>
-                                    <td class="px-6 py-3 text-right font-semibold text-green-600">{{ number_format($bill->paid_amount, 2) }}</td>
+                                    <td class="px-6 py-3 text-right font-semibold text-green-600">{{ format_currency($bill->paid_amount) }}</td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -260,16 +260,16 @@
                 <dl class="space-y-3 text-sm">
                     <div class="flex justify-between">
                         <dt class="text-gray-500">Bill Total</dt>
-                        <dd class="font-semibold text-gray-900">{{ number_format($bill->total, 2) }}</dd>
+                        <dd class="font-semibold text-gray-900">{{ format_currency($bill->total) }}</dd>
                     </div>
                     <div class="flex justify-between">
                         <dt class="text-gray-500">Paid Amount</dt>
-                        <dd class="font-semibold text-green-600">{{ number_format($bill->paid_amount, 2) }}</dd>
+                        <dd class="font-semibold text-green-600">{{ format_currency($bill->paid_amount) }}</dd>
                     </div>
                     <div class="flex justify-between pt-3 border-t border-gray-100">
                         <dt class="text-gray-900 font-semibold">Outstanding</dt>
                         <dd class="text-lg font-bold {{ $bill->outstanding > 0 ? 'text-red-600' : 'text-green-600' }}">
-                            {{ number_format($bill->outstanding, 2) }}
+                            {{ format_currency($bill->outstanding) }}
                         </dd>
                     </div>
                 </dl>

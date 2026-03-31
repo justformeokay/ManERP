@@ -353,4 +353,59 @@ return [
     'low_stock_alerts' => 'Peringatan Stok Rendah',
     'stock_min' => 'Min',
     'all_stock_levels_healthy' => 'Semua level stok dalam kondisi baik',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Settings Page
+    |--------------------------------------------------------------------------
+    */
+    'settings_saved' => 'Pengaturan berhasil disimpan.',
+    'settings_description' => 'Konfigurasi informasi perusahaan dan preferensi sistem.',
+    'company_information' => 'Informasi Perusahaan',
+    'system_preferences' => 'Preferensi Sistem',
+    'default_currency' => 'Mata Uang Default',
+    'timezone' => 'Zona Waktu',
+    'save_settings' => 'Simpan Pengaturan',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Category Form
+    |--------------------------------------------------------------------------
+    */
+    'edit_category' => 'Edit Kategori',
+    'create_category' => 'Buat Kategori',
+    'update_category_information' => 'Perbarui informasi kategori',
+    'add_new_product_category' => 'Tambahkan kategori produk baru',
+    'basic_information' => 'Informasi Dasar',
+    'category_name' => 'Nama Kategori *',
+    'category_name_placeholder' => 'mis., Elektronik, Bahan Baku',
+    'slug_label' => 'Slug (URL friendly)',
+    'slug_placeholder' => 'Dihasilkan secara otomatis dari nama',
+    'auto_generate_slug' => 'Biarkan kosong untuk auto-generate dari nama kategori',
+    'description_label' => 'Deskripsi',
+    'description_placeholder' => 'Tambahkan deskripsi terperinci untuk kategori ini',
+    'category_hierarchy' => 'Hierarki Kategori',
+    'parent_category' => 'Kategori Induk',
+    'parent_category_none' => 'Tidak Ada (Level Atas)',
+    'parent_category_instruction' => 'Buat subkategori dengan memilih kategori induk',
+    'update_category_btn' => 'Update Kategori',
+    'create_category_btn' => 'Buat Kategori',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Category Index
+    |--------------------------------------------------------------------------
+    */
+    'products_categories' => 'Kategori Produk',
+    'manage_categories' => 'Kelola kategori produk dan hierarki',
+    'add_category' => 'Tambah Kategori',
+    'search_categories_placeholder' => 'Cari kategori...',
+    'category_name_header' => 'Nama Kategori',
+    'parent_header' => 'Induk',
+    'subcategories_header' => 'Subkategori',
+    'products_header' => 'Produk',
+    'actions_header' => 'Tindakan',
+    'edit_btn' => 'Edit',
+    'delete_btn' => 'Hapus',
+    'delete_category_confirm' => 'Apakah Anda yakin? Tindakan ini tidak dapat dibatalkan. Pastikan tidak ada produk dalam kategori ini.',
 ];

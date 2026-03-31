@@ -354,4 +354,59 @@ return [
     'low_stock_alerts' => 'Low Stock Alerts',
     'stock_min' => 'Min',
     'all_stock_levels_healthy' => 'All stock levels are healthy',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Settings Page
+    |--------------------------------------------------------------------------
+    */
+    'settings_saved' => 'Settings saved successfully.',
+    'settings_description' => 'Configure your company information and system preferences.',
+    'company_information' => 'Company Information',
+    'system_preferences' => 'System Preferences',
+    'default_currency' => 'Default Currency',
+    'timezone' => 'Timezone',
+    'save_settings' => 'Save Settings',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Category Form
+    |--------------------------------------------------------------------------
+    */
+    'edit_category' => 'Edit Category',
+    'create_category' => 'Create Category',
+    'update_category_information' => 'Update category information',
+    'add_new_product_category' => 'Add a new product category',
+    'basic_information' => 'Basic Information',
+    'category_name' => 'Category Name *',
+    'category_name_placeholder' => 'e.g., Electronics, Raw Materials',
+    'slug_label' => 'Slug (URL friendly)',
+    'slug_placeholder' => 'Automatically generated from name',
+    'auto_generate_slug' => 'Leave empty to auto-generate from category name',
+    'description_label' => 'Description',
+    'description_placeholder' => 'Add a detailed description for this category',
+    'category_hierarchy' => 'Category Hierarchy',
+    'parent_category' => 'Parent Category',
+    'parent_category_none' => 'None (Top Level)',
+    'parent_category_instruction' => 'Create subcategories by selecting a parent',
+    'update_category_btn' => 'Update Category',
+    'create_category_btn' => 'Create Category',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Category Index
+    |--------------------------------------------------------------------------
+    */
+    'products_categories' => 'Product Categories',
+    'manage_categories' => 'Manage product categories and hierarchies',
+    'add_category' => 'Add Category',
+    'search_categories_placeholder' => 'Search categories...',
+    'category_name_header' => 'Category Name',
+    'parent_header' => 'Parent',
+    'subcategories_header' => 'Subcategories',
+    'products_header' => 'Products',
+    'actions_header' => 'Actions',
+    'edit_btn' => 'Edit',
+    'delete_btn' => 'Delete',
+    'delete_category_confirm' => 'Are you sure? This action cannot be undone. Make sure there are no products in this category.',
 ];

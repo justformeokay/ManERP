@@ -18,7 +18,20 @@ class SettingsController extends Controller
             'timezone' => Setting::get('timezone', 'UTC'),
         ];
 
-        $currencies = ['USD', 'EUR', 'GBP', 'JPY', 'IDR', 'SGD', 'MYR', 'AUD', 'CAD', 'CHF'];
+        $currencies = [
+            'USD' => '$ - US Dollar',
+            'IDR' => 'Rp - Indonesian Rupiah',
+            'CNY' => '¥ - Chinese Yuan',
+            'KRW' => '₩ - Korean Won',
+            'EUR' => '€ - Euro',
+            'GBP' => '£ - British Pound',
+            'JPY' => '¥ - Japanese Yen',
+            'SGD' => 'S$ - Singapore Dollar',
+            'MYR' => 'RM - Malaysian Ringgit',
+            'AUD' => 'A$ - Australian Dollar',
+            'CAD' => 'C$ - Canadian Dollar',
+            'CHF' => 'Fr - Swiss Franc',
+        ];
         $timezones = timezone_identifiers_list();
 
         return view('settings.index', compact('settings', 'currencies', 'timezones'));
@@ -37,6 +50,6 @@ class SettingsController extends Controller
 
         Setting::setMany($validated);
 
-        return back()->with('success', 'Settings saved successfully.');
+        return back()->with('success', __('messages.settings_saved'));
     }
 }

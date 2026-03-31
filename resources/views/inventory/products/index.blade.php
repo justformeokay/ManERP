@@ -107,8 +107,8 @@
                                 {{ $product->unit }}
                             </td>
                             <td class="whitespace-nowrap px-6 py-4 text-right text-sm text-gray-700">
-                                <p>{{ number_format($product->sell_price, 2) }}</p>
-                                <p class="text-xs text-gray-400">Cost: {{ number_format($product->cost_price, 2) }}</p>
+                                <p>{{ format_currency($product->sell_price) }}</p>
+                                <p class="text-xs text-gray-400">Cost: {{ format_currency($product->cost_price) }}</p>
                             </td>
                             <td class="whitespace-nowrap px-6 py-4 text-right">
                                 <span class="inline-flex items-center gap-1 text-sm font-semibold {{ $lowStock ? 'text-red-600' : 'text-gray-900' }}">

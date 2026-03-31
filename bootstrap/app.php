@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\ApplyTimezone;
 use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\CheckPermission;
@@ -19,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             EnsureUserIsActive::class,
             SetLocale::class,
+            ApplyTimezone::class,
         ]);
         
         // Register middleware aliases

@@ -63,7 +63,7 @@
             </div>
             <p class="text-sm text-gray-500">
                 Closing Balance:
-                <span class="font-bold text-gray-900">{{ number_format($data['closing_balance'], 2) }}</span>
+                <span class="font-bold text-gray-900">{{ format_currency($data['closing_balance']) }}</span>
             </p>
         </div>
 
@@ -94,13 +94,13 @@
                                     {{ $entry->description }}
                                 </td>
                                 <td class="whitespace-nowrap px-6 py-3 text-right text-sm {{ $entry->debit > 0 ? 'font-semibold text-gray-900' : 'text-gray-400' }}">
-                                    {{ $entry->debit > 0 ? number_format($entry->debit, 2) : '—' }}
+                                    {{ $entry->debit > 0 ? format_currency($entry->debit) : '—' }}
                                 </td>
                                 <td class="whitespace-nowrap px-6 py-3 text-right text-sm {{ $entry->credit > 0 ? 'font-semibold text-gray-900' : 'text-gray-400' }}">
-                                    {{ $entry->credit > 0 ? number_format($entry->credit, 2) : '—' }}
+                                    {{ $entry->credit > 0 ? format_currency($entry->credit) : '—' }}
                                 </td>
                                 <td class="whitespace-nowrap px-6 py-3 text-right text-sm font-bold {{ $entry->balance >= 0 ? 'text-gray-900' : 'text-red-600' }}">
-                                    {{ number_format($entry->balance, 2) }}
+                                    {{ format_currency($entry->balance) }}
                                 </td>
                             </tr>
                         @empty
@@ -116,7 +116,7 @@
                             <tr>
                                 <td colspan="5" class="px-6 py-3 text-right text-sm font-semibold text-gray-900">Closing Balance</td>
                                 <td class="px-6 py-3 text-right text-sm font-bold {{ $data['closing_balance'] >= 0 ? 'text-gray-900' : 'text-red-600' }}">
-                                    {{ number_format($data['closing_balance'], 2) }}
+                                    {{ format_currency($data['closing_balance']) }}
                                 </td>
                             </tr>
                         </tfoot>

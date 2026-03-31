@@ -103,6 +103,7 @@
                 'en' => ['flag' => '🇺🇸', 'name' => 'English'],
                 'id' => ['flag' => '🇮🇩', 'name' => 'Bahasa Indonesia'],
                 'zh' => ['flag' => '🇨🇳', 'name' => '中文'],
+                'ko' => ['flag' => '🇰🇷', 'name' => '한국어'],
             ];
         @endphp
         <div x-data="{ open: false }" class="relative">

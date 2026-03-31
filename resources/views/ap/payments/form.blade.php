@@ -47,7 +47,7 @@
                             <input type="number" name="amount" id="amount" step="0.01" min="0.01" max="{{ $bill->outstanding }}" required
                                 value="{{ old('amount', $bill->outstanding) }}"
                                 class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary-500" />
-                            <p class="mt-1 text-xs text-gray-500">Maximum: {{ number_format($bill->outstanding, 2) }}</p>
+                            <p class="mt-1 text-xs text-gray-500">Maximum: {{ format_currency($bill->outstanding) }}</p>
                             @error('amount') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                         </div>
 
@@ -131,15 +131,15 @@
                     </div>
                     <div class="flex justify-between pt-3 border-t border-gray-100">
                         <dt class="text-gray-500">Bill Total</dt>
-                        <dd class="font-semibold text-gray-900">{{ number_format($bill->total, 2) }}</dd>
+                        <dd class="font-semibold text-gray-900">{{ format_currency($bill->total) }}</dd>
                     </div>
                     <div class="flex justify-between">
                         <dt class="text-gray-500">Previously Paid</dt>
-                        <dd class="font-semibold text-green-600">{{ number_format($bill->paid_amount, 2) }}</dd>
+                        <dd class="font-semibold text-green-600">{{ format_currency($bill->paid_amount) }}</dd>
                     </div>
                     <div class="flex justify-between pt-3 border-t border-gray-100">
                         <dt class="text-gray-900 font-semibold">Outstanding</dt>
-                        <dd class="text-lg font-bold text-red-600">{{ number_format($bill->outstanding, 2) }}</dd>
+                        <dd class="text-lg font-bold text-red-600">{{ format_currency($bill->outstanding) }}</dd>
                     </div>
                 </dl>
             </div>

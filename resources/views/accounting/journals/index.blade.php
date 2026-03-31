@@ -72,7 +72,7 @@
                                 {{ $journal->description }}
                             </td>
                             <td class="whitespace-nowrap px-6 py-4 text-right text-sm font-semibold text-gray-900">
-                                {{ number_format($journal->total_debit, 2) }}
+                                {{ format_currency($journal->total_debit) }}
                             </td>
                             <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
                                 {{ $journal->creator->name ?? '—' }}

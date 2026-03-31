@@ -353,4 +353,59 @@ return [
     'low_stock_alerts' => '低库存警告',
     'stock_min' => '最低',
     'all_stock_levels_healthy' => '所有库存水平正常',
-];
+
+    /*
+    |--------------------------------------------------------------------------
+    | Settings Page
+    |--------------------------------------------------------------------------
+    */
+    'settings_saved' => '设置已成功保存。',
+    'settings_description' => '配置公司信息和系统偏好设置。',
+    'company_information' => '公司信息',
+    'system_preferences' => '系统偏好',
+    'default_currency' => '默认货币',
+    'timezone' => '时区',
+    'save_settings' => '保存设置',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Category Form
+    |--------------------------------------------------------------------------
+    */
+    'edit_category' => '编辑分类',
+    'create_category' => '创建分类',
+    'update_category_information' => '更新分类信息',
+    'add_new_product_category' => '添加新产品分类',
+    'basic_information' => '基本信息',
+    'category_name' => '分类名称 *',
+    'category_name_placeholder' => '例如，电子产品、原材料',
+    'slug_label' => 'Slug（URL友好）',
+    'slug_placeholder' => '从名称自动生成',
+    'auto_generate_slug' => '留空以从分类名称自动生成',
+    'description_label' => '描述',
+    'description_placeholder' => '为此分类添加详细描述',
+    'category_hierarchy' => '分类层次',
+    'parent_category' => '父分类',
+    'parent_category_none' => '无（顶级）',
+    'parent_category_instruction' => '通过选择父分类来创建子分类',
+    'update_category_btn' => '更新分类',
+    'create_category_btn' => '创建分类',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Category Index
+    |--------------------------------------------------------------------------
+    */
+    'products_categories' => '产品分类',
+    'manage_categories' => '管理产品分类和层次',
+    'add_category' => '添加分类',
+    'search_categories_placeholder' => '搜索分类...',
+    'category_name_header' => '分类名称',
+    'parent_header' => '父类',
+    'subcategories_header' => '子分类',
+    'products_header' => '产品',
+    'actions_header' => '操作',
+    'edit_btn' => '编辑',
+    'delete_btn' => '删除',
+    'delete_category_confirm' => '你确定么？此操作无法撤销。请确保此分类中没有产品。',
+    ];

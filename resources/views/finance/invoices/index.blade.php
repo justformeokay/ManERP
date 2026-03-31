@@ -86,10 +86,10 @@
                                 </span>
                             </td>
                             <td class="whitespace-nowrap px-6 py-4 text-right text-sm font-semibold text-gray-900">
-                                {{ number_format($invoice->total_amount, 2) }}
+                                {{ format_currency($invoice->total_amount) }}
                             </td>
                             <td class="whitespace-nowrap px-6 py-4 text-right text-sm text-gray-700">
-                                {{ number_format($invoice->paid_amount, 2) }}
+                                {{ format_currency($invoice->paid_amount) }}
                             </td>
                             <td class="whitespace-nowrap px-6 py-4 text-right text-sm">
                                 <a href="{{ route('finance.invoices.show', $invoice) }}"

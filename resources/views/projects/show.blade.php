@@ -60,7 +60,7 @@
                     </div>
                     <div>
                         <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Budget</p>
-                        <p class="mt-1 text-sm font-medium text-gray-900">{{ $project->budget ? '$' . number_format($project->budget, 2) : '—' }}</p>
+                        <p class="mt-1 text-sm font-medium text-gray-900">{{ $project->budget ? format_currency($project->budget) : '—' }}</p>
                     </div>
                 </div>
 

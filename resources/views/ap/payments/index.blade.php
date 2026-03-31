@@ -29,13 +29,13 @@
         <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
             <p class="text-sm font-medium text-gray-500">This Month</p>
             <p class="mt-1 text-2xl font-bold text-green-600">
-                {{ number_format($payments->where('payment_date', '>=', now()->startOfMonth())->sum('amount'), 2) }}
+                {{ format_currency($payments->where('payment_date', '>=', now()->startOfMonth())->sum('amount')) }}
             </p>
         </div>
         <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
             <p class="text-sm font-medium text-gray-500">Last 30 Days</p>
             <p class="mt-1 text-2xl font-bold text-gray-900">
-                {{ number_format($payments->where('payment_date', '>=', now()->subDays(30))->sum('amount'), 2) }}
+                {{ format_currency($payments->where('payment_date', '>=', now()->subDays(30))->sum('amount')) }}
             </p>
         </div>
         <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
@@ -131,7 +131,7 @@
                                 {{ $payment->reference_number ?: '—' }}
                             </td>
                             <td class="whitespace-nowrap px-6 py-4 text-right text-sm font-semibold text-green-600">
-                                {{ number_format($payment->amount, 2) }}
+                                {{ format_currency($payment->amount) }}
                             </td>
                             <td class="whitespace-nowrap px-6 py-4 text-right text-sm">
                                 <a href="{{ route('ap.bills.show', $payment->supplierBill) }}"

@@ -97,32 +97,32 @@
                 <dl class="space-y-3">
                     <div class="flex justify-between">
                         <dt class="text-sm text-gray-500">Subtotal</dt>
-                        <dd class="text-sm text-gray-900">{{ number_format($invoice->subtotal, 2) }}</dd>
+                        <dd class="text-sm text-gray-900">{{ format_currency($invoice->subtotal) }}</dd>
                     </div>
                     @if($invoice->tax_amount > 0)
                         <div class="flex justify-between">
                             <dt class="text-sm text-gray-500">Tax</dt>
-                            <dd class="text-sm text-gray-900">{{ number_format($invoice->tax_amount, 2) }}</dd>
+                            <dd class="text-sm text-gray-900">{{ format_currency($invoice->tax_amount) }}</dd>
                         </div>
                     @endif
                     @if($invoice->discount > 0)
                         <div class="flex justify-between">
                             <dt class="text-sm text-gray-500">Discount</dt>
-                            <dd class="text-sm text-red-600">-{{ number_format($invoice->discount, 2) }}</dd>
+                            <dd class="text-sm text-red-600">-{{ format_currency($invoice->discount) }}</dd>
                         </div>
                     @endif
                     <div class="flex justify-between border-t border-gray-100 pt-3">
                         <dt class="text-sm font-semibold text-gray-900">Total</dt>
-                        <dd class="text-sm font-bold text-gray-900">{{ number_format($invoice->total_amount, 2) }}</dd>
+                        <dd class="text-sm font-bold text-gray-900">{{ format_currency($invoice->total_amount) }}</dd>
                     </div>
                     <div class="flex justify-between">
                         <dt class="text-sm text-gray-500">Paid</dt>
-                        <dd class="text-sm font-semibold text-green-600">{{ number_format($invoice->paid_amount, 2) }}</dd>
+                        <dd class="text-sm font-semibold text-green-600">{{ format_currency($invoice->paid_amount) }}</dd>
                     </div>
                     <div class="flex justify-between border-t border-gray-100 pt-3">
                         <dt class="text-sm font-semibold text-gray-900">Remaining Balance</dt>
                         <dd class="text-sm font-bold {{ $invoice->remaining_balance > 0 ? 'text-red-600' : 'text-green-600' }}">
-                            {{ number_format($invoice->remaining_balance, 2) }}
+                            {{ format_currency($invoice->remaining_balance) }}
                         </dd>
                     </div>
                 </dl>
@@ -164,9 +164,9 @@
                                         <p class="text-xs text-gray-500">{{ $item->product->sku ?? '' }}</p>
                                     </td>
                                     <td class="whitespace-nowrap px-6 py-3 text-right text-sm text-gray-700">{{ number_format($item->quantity, 0) }}</td>
-                                    <td class="whitespace-nowrap px-6 py-3 text-right text-sm text-gray-700">{{ number_format($item->unit_price, 2) }}</td>
-                                    <td class="whitespace-nowrap px-6 py-3 text-right text-sm text-gray-700">{{ number_format($item->discount, 2) }}</td>
-                                    <td class="whitespace-nowrap px-6 py-3 text-right text-sm font-semibold text-gray-900">{{ number_format($item->total, 2) }}</td>
+                                    <td class="whitespace-nowrap px-6 py-3 text-right text-sm text-gray-700">{{ format_currency($item->unit_price) }}</td>
+                                    <td class="whitespace-nowrap px-6 py-3 text-right text-sm text-gray-700">{{ format_currency($item->discount) }}</td>
+                                    <td class="whitespace-nowrap px-6 py-3 text-right text-sm font-semibold text-gray-900">{{ format_currency($item->total) }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -198,7 +198,7 @@
                                     <td class="whitespace-nowrap px-6 py-3 text-sm text-gray-700">{{ $payment->payment_date->format('M d, Y') }}</td>
                                     <td class="whitespace-nowrap px-6 py-3 text-sm text-gray-700">{{ ucwords(str_replace('_', ' ', $payment->payment_method)) }}</td>
                                     <td class="px-6 py-3 text-sm text-gray-700">{{ $payment->reference_number ?? '—' }}</td>
-                                    <td class="whitespace-nowrap px-6 py-3 text-right text-sm font-semibold text-green-600">{{ number_format($payment->amount, 2) }}</td>
+                                    <td class="whitespace-nowrap px-6 py-3 text-right text-sm font-semibold text-green-600">{{ format_currency($payment->amount) }}</td>
                                     <td class="whitespace-nowrap px-6 py-3 text-sm text-gray-500">{{ $payment->creator->name ?? '—' }}</td>
                                 </tr>
                             @empty

@@ -83,7 +83,7 @@
                                 </span>
                             </td>
                             <td class="whitespace-nowrap px-6 py-4 text-right text-sm font-semibold text-gray-900">
-                                {{ number_format($order->total, 2) }}
+                                {{ format_currency($order->total) }}
                             </td>
                             <td class="whitespace-nowrap px-6 py-4 text-right text-sm space-x-1">
                                 <a href="{{ route('sales.show', $order) }}"

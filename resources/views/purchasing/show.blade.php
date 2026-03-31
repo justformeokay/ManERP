@@ -99,17 +99,17 @@
                 <dl class="space-y-3 text-sm">
                     <div class="flex justify-between">
                         <dt class="text-gray-500">Subtotal</dt>
-                        <dd class="font-medium text-gray-900">{{ number_format($order->subtotal, 2) }}</dd>
+                        <dd class="font-medium text-gray-900">{{ format_currency($order->subtotal) }}</dd>
                     </div>
                     @if($order->tax_amount > 0)
                         <div class="flex justify-between">
                             <dt class="text-gray-500">Tax</dt>
-                            <dd class="font-medium text-gray-900">+ {{ number_format($order->tax_amount, 2) }}</dd>
+                            <dd class="font-medium text-gray-900">+ {{ format_currency($order->tax_amount) }}</dd>
                         </div>
                     @endif
                     <div class="flex justify-between border-t border-gray-100 pt-3">
                         <dt class="font-semibold text-gray-900">Grand Total</dt>
-                        <dd class="text-lg font-bold text-gray-900">{{ number_format($order->total, 2) }}</dd>
+                        <dd class="text-lg font-bold text-gray-900">{{ format_currency($order->total) }}</dd>
                     </div>
                 </dl>
             </div>
@@ -227,8 +227,8 @@
                                             <svg class="inline h-4 w-4 text-green-500 ml-0.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
                                         @endif
                                     </td>
-                                    <td class="px-6 py-3 text-right text-sm text-gray-700">{{ number_format($item->unit_price, 2) }}</td>
-                                    <td class="px-6 py-3 text-right text-sm font-semibold text-gray-900">{{ number_format($item->total, 2) }}</td>
+                                    <td class="px-6 py-3 text-right text-sm text-gray-700">{{ format_currency($item->unit_price) }}</td>
+                                    <td class="px-6 py-3 text-right text-sm font-semibold text-gray-900">{{ format_currency($item->total) }}</td>
                                     @if($canReceive)
                                         <td class="px-6 py-3 text-right">
                                             <input type="hidden" name="receive[{{ $i }}][item_id]" value="{{ $item->id }}">

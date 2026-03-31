@@ -42,18 +42,18 @@
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
             <p class="text-xs font-medium uppercase tracking-wider text-gray-500">Total Revenue</p>
-            <p class="mt-1 text-2xl font-bold text-green-700">{{ number_format($data['total_revenue'], 2) }}</p>
+            <p class="mt-1 text-2xl font-bold text-green-700">{{ format_currency($data['total_revenue']) }}</p>
         </div>
         <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
             <p class="text-xs font-medium uppercase tracking-wider text-gray-500">Total Expenses</p>
-            <p class="mt-1 text-2xl font-bold text-red-600">{{ number_format($data['total_expense'], 2) }}</p>
+            <p class="mt-1 text-2xl font-bold text-red-600">{{ format_currency($data['total_expense']) }}</p>
         </div>
         <div class="rounded-2xl p-5 shadow-sm ring-1 {{ $data['net_profit'] >= 0 ? 'bg-green-50 ring-green-200' : 'bg-red-50 ring-red-200' }}">
             <p class="text-xs font-medium uppercase tracking-wider {{ $data['net_profit'] >= 0 ? 'text-green-600' : 'text-red-600' }}">
                 {{ $data['net_profit'] >= 0 ? 'Net Profit' : 'Net Loss' }}
             </p>
             <p class="mt-1 text-2xl font-bold {{ $data['net_profit'] >= 0 ? 'text-green-800' : 'text-red-800' }}">
-                {{ number_format(abs($data['net_profit']), 2) }}
+                {{ format_currency(abs($data['net_profit'])) }}
             </p>
         </div>
     </div>
@@ -78,7 +78,7 @@
                             <tr class="hover:bg-gray-50/50 transition-colors">
                                 <td class="px-6 py-3 text-sm font-mono font-semibold text-gray-900">{{ $account->code }}</td>
                                 <td class="px-6 py-3 text-sm text-gray-700">{{ $account->name }}</td>
-                                <td class="px-6 py-3 text-right text-sm font-semibold text-green-700">{{ number_format($account->balance, 2) }}</td>
+                                <td class="px-6 py-3 text-right text-sm font-semibold text-green-700">{{ format_currency($account->balance) }}</td>
                             </tr>
                         @empty
                             <tr><td colspan="3" class="px-6 py-4 text-center text-sm text-gray-400">No revenue recorded in this period.</td></tr>
@@ -87,7 +87,7 @@
                     <tfoot class="bg-green-50/50">
                         <tr>
                             <td colspan="2" class="px-6 py-3 text-right text-sm font-bold text-green-900">Total Revenue</td>
-                            <td class="px-6 py-3 text-right text-sm font-bold text-green-900">{{ number_format($data['total_revenue'], 2) }}</td>
+                            <td class="px-6 py-3 text-right text-sm font-bold text-green-900">{{ format_currency($data['total_revenue']) }}</td>
                         </tr>
                     </tfoot>
                 </table>
@@ -113,7 +113,7 @@
                             <tr class="hover:bg-gray-50/50 transition-colors">
                                 <td class="px-6 py-3 text-sm font-mono font-semibold text-gray-900">{{ $account->code }}</td>
                                 <td class="px-6 py-3 text-sm text-gray-700">{{ $account->name }}</td>
-                                <td class="px-6 py-3 text-right text-sm font-semibold text-red-600">{{ number_format($account->balance, 2) }}</td>
+                                <td class="px-6 py-3 text-right text-sm font-semibold text-red-600">{{ format_currency($account->balance) }}</td>
                             </tr>
                         @empty
                             <tr><td colspan="3" class="px-6 py-4 text-center text-sm text-gray-400">No expenses recorded in this period.</td></tr>
@@ -122,7 +122,7 @@
                     <tfoot class="bg-red-50/50">
                         <tr>
                             <td colspan="2" class="px-6 py-3 text-right text-sm font-bold text-red-900">Total Expenses</td>
-                            <td class="px-6 py-3 text-right text-sm font-bold text-red-900">{{ number_format($data['total_expense'], 2) }}</td>
+                            <td class="px-6 py-3 text-right text-sm font-bold text-red-900">{{ format_currency($data['total_expense']) }}</td>
                         </tr>
                     </tfoot>
                 </table>
@@ -135,18 +135,18 @@
                 <tbody>
                     <tr>
                         <td class="px-6 py-3 text-sm text-gray-700">Total Revenue</td>
-                        <td class="px-6 py-3 text-right text-sm font-semibold text-green-700">{{ number_format($data['total_revenue'], 2) }}</td>
+                        <td class="px-6 py-3 text-right text-sm font-semibold text-green-700">{{ format_currency($data['total_revenue']) }}</td>
                     </tr>
                     <tr>
                         <td class="px-6 py-3 text-sm text-gray-700">Total Expenses</td>
-                        <td class="px-6 py-3 text-right text-sm font-semibold text-red-600">({{ number_format($data['total_expense'], 2) }})</td>
+                        <td class="px-6 py-3 text-right text-sm font-semibold text-red-600">({{ format_currency($data['total_expense']) }})</td>
                     </tr>
                     <tr class="border-t-2 {{ $data['net_profit'] >= 0 ? 'border-green-300' : 'border-red-300' }}">
                         <td class="px-6 py-4 text-base font-bold {{ $data['net_profit'] >= 0 ? 'text-green-900' : 'text-red-900' }}">
                             {{ $data['net_profit'] >= 0 ? 'Net Profit' : 'Net Loss' }}
                         </td>
                         <td class="px-6 py-4 text-right text-base font-bold {{ $data['net_profit'] >= 0 ? 'text-green-900' : 'text-red-900' }}">
-                            {{ number_format(abs($data['net_profit']), 2) }}
+                            {{ format_currency(abs($data['net_profit'])) }}
                         </td>
                     </tr>
                 </tbody>

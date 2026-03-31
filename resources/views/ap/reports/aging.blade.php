@@ -30,27 +30,27 @@
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
         <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
             <p class="text-sm font-medium text-gray-500">Total Outstanding</p>
-            <p class="mt-1 text-xl font-bold text-gray-900">{{ number_format($totals['total'], 2) }}</p>
+            <p class="mt-1 text-xl font-bold text-gray-900">{{ format_currency($totals['total']) }}</p>
         </div>
         <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-green-200 border-l-4 border-green-500">
             <p class="text-sm font-medium text-gray-500">Current</p>
-            <p class="mt-1 text-xl font-bold text-green-600">{{ number_format($totals['current'], 2) }}</p>
+            <p class="mt-1 text-xl font-bold text-green-600">{{ format_currency($totals['current']) }}</p>
         </div>
         <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-yellow-200 border-l-4 border-yellow-500">
             <p class="text-sm font-medium text-gray-500">1-30 Days</p>
-            <p class="mt-1 text-xl font-bold text-yellow-600">{{ number_format($totals['1-30'], 2) }}</p>
+            <p class="mt-1 text-xl font-bold text-yellow-600">{{ format_currency($totals['1-30']) }}</p>
         </div>
         <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-orange-200 border-l-4 border-orange-500">
             <p class="text-sm font-medium text-gray-500">31-60 Days</p>
-            <p class="mt-1 text-xl font-bold text-orange-600">{{ number_format($totals['31-60'], 2) }}</p>
+            <p class="mt-1 text-xl font-bold text-orange-600">{{ format_currency($totals['31-60']) }}</p>
         </div>
         <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-red-200 border-l-4 border-red-500">
             <p class="text-sm font-medium text-gray-500">61-90 Days</p>
-            <p class="mt-1 text-xl font-bold text-red-500">{{ number_format($totals['61-90'], 2) }}</p>
+            <p class="mt-1 text-xl font-bold text-red-500">{{ format_currency($totals['61-90']) }}</p>
         </div>
         <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-red-300 border-l-4 border-red-700">
             <p class="text-sm font-medium text-gray-500">Over 90 Days</p>
-            <p class="mt-1 text-xl font-bold text-red-700">{{ number_format($totals['90+'], 2) }}</p>
+            <p class="mt-1 text-xl font-bold text-red-700">{{ format_currency($totals['90+']) }}</p>
         </div>
     </div>
 
@@ -95,22 +95,22 @@
                                 <p class="text-xs text-gray-500">{{ $row['bill_count'] }} bill(s)</p>
                             </td>
                             <td class="whitespace-nowrap px-6 py-4 text-right text-sm {{ $row['current'] > 0 ? 'text-green-600 font-medium' : 'text-gray-300' }}">
-                                {{ number_format($row['current'], 2) }}
+                                {{ format_currency($row['current']) }}
                             </td>
                             <td class="whitespace-nowrap px-6 py-4 text-right text-sm {{ $row['1-30'] > 0 ? 'text-yellow-600 font-medium' : 'text-gray-300' }}">
-                                {{ number_format($row['1-30'], 2) }}
+                                {{ format_currency($row['1-30']) }}
                             </td>
                             <td class="whitespace-nowrap px-6 py-4 text-right text-sm {{ $row['31-60'] > 0 ? 'text-orange-600 font-medium' : 'text-gray-300' }}">
-                                {{ number_format($row['31-60'], 2) }}
+                                {{ format_currency($row['31-60']) }}
                             </td>
                             <td class="whitespace-nowrap px-6 py-4 text-right text-sm {{ $row['61-90'] > 0 ? 'text-red-500 font-medium' : 'text-gray-300' }}">
-                                {{ number_format($row['61-90'], 2) }}
+                                {{ format_currency($row['61-90']) }}
                             </td>
                             <td class="whitespace-nowrap px-6 py-4 text-right text-sm {{ $row['90+'] > 0 ? 'text-red-700 font-semibold' : 'text-gray-300' }}">
-                                {{ number_format($row['90+'], 2) }}
+                                {{ format_currency($row['90+']) }}
                             </td>
                             <td class="whitespace-nowrap px-6 py-4 text-right text-sm font-bold text-gray-900">
-                                {{ number_format($row['total'], 2) }}
+                                {{ format_currency($row['total']) }}
                             </td>
                         </tr>
                     @empty
@@ -126,12 +126,12 @@
                     <tfoot class="bg-gray-100">
                         <tr>
                             <td class="px-6 py-4 font-bold text-gray-900">Total</td>
-                            <td class="px-6 py-4 text-right font-bold text-green-600">{{ number_format($totals['current'], 2) }}</td>
-                            <td class="px-6 py-4 text-right font-bold text-yellow-600">{{ number_format($totals['1-30'], 2) }}</td>
-                            <td class="px-6 py-4 text-right font-bold text-orange-600">{{ number_format($totals['31-60'], 2) }}</td>
-                            <td class="px-6 py-4 text-right font-bold text-red-500">{{ number_format($totals['61-90'], 2) }}</td>
-                            <td class="px-6 py-4 text-right font-bold text-red-700">{{ number_format($totals['90+'], 2) }}</td>
-                            <td class="px-6 py-4 text-right font-bold text-gray-900">{{ number_format($totals['total'], 2) }}</td>
+                            <td class="px-6 py-4 text-right font-bold text-green-600">{{ format_currency($totals['current']) }}</td>
+                            <td class="px-6 py-4 text-right font-bold text-yellow-600">{{ format_currency($totals['1-30']) }}</td>
+                            <td class="px-6 py-4 text-right font-bold text-orange-600">{{ format_currency($totals['31-60']) }}</td>
+                            <td class="px-6 py-4 text-right font-bold text-red-500">{{ format_currency($totals['61-90']) }}</td>
+                            <td class="px-6 py-4 text-right font-bold text-red-700">{{ format_currency($totals['90+']) }}</td>
+                            <td class="px-6 py-4 text-right font-bold text-gray-900">{{ format_currency($totals['total']) }}</td>
                         </tr>
                     </tfoot>
                 @endif
@@ -190,7 +190,7 @@
                                         </span>
                                     </td>
                                     <td class="whitespace-nowrap px-6 py-4 text-right text-sm font-semibold text-red-600">
-                                        {{ number_format($bill->outstanding, 2) }}
+                                        {{ format_currency($bill->outstanding) }}
                                     </td>
                                     <td class="whitespace-nowrap px-6 py-4 text-right text-sm">
                                         @if($bill->canPay())

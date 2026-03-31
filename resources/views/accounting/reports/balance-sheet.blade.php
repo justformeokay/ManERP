@@ -36,7 +36,7 @@
                     <svg class="h-5 w-5 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <p class="text-sm font-medium text-green-800">Balance sheet is <strong>balanced</strong>. Assets = Liabilities + Equity = {{ number_format($data['total_assets'], 2) }}</p>
+                    <p class="text-sm font-medium text-green-800">Balance sheet is <strong>balanced</strong>. Assets = Liabilities + Equity = {{ format_currency($data['total_assets']) }}</p>
                 </div>
             </div>
         @else
@@ -45,7 +45,7 @@
                     <svg class="h-5 w-5 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <p class="text-sm font-medium text-red-800">Balance sheet is <strong>not balanced</strong>. Difference: {{ number_format(abs($data['total_assets'] - $data['total_liabilities_equity']), 2) }}</p>
+                    <p class="text-sm font-medium text-red-800">Balance sheet is <strong>not balanced</strong>. Difference: {{ format_currency(abs($data['total_assets'] - $data['total_liabilities_equity'])) }}</p>
                 </div>
             </div>
         @endif
@@ -55,15 +55,15 @@
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
             <p class="text-xs font-medium uppercase tracking-wider text-gray-500">Total Assets</p>
-            <p class="mt-1 text-2xl font-bold text-blue-700">{{ number_format($data['total_assets'], 2) }}</p>
+            <p class="mt-1 text-2xl font-bold text-blue-700">{{ format_currency($data['total_assets']) }}</p>
         </div>
         <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
             <p class="text-xs font-medium uppercase tracking-wider text-gray-500">Total Liabilities</p>
-            <p class="mt-1 text-2xl font-bold text-red-600">{{ number_format($data['total_liabilities'], 2) }}</p>
+            <p class="mt-1 text-2xl font-bold text-red-600">{{ format_currency($data['total_liabilities']) }}</p>
         </div>
         <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
             <p class="text-xs font-medium uppercase tracking-wider text-gray-500">Total Equity</p>
-            <p class="mt-1 text-2xl font-bold text-purple-700">{{ number_format($data['total_equity'], 2) }}</p>
+            <p class="mt-1 text-2xl font-bold text-purple-700">{{ format_currency($data['total_equity']) }}</p>
         </div>
     </div>
 
@@ -87,7 +87,7 @@
                             <tr class="hover:bg-gray-50/50 transition-colors">
                                 <td class="px-6 py-3 text-sm font-mono font-semibold text-gray-900">{{ $account->code }}</td>
                                 <td class="px-6 py-3 text-sm text-gray-700">{{ $account->name }}</td>
-                                <td class="px-6 py-3 text-right text-sm font-semibold text-gray-900">{{ number_format($account->balance, 2) }}</td>
+                                <td class="px-6 py-3 text-right text-sm font-semibold text-gray-900">{{ format_currency($account->balance) }}</td>
                             </tr>
                         @empty
                             <tr><td colspan="3" class="px-6 py-4 text-center text-sm text-gray-400">No asset accounts with balance.</td></tr>
@@ -96,7 +96,7 @@
                     <tfoot class="bg-blue-50/50">
                         <tr>
                             <td colspan="2" class="px-6 py-3 text-right text-sm font-bold text-blue-900">Total Assets</td>
-                            <td class="px-6 py-3 text-right text-sm font-bold text-blue-900">{{ number_format($data['total_assets'], 2) }}</td>
+                            <td class="px-6 py-3 text-right text-sm font-bold text-blue-900">{{ format_currency($data['total_assets']) }}</td>
                         </tr>
                     </tfoot>
                 </table>
@@ -124,7 +124,7 @@
                                 <tr class="hover:bg-gray-50/50 transition-colors">
                                     <td class="px-6 py-3 text-sm font-mono font-semibold text-gray-900">{{ $account->code }}</td>
                                     <td class="px-6 py-3 text-sm text-gray-700">{{ $account->name }}</td>
-                                    <td class="px-6 py-3 text-right text-sm font-semibold text-gray-900">{{ number_format($account->balance, 2) }}</td>
+                                    <td class="px-6 py-3 text-right text-sm font-semibold text-gray-900">{{ format_currency($account->balance) }}</td>
                                 </tr>
                             @empty
                                 <tr><td colspan="3" class="px-6 py-4 text-center text-sm text-gray-400">No liability accounts with balance.</td></tr>
@@ -133,7 +133,7 @@
                         <tfoot class="bg-red-50/50">
                             <tr>
                                 <td colspan="2" class="px-6 py-3 text-right text-sm font-bold text-red-900">Total Liabilities</td>
-                                <td class="px-6 py-3 text-right text-sm font-bold text-red-900">{{ number_format($data['total_liabilities'], 2) }}</td>
+                                <td class="px-6 py-3 text-right text-sm font-bold text-red-900">{{ format_currency($data['total_liabilities']) }}</td>
                             </tr>
                         </tfoot>
                     </table>
@@ -159,7 +159,7 @@
                                 <tr class="hover:bg-gray-50/50 transition-colors">
                                     <td class="px-6 py-3 text-sm font-mono font-semibold text-gray-900">{{ $account->code }}</td>
                                     <td class="px-6 py-3 text-sm text-gray-700">{{ $account->name }}</td>
-                                    <td class="px-6 py-3 text-right text-sm font-semibold text-gray-900">{{ number_format($account->balance, 2) }}</td>
+                                    <td class="px-6 py-3 text-right text-sm font-semibold text-gray-900">{{ format_currency($account->balance) }}</td>
                                 </tr>
                             @empty
                                 <tr><td colspan="3" class="px-6 py-4 text-center text-sm text-gray-400">No equity accounts with balance.</td></tr>
@@ -169,14 +169,14 @@
                                 <td class="px-6 py-3 text-sm font-mono text-gray-500">—</td>
                                 <td class="px-6 py-3 text-sm font-medium text-purple-800 italic">Retained Earnings (Revenue − Expense)</td>
                                 <td class="px-6 py-3 text-right text-sm font-semibold {{ $data['retained_earnings'] >= 0 ? 'text-green-700' : 'text-red-600' }}">
-                                    {{ number_format($data['retained_earnings'], 2) }}
+                                    {{ format_currency($data['retained_earnings']) }}
                                 </td>
                             </tr>
                         </tbody>
                         <tfoot class="bg-purple-50/50">
                             <tr>
                                 <td colspan="2" class="px-6 py-3 text-right text-sm font-bold text-purple-900">Total Equity</td>
-                                <td class="px-6 py-3 text-right text-sm font-bold text-purple-900">{{ number_format($data['total_equity'], 2) }}</td>
+                                <td class="px-6 py-3 text-right text-sm font-bold text-purple-900">{{ format_currency($data['total_equity']) }}</td>
                             </tr>
                         </tfoot>
                     </table>
@@ -191,11 +191,11 @@
             <tbody>
                 <tr class="border-b border-gray-100">
                     <td class="px-6 py-4 text-sm font-bold text-gray-900">Total Assets</td>
-                    <td class="px-6 py-4 text-right text-sm font-bold text-blue-700">{{ number_format($data['total_assets'], 2) }}</td>
+                    <td class="px-6 py-4 text-right text-sm font-bold text-blue-700">{{ format_currency($data['total_assets']) }}</td>
                 </tr>
                 <tr class="border-b border-gray-100">
                     <td class="px-6 py-4 text-sm font-bold text-gray-900">Total Liabilities + Equity</td>
-                    <td class="px-6 py-4 text-right text-sm font-bold text-gray-900">{{ number_format($data['total_liabilities_equity'], 2) }}</td>
+                    <td class="px-6 py-4 text-right text-sm font-bold text-gray-900">{{ format_currency($data['total_liabilities_equity']) }}</td>
                 </tr>
                 <tr class="{{ $data['is_balanced'] ? 'bg-green-50' : 'bg-red-50' }}">
                     <td class="px-6 py-4 text-sm font-bold {{ $data['is_balanced'] ? 'text-green-800' : 'text-red-800' }}">

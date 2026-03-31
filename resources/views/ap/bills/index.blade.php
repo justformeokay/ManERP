@@ -34,12 +34,12 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
             <p class="text-sm font-medium text-gray-500">Total Outstanding</p>
-            <p class="mt-1 text-2xl font-bold text-gray-900">{{ number_format($summary['total_outstanding'], 2) }}</p>
+            <p class="mt-1 text-2xl font-bold text-gray-900">{{ format_currency($summary['total_outstanding']) }}</p>
             <p class="mt-1 text-xs text-gray-400">{{ $summary['total_bills'] }} unpaid bills</p>
         </div>
         <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
             <p class="text-sm font-medium text-gray-500">Overdue Amount</p>
-            <p class="mt-1 text-2xl font-bold text-red-600">{{ number_format($summary['overdue_amount'], 2) }}</p>
+            <p class="mt-1 text-2xl font-bold text-red-600">{{ format_currency($summary['overdue_amount']) }}</p>
             <p class="mt-1 text-xs text-gray-400">{{ $summary['overdue_count'] }} overdue bills</p>
         </div>
         <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
@@ -49,7 +49,7 @@
         </div>
         <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
             <p class="text-sm font-medium text-gray-500">This Month Payments</p>
-            <p class="mt-1 text-2xl font-bold text-green-600">{{ number_format(\App\Models\SupplierPayment::whereMonth('payment_date', now()->month)->sum('amount'), 2) }}</p>
+            <p class="mt-1 text-2xl font-bold text-green-600">{{ format_currency(\App\Models\SupplierPayment::whereMonth('payment_date', now()->month)->sum('amount')) }}</p>
             <p class="mt-1 text-xs text-gray-400">Total paid</p>
         </div>
     </div>
@@ -155,10 +155,10 @@
                                 </span>
                             </td>
                             <td class="whitespace-nowrap px-6 py-4 text-right text-sm font-semibold text-gray-900">
-                                {{ number_format($bill->total, 2) }}
+                                {{ format_currency($bill->total) }}
                             </td>
                             <td class="whitespace-nowrap px-6 py-4 text-right text-sm {{ $bill->outstanding > 0 ? 'text-red-600 font-semibold' : 'text-gray-400' }}">
-                                {{ number_format($bill->outstanding, 2) }}
+                                {{ format_currency($bill->outstanding) }}
                             </td>
                             <td class="whitespace-nowrap px-6 py-4 text-right text-sm">
                                 <div class="flex items-center justify-end gap-1">

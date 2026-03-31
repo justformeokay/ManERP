@@ -47,7 +47,7 @@
                             {{ $approval->flow?->name ?? $approval->module }}
                         </p>
                         <p class="text-lg font-bold text-gray-900 mt-1">
-                            Rp {{ number_format($approval->amount, 0, ',', '.') }}
+                            {{ format_currency($approval->amount) }}
                         </p>
                     </div>
 
@@ -122,7 +122,7 @@
                                     </div>
                                 </td>
                                 <td class="px-6 py-4">
-                                    <span class="text-sm font-medium text-gray-900">Rp {{ number_format($approval->amount, 0, ',', '.') }}</span>
+                                    <span class="text-sm font-medium text-gray-900">{{ format_currency($approval->amount) }}</span>
                                 </td>
                                 <td class="px-6 py-4">
                                     <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium

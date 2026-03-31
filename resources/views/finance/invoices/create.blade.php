@@ -41,7 +41,7 @@
                                     @selected(old('sales_order_id', $salesOrder?->id) == $order->id)
                                     data-client="{{ $order->client->name ?? '' }}"
                                     data-total="{{ number_format($order->total, 2) }}">
-                                    {{ $order->number }} — {{ $order->client->name ?? 'N/A' }} — {{ number_format($order->total, 2) }}
+                                    {{ $order->number }} — {{ $order->client->name ?? 'N/A' }} — {{ format_currency($order->total) }}
                                 </option>
                             @endforeach
                         </select>

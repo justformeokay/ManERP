@@ -27,19 +27,19 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         @include('components.stat-card', [
             'title' => 'Total Revenue',
-            'value' => number_format($totalRevenue, 0),
+            'value' => format_currency($totalRevenue),
             'iconBg' => 'bg-green-50 text-green-600',
             'icon' => '<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>',
         ])
         @include('components.stat-card', [
             'title' => 'Total Paid',
-            'value' => number_format($totalPaid, 0),
+            'value' => format_currency($totalPaid),
             'iconBg' => 'bg-blue-50 text-blue-600',
             'icon' => '<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>',
         ])
         @include('components.stat-card', [
             'title' => 'Outstanding',
-            'value' => number_format($totalOutstanding, 0),
+            'value' => format_currency($totalOutstanding),
             'iconBg' => 'bg-amber-50 text-amber-600',
             'icon' => '<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>',
         ])
@@ -76,7 +76,7 @@
                                     </span>
                                 </td>
                                 <td class="px-6 py-3 text-right text-sm text-gray-700">{{ $row->count }}</td>
-                                <td class="px-6 py-3 text-right text-sm font-semibold text-gray-900">{{ number_format($row->total, 2) }}</td>
+                                <td class="px-6 py-3 text-right text-sm font-semibold text-gray-900">{{ format_currency($row->total) }}</td>
                             </tr>
                         @empty
                             <tr>
@@ -111,8 +111,8 @@
                                     <p class="text-xs text-gray-500">{{ $client->company }}</p>
                                 </td>
                                 <td class="px-6 py-3 text-right text-sm text-gray-700">{{ $client->invoice_count }}</td>
-                                <td class="px-6 py-3 text-right text-sm font-semibold text-gray-900">{{ number_format($client->total_billed, 2) }}</td>
-                                <td class="px-6 py-3 text-right text-sm text-green-600">{{ number_format($client->total_paid, 2) }}</td>
+                                <td class="px-6 py-3 text-right text-sm font-semibold text-gray-900">{{ format_currency($client->total_billed) }}</td>
+                                <td class="px-6 py-3 text-right text-sm text-green-600">{{ format_currency($client->total_paid) }}</td>
                             </tr>
                         @empty
                             <tr>
@@ -154,7 +154,7 @@
                             <td class="px-6 py-3 text-sm text-gray-700">{{ $payment->invoice->client->name ?? '—' }}</td>
                             <td class="whitespace-nowrap px-6 py-3 text-sm text-gray-700">{{ ucwords(str_replace('_', ' ', $payment->payment_method)) }}</td>
                             <td class="px-6 py-3 text-sm text-gray-500">{{ $payment->reference_number ?? '—' }}</td>
-                            <td class="whitespace-nowrap px-6 py-3 text-right text-sm font-semibold text-green-600">{{ number_format($payment->amount, 2) }}</td>
+                            <td class="whitespace-nowrap px-6 py-3 text-right text-sm font-semibold text-green-600">{{ format_currency($payment->amount) }}</td>
                         </tr>
                     @empty
                         <tr>

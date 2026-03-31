@@ -46,7 +46,7 @@
                     <svg class="h-5 w-5 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <p class="text-sm font-medium text-green-800">Trial balance is <strong>balanced</strong>. Total Debits = Total Credits = {{ number_format($data['grand_debit'], 2) }}</p>
+                    <p class="text-sm font-medium text-green-800">Trial balance is <strong>balanced</strong>. Total Debits = Total Credits = {{ format_currency($data['grand_debit']) }}</p>
                 </div>
             </div>
         @else
@@ -55,7 +55,7 @@
                     <svg class="h-5 w-5 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <p class="text-sm font-medium text-red-800">Trial balance is <strong>not balanced</strong>. Difference: {{ number_format(abs($data['grand_debit'] - $data['grand_credit']), 2) }}</p>
+                    <p class="text-sm font-medium text-red-800">Trial balance is <strong>not balanced</strong>. Difference: {{ format_currency(abs($data['grand_debit'] - $data['grand_credit'])) }}</p>
                 </div>
             </div>
         @endif
@@ -88,10 +88,10 @@
                                 </span>
                             </td>
                             <td class="whitespace-nowrap px-6 py-3 text-right text-sm {{ $row->total_debit > 0 ? 'font-semibold text-gray-900' : 'text-gray-400' }}">
-                                {{ $row->total_debit > 0 ? number_format($row->total_debit, 2) : '—' }}
+                                {{ $row->total_debit > 0 ? format_currency($row->total_debit) : '—' }}
                             </td>
                             <td class="whitespace-nowrap px-6 py-3 text-right text-sm {{ $row->total_credit > 0 ? 'font-semibold text-gray-900' : 'text-gray-400' }}">
-                                {{ $row->total_credit > 0 ? number_format($row->total_credit, 2) : '—' }}
+                                {{ $row->total_credit > 0 ? format_currency($row->total_credit) : '—' }}
                             </td>
                         </tr>
                     @empty
@@ -106,8 +106,8 @@
                     <tfoot class="bg-gray-50/50 border-t-2 border-gray-200">
                         <tr>
                             <td colspan="3" class="px-6 py-3 text-right text-sm font-bold text-gray-900">Grand Total</td>
-                            <td class="px-6 py-3 text-right text-sm font-bold text-gray-900">{{ number_format($data['grand_debit'], 2) }}</td>
-                            <td class="px-6 py-3 text-right text-sm font-bold text-gray-900">{{ number_format($data['grand_credit'], 2) }}</td>
+                            <td class="px-6 py-3 text-right text-sm font-bold text-gray-900">{{ format_currency($data['grand_debit']) }}</td>
+                            <td class="px-6 py-3 text-right text-sm font-bold text-gray-900">{{ format_currency($data['grand_credit']) }}</td>
                         </tr>
                     </tfoot>
                 @endif

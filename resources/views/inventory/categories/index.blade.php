@@ -5,28 +5,28 @@
     <!-- Header -->
     <div class="flex justify-between items-start">
         <div>
-            <h1 class="text-3xl font-bold text-gray-900">Product Categories</h1>
-            <p class="mt-2 text-gray-600">Manage product categories and hierarchies</p>
+            <h1 class="text-3xl font-bold text-gray-900">{{ __('messages.products_categories') }}</h1>
+            <p class="mt-2 text-gray-600">{{ __('messages.manage_categories') }}</p>
         </div>
         <a href="{{ route('inventory.categories.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
             </svg>
-            Add Category
+            {{ __('messages.add_category') }}
         </a>
     </div>
 
     <!-- Search & Filter -->
     <div class="bg-white px-6 py-4 rounded-lg border border-gray-200">
         <form method="GET" class="flex gap-2">
-            <input type="text" name="search" placeholder="Search categories..." value="{{ request('search') }}" 
+            <input type="text" name="search" placeholder="{{ __('messages.search_categories_placeholder') }}" value="{{ request('search') }}" 
                 class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
             <button type="submit" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
-                Search
+                {{ __('messages.search') }}
             </button>
             @if(request('search'))
                 <a href="{{ route('inventory.categories.index') }}" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
-                    Clear
+                    {{ __('messages.clear') }}
                 </a>
             @endif
         </form>
@@ -38,11 +38,11 @@
             <table class="w-full">
                 <thead class="bg-gray-50 border-b border-gray-200">
                     <tr>
-                        <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Category Name</th>
-                        <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Parent</th>
-                        <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Subcategories</th>
-                        <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Products</th>
-                        <th class="px-6 py-3 text-right text-sm font-medium text-gray-700">Actions</th>
+                        <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">{{ __('messages.category_name_header') }}</th>
+                        <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">{{ __('messages.parent_header') }}</th>
+                        <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">{{ __('messages.subcategories_header') }}</th>
+                        <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">{{ __('messages.products_header') }}</th>
+                        <th class="px-6 py-3 text-right text-sm font-medium text-gray-700">{{ __('messages.actions_header') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -88,14 +88,14 @@
                                 <div class="flex justify-end gap-2">
                                     <a href="{{ route('inventory.categories.edit', $category) }}" 
                                         class="inline-flex items-center px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition">
-                                        Edit
+                                        {{ __('messages.edit_btn') }}
                                     </a>
                                     <form method="POST" action="{{ route('inventory.categories.destroy', $category) }}" class="inline" 
-                                        onsubmit="return confirm('Are you sure? This action cannot be undone. Make sure there are no products in this category.');">
+                                        onsubmit="return confirm('{{ __('messages.delete_category_confirm') }}');">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="inline-flex items-center px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200 transition">
-                                            Delete
+                                            {{ __('messages.delete_btn') }}
                                         </button>
                                     </form>
                                 </div>
@@ -114,11 +114,11 @@
                 <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
                 </svg>
-                <h3 class="mt-2 text-sm font-medium text-gray-900">No categories found</h3>
-                <p class="mt-1 text-sm text-gray-500">Get started by creating your first product category.</p>
+                <h3 class="mt-2 text-sm font-medium text-gray-900">{{ __('messages.no_data') }}</h3>
+                <p class="mt-1 text-sm text-gray-500">{{ __('messages.manage_categories') }}</p>
                 <div class="mt-6">
                     <a href="{{ route('inventory.categories.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
-                        Create Category
+                        {{ __('messages.create_category_btn') }}
                     </a>
                 </div>
             </div>

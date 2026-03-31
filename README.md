@@ -1,860 +1,954 @@
-# ManERP - Manufacturing Enterprise Resource Planning
+# ManERP — Manufacturing Enterprise Resource Planning
 
-![Laravel](https://img.shields.io/badge/Laravel-13.x-red)
-![PHP](https://img.shields.io/badge/PHP-8.3+-blue)
-![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4.x-38B2AC)
-![MySQL](https://img.shields.io/badge/MySQL-8.x-orange)
-![Routes](https://img.shields.io/badge/Routes-145-green)
-![Modules](https://img.shields.io/badge/Modules-13-purple)
+![Laravel](https://img.shields.io/badge/Laravel-13.x-FF2D20?style=flat&logo=laravel)
+![PHP](https://img.shields.io/badge/PHP-8.3+-777BB4?style=flat&logo=php)
+![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.x-38B2AC?style=flat&logo=tailwindcss)
+![Alpine.js](https://img.shields.io/badge/Alpine.js-3.x-8BC0D0?style=flat)
+![MySQL](https://img.shields.io/badge/MySQL-8.x-4479A1?style=flat&logo=mysql)
+![Routes](https://img.shields.io/badge/Routes-174-22c55e?style=flat)
+![Modules](https://img.shields.io/badge/Modules-16-a855f7?style=flat)
+![Tables](https://img.shields.io/badge/Tables-43-f59e0b?style=flat)
+![License](https://img.shields.io/badge/License-MIT-blue?style=flat)
+
+---
 
 ## 📋 Deskripsi Proyek
 
-**ManERP** adalah sistem Enterprise Resource Planning (ERP) berbasis web yang dirancang khusus untuk industri manufaktur. Sistem ini mengintegrasikan berbagai modul bisnis mulai dari manajemen inventori, produksi, penjualan, pembelian, keuangan, akuntansi berentri ganda, hingga pelaporan dalam satu platform terpadu.
+**ManERP** adalah sistem *Enterprise Resource Planning* (ERP) berbasis web yang dirancang khusus untuk kebutuhan industri manufaktur skala kecil hingga menengah. Sistem ini mengintegrasikan seluruh siklus bisnis — mulai dari pembelian bahan baku, produksi, manajemen gudang, penjualan, keuangan, hingga akuntansi — dalam satu platform terpadu yang modern, aman, dan mudah digunakan.
 
 ### 🎯 Target Pengguna
 
-- Pabrik manufaktur skala kecil hingga menengah
-- Bengkel produksi
-- Workshop/industri rumahan yang ingin scale-up
-- Perusahaan dengan proses produksi berbasis Bill of Materials (BOM)
+| Segmen | Deskripsi |
+|---|---|
+| Pabrik manufaktur | Skala kecil hingga menengah (UKM – Menengah) |
+| Workshop / Bengkel | Produksi berbasis pesanan (job order) |
+| Trading company | Yang membutuhkan manajemen stok & pembelian |
+| Kontraktor / Proyek | Yang membutuhkan manajemen proyek & biaya |
 
 ---
 
 ## 🏗️ Arsitektur Sistem
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        PRESENTATION LAYER                        │
-│    Blade Templates + TailwindCSS 4 + Alpine.js 3 + Vite 8       │
-└─────────────────────────────────────────────────────────────────┘
-                                │
-┌─────────────────────────────────────────────────────────────────┐
-│                        APPLICATION LAYER                         │
-│              Laravel 13.x Controllers + Middleware               │
-│         (Auth, Permission, Admin, Active, Notification)          │
-└─────────────────────────────────────────────────────────────────┘
-                                │
-┌─────────────────────────────────────────────────────────────────┐
-│                         SERVICE LAYER                            │
-│  StockService │ FinanceService │ AccountingService │ AuditLogService │
-└─────────────────────────────────────────────────────────────────┘
-                                │
-┌─────────────────────────────────────────────────────────────────┐
-│                          DATA LAYER                              │
-│              Eloquent ORM + MySQL 8 (XAMPP)                      │
-│                      33+ Database Tables                         │
-└─────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────┐
+│                         PRESENTATION LAYER                            │
+│     Blade Templates · TailwindCSS 3 · Alpine.js 3 · Chart.js 4      │
+└──────────────────────────────────────────────────────────────────────┘
+                                  │
+┌──────────────────────────────────────────────────────────────────────┐
+│                         APPLICATION LAYER                             │
+│          Laravel 13.x Controllers · Middleware · FormRequests         │
+│     (Auth · Permission · Admin · Active · Locale · Notification)      │
+└──────────────────────────────────────────────────────────────────────┘
+                                  │
+┌──────────────────────────────────────────────────────────────────────┐
+│                           SERVICE LAYER                               │
+│  StockService · FinanceService · AccountingService · ApprovalService  │
+│               AuditLogService · PDFService                            │
+└──────────────────────────────────────────────────────────────────────┘
+                                  │
+┌──────────────────────────────────────────────────────────────────────┐
+│                            DATA LAYER                                 │
+│           Eloquent ORM (34 Models) · MySQL 8 · 43 Tables             │
+└──────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 📦 Modul & Fitur
+## 🛠️ Tech Stack
+
+| Komponen | Teknologi | Versi |
+|---|---|---|
+| Framework Backend | Laravel | 13.x |
+| Bahasa | PHP | 8.3+ |
+| Database | MySQL | 8.x |
+| CSS Framework | TailwindCSS | 3.x |
+| JS Framework | Alpine.js | 3.x |
+| Charting | Chart.js | 4.x |
+| Build Tool | Vite | 8.x |
+| HTTP Client | Axios | 1.x |
+| PDF Generator | barryvdh/laravel-dompdf | 3.x |
+| Server Dev | XAMPP / Laravel Sail | — |
+
+---
+
+## 📦 Modul & Fitur Lengkap
 
 ### 1. 🔐 Authentication & User Management
 
-
-| Fitur                | Status | Deskripsi                             |
-| -------------------- | ------ | ------------------------------------- |
-| Login/Logout         | ✅     | Autentikasi via Laravel Breeze        |
-| User Registration    | ✅     | Pendaftaran user baru                 |
-| Password Reset       | ✅     | Reset password via email              |
-| Profile Management   | ✅     | Edit profil dan password              |
-| Role-based Access    | ✅     | Role: admin, staff                    |
-| Granular Permissions | ✅     | Per-modul: view, create, edit, delete |
-| User CRUD (Admin)    | ✅     | Manajemen user oleh admin             |
+| Fitur | Status | Deskripsi |
+|---|---|---|
+| Login / Logout | ✅ | Autentikasi aman via Laravel Breeze |
+| Pendaftaran User | ✅ | Registrasi user baru oleh admin |
+| Reset Password | ✅ | Reset via email token |
+| Manajemen Profil | ✅ | Edit nama, email, password, bahasa |
+| Role System | ✅ | Role: `admin` dan `staff` |
+| Granular Permissions | ✅ | Per modul: `view`, `create`, `edit`, `delete` |
+| User CRUD (Admin) | ✅ | Create, edit, disable, hapus user |
+| Status Aktif/Non-aktif | ✅ | Blokir akses tanpa hapus user |
+| Multi-language Preference | ✅ | Pilih bahasa per user (EN / ID / ZH) |
 
 **Permission Matrix:**
-
 ```
-┌────────────────┬──────┬────────┬──────┬────────┐
-│ Module         │ View │ Create │ Edit │ Delete │
-├────────────────┼──────┼────────┼──────┼────────┤
-│ Clients        │  ✓   │   ✓    │  ✓   │   ✓    │
-│ Warehouses     │  ✓   │   ✓    │  ✓   │   ✓    │
-│ Suppliers      │  ✓   │   ✓    │  ✓   │   ✓    │
-│ Projects       │  ✓   │   ✓    │  ✓   │   ✓    │
-│ Inventory      │  ✓   │   ✓    │  ✓   │   ✓    │
-│ Manufacturing  │  ✓   │   ✓    │  ✓   │   ✓    │
-│ Sales          │  ✓   │   ✓    │  ✓   │   ✓    │
-│ Purchasing     │  ✓   │   ✓    │  ✓   │   ✓    │
-│ Reports        │  ✓   │   -    │  -   │   -    │
-└────────────────┴──────┴────────┴──────┴────────┘
+┌──────────────────┬──────┬────────┬──────┬────────┐
+│ Modul            │ View │ Create │ Edit │ Delete │
+├──────────────────┼──────┼────────┼──────┼────────┤
+│ Clients          │  ✓   │   ✓    │  ✓   │   ✓    │
+│ Warehouses       │  ✓   │   ✓    │  ✓   │   ✓    │
+│ Suppliers        │  ✓   │   ✓    │  ✓   │   ✓    │
+│ Projects         │  ✓   │   ✓    │  ✓   │   ✓    │
+│ Inventory        │  ✓   │   ✓    │  ✓   │   ✓    │
+│ Manufacturing    │  ✓   │   ✓    │  ✓   │   ✓    │
+│ Sales            │  ✓   │   ✓    │  ✓   │   ✓    │
+│ Purchasing       │  ✓   │   ✓    │  ✓   │   ✓    │
+│ Reports          │  ✓   │   —    │  —   │   —    │
+│ Approvals        │  ✓   │   —    │  —   │   —    │
+└──────────────────┴──────┴────────┴──────┴────────┘
 ```
 
 ---
 
-### 2. 👥 CRM - Client Management
+### 2. 👥 CRM — Manajemen Klien
 
-
-| Fitur               | Status | Deskripsi                    |
-| ------------------- | ------ | ---------------------------- |
-| Client CRUD         | ✅     | Tambah, edit, hapus client   |
-| Contact Info        | ✅     | Nama, email, telepon, alamat |
-| Client Status       | ✅     | Active/Inactive              |
-| Search & Filter     | ✅     | Pencarian nama, email        |
-| Client-Project Link | ✅     | Relasi client ke project     |
-| Client-Sales Link   | ✅     | Relasi client ke sales order |
+| Fitur | Status | Deskripsi |
+|---|---|---|
+| Client CRUD | ✅ | Tambah, edit, hapus klien |
+| Informasi Kontak | ✅ | Nama, email, telepon, alamat, PIC |
+| Status Aktif/Nonaktif | ✅ | Kelola status klien |
+| Pencarian & Filter | ✅ | Cari berdasarkan nama dan email |
+| Relasi ke Proyek | ✅ | Klien terhubung ke proyek |
+| Relasi ke Sales Order | ✅ | Klien terhubung ke penjualan |
 
 ---
 
 ### 3. 🏭 Master Data
 
-#### 3.1 Warehouses (Gudang)
+#### Gudang (Warehouses)
+| Fitur | Status | Deskripsi |
+|---|---|---|
+| CRUD Gudang | ✅ | Multi-warehouse support |
+| Kode & Lokasi | ✅ | Nama, kode, alamat gudang |
+| Status Aktif | ✅ | Aktifkan/nonaktifkan gudang |
+| Stok per Gudang | ✅ | Stok dikelola terpisah per gudang |
 
+#### Pemasok (Suppliers)
+| Fitur | Status | Deskripsi |
+|---|---|---|
+| CRUD Pemasok | ✅ | Manajemen data vendor |
+| Kontak Lengkap | ✅ | Telepon, email, alamat, PIC |
+| Status Aktif | ✅ | Aktifkan/nonaktifkan pemasok |
+| Relasi ke PO | ✅ | Terhubung ke Purchase Order |
+| Relasi ke Tagihan | ✅ | Terhubung ke Supplier Bill (AP) |
 
-| Fitur               | Status | Deskripsi                |
-| ------------------- | ------ | ------------------------ |
-| Warehouse CRUD      | ✅     | Multi-warehouse support  |
-| Location Info       | ✅     | Nama, kode, alamat       |
-| Active/Inactive     | ✅     | Status gudang            |
-| Per-warehouse Stock | ✅     | Stok terpisah per gudang |
-
-#### 3.2 Suppliers (Pemasok)
-
-
-| Fitur           | Status | Deskripsi                   |
-| --------------- | ------ | --------------------------- |
-| Supplier CRUD   | ✅     | Manajemen pemasok           |
-| Contact Details | ✅     | Telepon, email, alamat, PIC |
-| Supplier Status | ✅     | Active/Inactive             |
-| Link to PO      | ✅     | Relasi ke Purchase Order    |
-
-#### 3.3 Categories (Kategori Produk)
-
-
-| Fitur         | Status | Deskripsi                  |
-| ------------- | ------ | -------------------------- |
-| Category CRUD | ✅     | Kategori produk            |
-| Hierarchical  | ❌     | Belum support sub-kategori |
-| Product Count | ✅     | Jumlah produk per kategori |
+#### Kategori Produk
+| Fitur | Status | Deskripsi |
+|---|---|---|
+| CRUD Kategori | ✅ | Pengelompokan produk |
+| Jumlah Produk | ✅ | Tampilkan total produk per kategori |
+| Sub-kategori | ❌ | Belum tersedia (flat structure) |
 
 ---
 
-### 4. 📦 Inventory Management
+### 4. 📦 Manajemen Inventori
 
-#### 4.1 Products (Produk)
+#### Produk
+| Fitur | Status | Deskripsi |
+|---|---|---|
+| CRUD Produk | ✅ | SKU, nama, deskripsi, kategori |
+| Satuan Pengukuran | ✅ | pcs, kg, liter, meter, dll. |
+| Harga Beli & Jual | ✅ | Harga master untuk kalkulasi otomatis |
+| Alert Stok Minimum | ✅ | Threshold min_stock per produk |
+| Status Aktif | ✅ | Nonaktifkan produk tanpa menghapus |
+| Gambar Produk | ❌ | Belum tersedia |
 
+#### Level Stok
+| Fitur | Status | Deskripsi |
+|---|---|---|
+| Stok Multi-Gudang | ✅ | Stok dikelola per produk per gudang |
+| Ringkasan Stok | ✅ | Semua produk dan level stok |
+| Alert Stok Rendah | ✅ | Notifikasi otomatis ke semua admin |
+| Penilaian Stok | ⚠️ | Kalkulasi nilai stok (basic) |
 
-| Fitur               | Status | Deskripsi                    |
-| ------------------- | ------ | ---------------------------- |
-| Product CRUD        | ✅     | SKU, nama, deskripsi         |
-| Category Assignment | ✅     | Link ke kategori             |
-| Unit of Measure     | ✅     | Satuan (pcs, kg, meter, dll) |
-| Pricing             | ✅     | Harga beli & jual            |
-| Min Stock Alert     | ✅     | Threshold stok minimum       |
-| Active/Inactive     | ✅     | Status produk                |
-| Product Images      | ❌     | Belum tersedia               |
+#### Pergerakan Stok
+| Fitur | Status | Deskripsi |
+|---|---|---|
+| Stok Masuk (In) | ✅ | Penerimaan barang manual |
+| Stok Keluar (Out) | ✅ | Pengeluaran barang manual |
+| Penyesuaian (Adjustment) | ✅ | Koreksi stok fisik |
+| Riwayat Pergerakan | ✅ | Log lengkap semua gerakan stok |
+| Referensi Transaksi | ✅ | Link ke SO / PO / MO |
+| Batalkan Gerakan | ❌ | Belum bisa undo movement |
 
-#### 4.2 Stock Management
-
-
-| Fitur                 | Status | Deskripsi                    |
-| --------------------- | ------ | ---------------------------- |
-| Multi-warehouse Stock | ✅     | Stok per gudang              |
-| Stock Overview        | ✅     | Ringkasan stok semua produk  |
-| Low Stock Alert       | ✅     | Notifikasi stok rendah       |
-| Stock Valuation       | ⚠️   | Kalkulasi nilai stok (basic) |
-
-#### 4.3 Stock Movements
-
-
-| Fitur              | Status | Deskripsi              |
-| ------------------ | ------ | ---------------------- |
-| Stock In           | ✅     | Penerimaan barang      |
-| Stock Out          | ✅     | Pengeluaran barang     |
-| Adjustment         | ✅     | Penyesuaian stok       |
-| Movement History   | ✅     | Riwayat pergerakan     |
-| Reference Tracking | ✅     | Link ke SO/PO/MO       |
-| Undo Movement      | ❌     | Belum bisa membatalkan |
-
-#### 4.4 Stock Transfers
-
-
-| Fitur            | Status | Deskripsi                      |
-| ---------------- | ------ | ------------------------------ |
-| Create Transfer  | ✅     | Request transfer antar gudang  |
-| Execute Transfer | ✅     | Eksekusi transfer              |
-| Cancel Transfer  | ✅     | Batalkan transfer pending      |
-| Transfer Status  | ✅     | Pending → Completed/Cancelled |
-| Transfer History | ✅     | Riwayat transfer               |
+#### Transfer Stok
+| Fitur | Status | Deskripsi |
+|---|---|---|
+| Buat Transfer | ✅ | Request transfer antar gudang |
+| Eksekusi Transfer | ✅ | Konfirmasi dan proses transfer |
+| Batalkan Transfer | ✅ | Cancel transfer yang pending |
+| Status Transfer | ✅ | Pending → Completed / Cancelled |
+| Riwayat Transfer | ✅ | Log semua transfer |
 
 ---
 
-### 5. 🏭 Manufacturing (Produksi)
+### 5. 🏭 Manufaktur (Manufacturing)
 
-#### 5.1 Bill of Materials (BOM)
+#### Bill of Materials (BOM)
+| Fitur | Status | Deskripsi |
+|---|---|---|
+| CRUD BOM | ✅ | Resep / formula produksi |
+| Komponen BOM | ✅ | Daftar bahan baku + qty |
+| Produk Output | ✅ | Tentukan produk hasil produksi |
+| Qty Output | ✅ | Kuantitas output per batch |
+| Multi-level BOM | ❌ | Belum support BOM bertingkat |
+| Status Aktif | ✅ | Aktifkan/nonaktifkan BOM |
 
-
-| Fitur           | Status | Deskripsi                    |
-| --------------- | ------ | ---------------------------- |
-| BOM CRUD        | ✅     | Resep produksi               |
-| Multi-level BOM | ❌     | Belum support BOM bertingkat |
-| Component Items | ✅     | Daftar bahan baku            |
-| Output Product  | ✅     | Produk hasil                 |
-| Output Quantity | ✅     | Qty output per batch         |
-| Active/Inactive | ✅     | Status BOM                   |
-
-#### 5.2 Manufacturing Orders (Work Orders)
-
-
-| Fitur                | Status | Deskripsi                    |
-| -------------------- | ------ | ---------------------------- |
-| MO CRUD              | ✅     | Perintah produksi            |
-| BOM Selection        | ✅     | Pilih BOM untuk produksi     |
-| Planned Quantity     | ✅     | Target jumlah produksi       |
-| Warehouse Assignment | ✅     | Gudang produksi              |
-| Project Link         | ✅     | Link ke project (optional)   |
-| Priority Level       | ✅     | Low, Normal, High, Urgent    |
-| Scheduled Dates      | ✅     | Tanggal mulai & selesai      |
-| **Workflow Status**  |        |                              |
-| - Draft              | ✅     | Order baru dibuat            |
-| - Confirmed          | ✅     | Order dikonfirmasi           |
-| - In Progress        | ✅     | Sedang diproduksi            |
-| - Done               | ✅     | Selesai                      |
-| - Cancelled          | ✅     | Dibatalkan                   |
-| Progress Tracking    | ✅     | % progress produksi          |
-| Material Consumption | ✅     | Auto consume bahan baku      |
-| Finished Goods       | ✅     | Auto stock in hasil produksi |
-| Partial Production   | ✅     | Produksi bertahap            |
+#### Manufacturing Orders (Work Orders)
+| Fitur | Status | Deskripsi |
+|---|---|---|
+| CRUD Work Order | ✅ | Perintah produksi |
+| Pilih BOM | ✅ | Load bahan baku otomatis dari BOM |
+| Target Kuantitas | ✅ | Planned quantity produksi |
+| Gudang Produksi | ✅ | Tentukan gudang sumber & output |
+| Link ke Proyek | ✅ | Opsional hubungkan ke proyek |
+| Prioritas | ✅ | Low / Normal / High / Urgent |
+| Jadwal Produksi | ✅ | Tanggal mulai & selesai rencana |
+| **Status Workflow** | | |
+| — Draft | ✅ | Order baru dibuat |
+| — Confirmed | ✅ | Order dikonfirmasi, siap produksi |
+| — In Progress | ✅ | Sedang berjalan |
+| — Done | ✅ | Produksi selesai |
+| — Cancelled | ✅ | Dibatalkan |
+| Tracking Progress | ✅ | % progress produksi (produced/planned) |
+| Konsumsi Material | ✅ | Otomatis deduct bahan baku saat produksi |
+| Barang Jadi Masuk | ✅ | Otomatis stock-in hasil produksi |
+| Produksi Bertahap | ✅ | Partial production supported |
 
 ---
 
-### 6. 💰 Sales Management
+### 6. 💰 Manajemen Penjualan (Sales)
 
-#### 6.1 Sales Orders
-
-
-| Fitur                | Status | Deskripsi                  |
-| -------------------- | ------ | -------------------------- |
-| SO CRUD              | ✅     | Order penjualan            |
-| Client Selection     | ✅     | Pilih client               |
-| Multi-item Order     | ✅     | Multiple line items        |
-| Auto Pricing         | ✅     | Harga dari master produk   |
-| Qty & Discount       | ✅     | Per-item quantity & diskon |
-| Tax Calculation      | ✅     | Kalkulasi pajak            |
-| Order Notes          | ✅     | Catatan order              |
-| Warehouse Selection  | ✅     | Gudang pengiriman          |
-| Project Link         | ✅     | Link ke project (optional) |
-| **Workflow Status**  |        |                            |
-| - Draft              | ✅     | Order baru                 |
-| - Confirmed          | ✅     | Stock dideduct otomatis    |
-| - Processing         | ✅     | Dalam proses               |
-| - Shipped            | ✅     | Sudah dikirim              |
-| - Completed          | ✅     | Selesai                    |
-| - Cancelled          | ✅     | Dibatalkan                 |
-| Stock Validation     | ✅     | Cek ketersediaan stok      |
-| Auto Stock Deduction | ✅     | Kurangi stok saat confirm  |
-| Created By Tracking  | ✅     | Tracking pembuat order     |
+| Fitur | Status | Deskripsi |
+|---|---|---|
+| CRUD Sales Order | ✅ | Pesan penjualan |
+| Pilih Klien | ✅ | Link ke master klien |
+| Multi-item Order | ✅ | Multiple line items per order |
+| Harga Otomatis | ✅ | Ambil harga dari master produk |
+| Diskon per Item | ✅ | Diskon per baris item |
+| Kalkulasi Pajak | ✅ | Tax otomatis per setting |
+| Catatan Order | ✅ | Notes / keterangan tambahan |
+| Pilih Gudang | ✅ | Gudang pengiriman |
+| Link ke Proyek | ✅ | Opsional hubungkan ke proyek |
+| **Status Workflow** | | |
+| — Draft | ✅ | Order dibuat, stok belum berkurang |
+| — Confirmed | ✅ | Stok dideduct otomatis |
+| — Processing | ✅ | Dalam proses pengerjaan |
+| — Shipped | ✅ | Sudah dikirim |
+| — Completed | ✅ | Order selesai |
+| — Cancelled | ✅ | Dibatalkan, stok dikembalikan |
+| Validasi Stok | ✅ | Cek ketersediaan sebelum konfirmasi |
+| Auto Deduct Stok | ✅ | Kurangi stok saat konfirmasi |
+| Buat Invoice | ✅ | Generate invoice langsung dari SO |
+| Tracking Pembuat | ✅ | Catat siapa yang membuat order |
 
 ---
 
-### 7. 🛒 Purchasing Management
+### 7. 🛒 Manajemen Pembelian (Purchasing)
 
-#### 7.1 Purchase Orders
-
-
-| Fitur               | Status | Deskripsi                   |
-| ------------------- | ------ | --------------------------- |
-| PO CRUD             | ✅     | Order pembelian             |
-| Supplier Selection  | ✅     | Pilih supplier              |
-| Multi-item Order    | ✅     | Multiple line items         |
-| Cost & Qty          | ✅     | Harga beli & quantity       |
-| Tax & Discount      | ✅     | Kalkulasi pajak & diskon    |
-| Expected Date       | ✅     | Tanggal kedatangan          |
-| Warehouse Selection | ✅     | Gudang penerimaan           |
-| Project Link        | ✅     | Link ke project (optional)  |
-| **Workflow Status** |        |                             |
-| - Draft             | ✅     | PO baru                     |
-| - Confirmed         | ✅     | PO dikonfirmasi             |
-| - Partial           | ✅     | Sebagian diterima           |
-| - Received          | ✅     | Semua diterima              |
-| - Cancelled         | ✅     | Dibatalkan                  |
-| Partial Receiving   | ✅     | Terima barang bertahap      |
-| Auto Stock In       | ✅     | Tambah stok saat terima     |
-| Receive Tracking    | ✅     | Track qty diterima per item |
+| Fitur | Status | Deskripsi |
+|---|---|---|
+| CRUD Purchase Order | ✅ | Order pembelian ke supplier |
+| Pilih Supplier | ✅ | Link ke master supplier |
+| Multi-item Order | ✅ | Multiple line items |
+| Harga Beli & Qty | ✅ | Input harga beli aktual |
+| Pajak & Diskon | ✅ | Kalkulasi per item |
+| Tanggal Kedatangan | ✅ | Expected delivery date |
+| Pilih Gudang | ✅ | Gudang tujuan penerimaan |
+| Link ke Proyek | ✅ | Opsional hubungkan ke proyek |
+| **Status Workflow** | | |
+| — Draft | ✅ | PO baru |
+| — Confirmed | ✅ | PO dikonfirmasi |
+| — Partial | ✅ | Sebagian item diterima |
+| — Received | ✅ | Semua item diterima |
+| — Cancelled | ✅ | Dibatalkan |
+| Penerimaan Bertahap | ✅ | Terima barang sebagian (partial receive) |
+| Auto Stock-in | ✅ | Tambah stok otomatis saat terima barang |
+| Tracking Penerimaan | ✅ | Pantau qty diterima vs qty order |
 
 ---
 
-### 8. 📊 Projects Management
+### 8. 📊 Manajemen Proyek
 
-
-| Fitur              | Status | Deskripsi                      |
-| ------------------ | ------ | ------------------------------ |
-| Project CRUD       | ✅     | Manajemen project              |
-| Client Assignment  | ✅     | Link ke client                 |
-| Manager Assignment | ✅     | Project manager                |
-| Budget Tracking    | ✅     | Budget project                 |
-| Timeline           | ✅     | Start & end date               |
-| Project Status     | ✅     | Planning, Active, On Hold, etc |
-| Link to Orders     | ✅     | Relasi ke SO/PO/MO             |
-| Project Progress   | ❌     | Belum ada % tracking           |
-| Task Management    | ❌     | Belum ada task breakdown       |
-
----
-
-### 9. 💵 Finance (Keuangan)
-
-#### 10.1 Invoice (Tagihan)
-
-
-| Fitur                    | Status | Deskripsi                                         |
-| ------------------------ | ------ | ------------------------------------------------- |
-| Generate Invoice dari SO | ✅     | Buat invoice langsung dari Sales Order            |
-| Invoice CRUD             | ✅     | Buat, lihat, batalkan invoice                     |
-| Invoice Status           | ✅     | Draft → Sent → Partial → Paid → Cancelled     |
-| Line Items               | ✅     | Detail item dari Sales Order                      |
-| Subtotal / Tax / Total   | ✅     | Kalkulasi otomatis                                |
-| Nomor Invoice Otomatis   | ✅     | Format INV-YYYY-XXXX                              |
-| Due Date                 | ✅     | Tanggal jatuh tempo                               |
-| Auto Journal Entry       | ✅     | Jurnal akuntansi otomatis (Piutang × Pendapatan) |
-
-#### 10.2 Payments (Pembayaran)
-
-
-| Fitur               | Status | Deskripsi                        |
-| ------------------- | ------ | -------------------------------- |
-| Record Payment      | ✅     | Catat pembayaran dari customer   |
-| Payment Methods     | ✅     | Cash, transfer, cek              |
-| Partial Payment     | ✅     | Pembayaran sebagian              |
-| Payment Reference   | ✅     | Nomor referensi transaksi        |
-| Auto Invoice Update | ✅     | Update status invoice otomatis   |
-| Auto Journal Entry  | ✅     | Jurnal otomatis (Kas × Piutang) |
+| Fitur | Status | Deskripsi |
+|---|---|---|
+| CRUD Proyek | ✅ | Manajemen proyek bisnis |
+| Assign ke Klien | ✅ | Hubungkan proyek ke klien |
+| Manajer Proyek | ✅ | Assign project manager |
+| Budget Tracking | ✅ | Monitor anggaran proyek |
+| Timeline | ✅ | Tanggal mulai & selesai |
+| Status Proyek | ✅ | Planning / Active / On Hold / Completed / Cancelled |
+| Link ke Order | ✅ | SO / PO / MO bisa terkoneksi ke proyek |
+| Task Management | ❌ | Belum ada breakdown tugas |
+| % Progress | ❌ | Belum ada tracking persentase |
 
 ---
 
-### 10. 📒 Accounting (Akuntansi)
+### 9. 💵 Keuangan (Finance — Accounts Receivable)
 
-#### 11.1 Chart of Accounts (Daftar Akun)
+#### Invoice / Tagihan ke Pelanggan
+| Fitur | Status | Deskripsi |
+|---|---|---|
+| Generate dari SO | ✅ | Buat invoice 1-klik dari Sales Order |
+| CRUD Invoice | ✅ | Buat, lihat, batalkan |
+| Nomor Otomatis | ✅ | Format `INV-YYYY-XXXX` |
+| Line Items | ✅ | Detail item dari SO |
+| Subtotal / Pajak / Total | ✅ | Kalkulasi otomatis |
+| Due Date | ✅ | Tanggal jatuh tempo |
+| **Status Invoice** | | |
+| — Draft | ✅ | Belum dikirim |
+| — Sent | ✅ | Sudah dikirim ke pelanggan |
+| — Partial | ✅ | Dibayar sebagian |
+| — Paid | ✅ | Lunas |
+| — Cancelled | ✅ | Dibatalkan |
+| Auto Jurnal Akuntansi | ✅ | Debet Piutang / Kredit Pendapatan |
+| Export PDF | ✅ | Cetak invoice ke PDF |
 
-
-| Fitur           | Status | Deskripsi                                  |
-| --------------- | ------ | ------------------------------------------ |
-| CoA CRUD        | ✅     | Buat, edit, hapus akun                     |
-| Tipe Akun       | ✅     | Asset, Liability, Equity, Revenue, Expense |
-| Kode Akun       | ✅     | Kode unik per akun                         |
-| Active/Inactive | ✅     | Status akun                                |
-
-#### 11.2 Journal Entries (Jurnal Umum)
-
-
-| Fitur               | Status | Deskripsi                              |
-| ------------------- | ------ | -------------------------------------- |
-| Manual Journal      | ✅     | Input jurnal manual                    |
-| Double-entry        | ✅     | Debet = Kredit wajib seimbang          |
-| Multi-line Items    | ✅     | Multiple debit/kredit per jurnal       |
-| Tanggal & Referensi | ✅     | Date & reference number                |
-| Auto Journal        | ✅     | Dibuat otomatis dari Invoice & Payment |
-| Jurnal Detail       | ✅     | View detail transaksi per jurnal       |
-
-#### 11.3 General Ledger (Buku Besar)
-
-
-| Fitur           | Status | Deskripsi                     |
-| --------------- | ------ | ----------------------------- |
-| Ledger per Akun | ✅     | Riwayat transaksi per akun    |
-| Saldo Berjalan  | ✅     | Running balance per transaksi |
-| Filter Tanggal  | ✅     | Period filter                 |
-| Filter Akun     | ✅     | Pilih akun yang ditampilkan   |
-
-#### 11.4 Trial Balance (Neraca Saldo)
-
-
-| Fitur                | Status | Deskripsi                  |
-| -------------------- | ------ | -------------------------- |
-| Trial Balance        | ✅     | Ringkasan saldo semua akun |
-| Total Debet = Kredit | ✅     | Verifikasi keseimbangan    |
-| Filter Periode       | ✅     | Filter berdasarkan tanggal |
-
-#### 11.5 Balance Sheet (Neraca Keuangan)
-
-
-| Fitur          | Status | Deskripsi                          |
-| -------------- | ------ | ---------------------------------- |
-| Assets         | ✅     | Total aset (current + non-current) |
-| Liabilities    | ✅     | Total kewajiban                    |
-| Equity         | ✅     | Modal / ekuitas                    |
-| Balance Check  | ✅     | Assets = Liabilities + Equity      |
-| Filter Tanggal | ✅     | Per tanggal laporan                |
-
-#### 11.6 Profit & Loss (Laporan Laba Rugi)
-
-
-| Fitur           | Status | Deskripsi                    |
-| --------------- | ------ | ---------------------------- |
-| Revenue         | ✅     | Total pendapatan per akun    |
-| Expenses        | ✅     | Total beban per akun         |
-| Gross Profit    | ✅     | Laba kotor                   |
-| Net Profit/Loss | ✅     | Laba/rugi bersih             |
-| Filter Periode  | ✅     | Filter tanggal mulai & akhir |
+#### Pembayaran dari Pelanggan
+| Fitur | Status | Deskripsi |
+|---|---|---|
+| Catat Pembayaran | ✅ | Record payment dari customer |
+| Metode Pembayaran | ✅ | Cash / Transfer / Cek |
+| Pembayaran Parsial | ✅ | Bayar sebagian invoice |
+| Nomor Referensi | ✅ | Reference number transaksi |
+| Auto Update Invoice | ✅ | Status invoice update otomatis |
+| Auto Jurnal | ✅ | Debet Kas / Kredit Piutang |
 
 ---
 
-### 11. 📈 Reports & Analytics
+### 10. 🧾 Accounts Payable (AP) — Hutang ke Pemasok
 
-
-| Report               | Status | Deskripsi                    |
-| -------------------- | ------ | ---------------------------- |
-| Sales Report         | ✅     | Revenue, order count, trends |
-| Purchasing Report    | ✅     | Spending, supplier analysis  |
-| Inventory Report     | ✅     | Stock levels, valuation      |
-| Manufacturing Report | ✅     | Production statistics        |
-| Date Range Filter    | ✅     | Filter per periode           |
-| CSV Export           | ✅     | Export semua report ke CSV   |
-| PDF Export           | ❌     | Belum tersedia               |
-| Chart Visualization  | ⚠️   | Basic (tabel)                |
-
----
-
-### 12. 🔔 Notifications
-
-
-| Notification          | Status | Trigger              |
-| --------------------- | ------ | -------------------- |
-| Low Stock Alert       | ✅     | Stok < min_stock     |
-| Sales Order Confirmed | ✅     | SO dikonfirmasi      |
-| PO Fully Received     | ✅     | PO selesai diterima  |
-| MO Completed          | ✅     | MO selesai produksi  |
-| Mark as Read          | ✅     | Per-notifikasi       |
-| Mark All as Read      | ✅     | Batch action         |
-| Email Notifications   | ❌     | Belum diimplementasi |
-| Push Notifications    | ❌     | Belum diimplementasi |
+| Fitur | Status | Deskripsi |
+|---|---|---|
+| Supplier Bills CRUD | ✅ | Pencatatan tagihan dari supplier |
+| Nomor Otomatis | ✅ | Format `BILL-YYYY-XXXX` |
+| Link ke Supplier | ✅ | Terhubung ke master pemasok |
+| Line Items | ✅ | Detail item tagihan |
+| Subtotal / Pajak / Total | ✅ | Kalkulasi otomatis |
+| Due Date | ✅ | Tanggal jatuh tempo |
+| **Status Tagihan** | | |
+| — Draft | ✅ | Tagihan baru |
+| — Posted | ✅ | Diposting ke akuntansi |
+| — Partial | ✅ | Dibayar sebagian |
+| — Paid | ✅ | Lunas |
+| — Cancelled | ✅ | Dibatalkan |
+| Posting ke Jurnal | ✅ | Debet Beban / Kredit Hutang |
+| Pembayaran ke Supplier | ✅ | Catat pembayaran ke pemasok |
+| Laporan Aging AP | ✅ | Analisis umur hutang per supplier |
+| Export PDF | ✅ | Cetak tagihan ke PDF |
 
 ---
 
-### 13. ⚙️ Settings (Admin Only)
+### 11. 📒 Akuntansi Berentri Ganda (Double-Entry Accounting)
 
+#### Chart of Accounts (Daftar Akun)
+| Fitur | Status | Deskripsi |
+|---|---|---|
+| CRUD Akun | ✅ | Kelola daftar akun |
+| Tipe Akun | ✅ | Asset / Liability / Equity / Revenue / Expense |
+| Kode Akun | ✅ | Kode unik per akun |
+| Status Aktif | ✅ | Aktifkan/nonaktifkan akun |
 
-| Setting         | Status | Deskripsi                |
-| --------------- | ------ | ------------------------ |
-| Company Info    | ✅     | Nama, alamat, telepon    |
-| Currency        | ✅     | Mata uang default        |
-| Tax Rate        | ✅     | Persentase pajak default |
-| User Management | ✅     | CRUD users & permissions |
+#### Jurnal Umum (Journal Entries)
+| Fitur | Status | Deskripsi |
+|---|---|---|
+| Jurnal Manual | ✅ | Input entri jurnal manual |
+| Double-Entry | ✅ | Debet = Kredit (wajib seimbang) |
+| Multi-baris | ✅ | Banyak baris debit/kredit per jurnal |
+| Nomor & Referensi | ✅ | Penomoran otomatis + referensi |
+| Auto-Jurnal | ✅ | Dibuat otomatis dari Invoice & Payment |
+
+#### General Ledger (Buku Besar)
+| Fitur | Status | Deskripsi |
+|---|---|---|
+| Ledger per Akun | ✅ | Riwayat semua transaksi per akun |
+| Saldo Berjalan | ✅ | Running balance per baris |
+| Filter Tanggal | ✅ | Filter berdasarkan periode |
+
+#### Laporan Keuangan
+| Laporan | Status | Deskripsi |
+|---|---|---|
+| Trial Balance | ✅ | Neraca saldo — verifikasi Total D = K |
+| Balance Sheet | ✅ | Neraca keuangan (Assets = Liabilities + Equity) |
+| Profit & Loss | ✅ | Laporan laba rugi per periode |
 
 ---
 
-## 🔄 Business Flow Diagrams
+### 12. ✅ Approval Workflow (Alur Persetujuan)
 
-### Flow 1: Sales Order to Delivery
+| Fitur | Status | Deskripsi |
+|---|---|---|
+| Approval Roles | ✅ | Definisi role approver (Manager, Direktur, dll.) |
+| Approval Flows | ✅ | Atur alur persetujuan per modul |
+| Multi-step Approval | ✅ | Persetujuan berjenjang (step 1 → 2 → N) |
+| Conditional Steps | ✅ | Step bersyarat berdasarkan nilai transaksi |
+| Submit & Review | ✅ | Ajukan permintaan persetujuan |
+| Approve / Reject | ✅ | Tombol setuju atau tolak per langkah |
+| Cancel & Resubmit | ✅ | Batalkan persetujuan, ajukan ulang |
+| Catatan Approval | ✅ | Tambahkan komentar di setiap keputusan |
+| Progress Tracking | ✅ | Progress bar visual per tahapan |
+| Log Approval | ✅ | Riwayat lengkap semua keputusan |
+| Dashboard Widget | ✅ | Tampil di dashboard sebagai task pending |
+| Admin Flow Editor | ✅ | Konfigurasi alur langsung dari UI |
+
+---
+
+### 13. 📈 Laporan & Analitik (Reports)
+
+| Laporan | Status | Deskripsi |
+|---|---|---|
+| Sales Report | ✅ | Revenue, jumlah order, tren penjualan |
+| Purchasing Report | ✅ | Pengeluaran, analisis supplier |
+| Inventory Report | ✅ | Level stok, valuasi inventori |
+| Manufacturing Report | ✅ | Statistik produksi, output, waste |
+| Finance Report | ✅ | Ringkasan keuangan, AR/AP summary |
+| Filter Rentang Tanggal | ✅ | Filter semua laporan per periode |
+| Export CSV | ✅ | Download semua laporan ke CSV |
+| Export PDF | ✅ | Cetak laporan ke PDF |
+| Chart Visualization | ✅ | Grafik bar revenue vs expense (Dashboard) |
+
+---
+
+### 14. 📄 PDF Generation
+
+| Fitur | Status | Deskripsi |
+|---|---|---|
+| Invoice PDF | ✅ | Cetak tagihan ke pelanggan |
+| Supplier Bill PDF | ✅ | Cetak tagihan dari supplier |
+| Purchase Order PDF | ✅ | Cetak surat order pembelian |
+| Template Profesional | ✅ | Layout siap cetak dengan info perusahaan |
+| Menggunakan DomPDF | ✅ | `barryvdh/laravel-dompdf` |
+
+---
+
+### 15. 🔔 Notifikasi
+
+| Notifikasi | Status | Trigger |
+|---|---|---|
+| Alert Stok Rendah | ✅ | Stok turun di bawah `min_stock` |
+| SO Dikonfirmasi | ✅ | Sales Order berstatus Confirmed |
+| PO Diterima Penuh | ✅ | PO berstatus Received |
+| MO Selesai | ✅ | Manufacturing Order berstatus Done |
+| Tandai Dibaca | ✅ | Per-notifikasi atau sekaligus |
+| Email Notifikasi | ❌ | Belum diimplementasi |
+| Push Notification | ❌ | Belum diimplementasi |
+
+---
+
+### 16. ⚙️ Pengaturan Sistem
+
+| Fitur | Status | Deskripsi |
+|---|---|---|
+| Informasi Perusahaan | ✅ | Nama, logo, alamat, telepon, email |
+| Mata Uang | ✅ | Konfigurasi mata uang default |
+| Tarif Pajak | ✅ | Persentase pajak default |
+| Manajemen User | ✅ | CRUD user dan permission |
+| Multi-language (i18n) | ✅ | English / Bahasa Indonesia / 中文 |
+| Audit Log | ✅ | Lihat semua aktivitas sistem (admin only) |
+
+---
+
+## 🔄 Alur Proses Bisnis (Business Flows)
+
+### Flow 1: Siklus Penjualan (Order-to-Cash)
 
 ```
-┌──────────┐     ┌──────────┐     ┌──────────┐     ┌──────────┐     ┌──────────┐
-│  CREATE  │────▶│ CONFIRM  │────▶│ PROCESS  │────▶│   SHIP   │────▶│ COMPLETE │
-│   DRAFT  │     │  (Stock  │     │          │     │          │     │          │
-│          │     │ Deducted)│     │          │     │          │     │          │
-└──────────┘     └──────────┘     └──────────┘     └──────────┘     └──────────┘
-                      │
-                      ▼
-              ┌──────────────┐
-              │ NOTIFICATION │
-              │   Sent to    │
-              │    Admin     │
-              └──────────────┘
+  [Buat SO]──►[Konfirmasi SO]──►[Proses]──►[Kirim]──►[Selesai]
+                    │                                     │
+                    ▼                                     ▼
+             [Stok Berkurang]                    [Buat Invoice]
+                                                      │
+                                          ┌───────────┴──────────┐
+                                          ▼                      ▼
+                                   [Terima Bayaran]       [Kirim ke PDF]
+                                          │
+                                          ▼
+                                   [Jurnal Akuntansi]
+                                   Kas / Piutang
 ```
 
-### Flow 2: Purchase Order to Stock
+**Detail langkah:**
+1. **Draft** — Buat Sales Order, isi data klien, produk, qty, harga
+2. **Confirm** — Sistem validasi stok cukup, lalu deduct stok otomatis
+3. **Processing / Shipped** — Update status sesuai progres pengiriman
+4. **Completed** — Tandai order selesai
+5. **Invoice** — Generate invoice dari SO dengan 1 klik
+6. **Payment** — Catat pembayaran (full/partial), sistem update status invoice & buat jurnal
+
+---
+
+### Flow 2: Siklus Pembelian (Purchase-to-Pay)
 
 ```
-┌──────────┐     ┌──────────┐     ┌──────────┐     ┌──────────┐
-│  CREATE  │────▶│ CONFIRM  │────▶│ RECEIVE  │────▶│ COMPLETE │
-│   DRAFT  │     │          │     │ (Stock   │     │          │
-│          │     │          │     │  Added)  │     │          │
-└──────────┘     └──────────┘     └──────────┘     └──────────┘
-                                       │
-                      ┌────────────────┴────────────────┐
-                      ▼                                 ▼
-              ┌──────────────┐                  ┌──────────────┐
-              │   PARTIAL    │                  │  FULL RECV   │
-              │   RECEIVE    │                  │ NOTIFICATION │
-              └──────────────┘                  └──────────────┘
+  [Buat PO]──►[Konfirmasi PO]──►[Terima Barang]──►[Received]
+                                      │
+                          ┌───────────┴──────────┐
+                          ▼                      ▼
+                   [Partial Receive]        [Full Receive]
+                          │                      │
+                          ▼                      ▼
+                   [Stok Bertambah]       [Notifikasi]
+                                               │
+                                               ▼
+                                     [Buat Supplier Bill]
+                                               │
+                                               ▼
+                                       [Post → Bayar]
+                                               │
+                                               ▼
+                                       [Jurnal Akuntansi]
+                                       Hutang / Beban
 ```
 
-### Flow 3: Manufacturing Order
+**Detail langkah:**
+1. **Draft** — Buat PO, pilih supplier, isi item & harga
+2. **Confirm** — PO dikonfirmasi, siap untuk penerimaan
+3. **Receive** — Catat penerimaan barang (bisa partial), stok bertambah otomatis
+4. **Supplier Bill** — Buat tagihan dari supplier, posting ke akuntansi
+5. **Payment** — Catat pembayaran ke supplier, update hutang, buat jurnal
+
+---
+
+### Flow 3: Siklus Produksi (Manufacturing)
 
 ```
-┌──────────┐     ┌──────────┐     ┌──────────┐     ┌──────────┐
-│  CREATE  │────▶│ CONFIRM  │────▶│ PRODUCE  │────▶│   DONE   │
-│   DRAFT  │     │          │     │          │     │          │
-└──────────┘     └──────────┘     └──────────┘     └──────────┘
-                                       │
-                                       ▼
-                              ┌─────────────────┐
-                              │  CONSUME RAW    │
-                              │  MATERIALS      │
-                              │  (Stock Out)    │
-                              └────────┬────────┘
-                                       │
-                                       ▼
-                              ┌─────────────────┐
-                              │  PRODUCE        │
-                              │  FINISHED GOODS │
-                              │  (Stock In)     │
-                              └────────┬────────┘
-                                       │
-                    ┌──────────────────┴──────────────────┐
-                    ▼                                      ▼
-            ┌──────────────┐                       ┌──────────────┐
-            │   PARTIAL    │                       │  COMPLETION  │
-            │  PRODUCTION  │                       │ NOTIFICATION │
-            └──────────────┘                       └──────────────┘
+  [Buat MO]──►[Pilih BOM]──►[Konfirmasi]──►[Prosess Produksi]──►[Done]
+                                                  │                 │
+                                                  ▼                 ▼
+                                         [Konsumsi Bahan]   [Output ke Stok]
+                                         (Stock Out)         (Stock In)
+                                              │
+                                    ┌─────────┴────────┐
+                                    ▼                  ▼
+                             [Produksi Penuh]   [Produksi Parsial]
+                                    │                  │
+                                    ▼                  ▼
+                             [Notifikasi]        [Masih bisa produksi lagi]
+                             MO Selesai          sampai planned qty terpenuhi
 ```
 
-### Flow 4: Stock Movement Integration
+**Detail langkah:**
+1. **Draft** — Buat Manufacturing Order, pilih BOM, tentukan jumlah & gudang
+2. **Confirm** — Konfirmasi order, cek ketersediaan bahan baku
+3. **Produce** — Input jumlah yang diproduksi, sistem otomatis:
+   - Kurangi stok bahan baku (berdasarkan proporsi BOM)
+   - Tambah stok produk jadi
+4. **Done** — Status berubah otomatis saat produced qty = planned qty
+
+---
+
+### Flow 4: Alur Persetujuan (Approval Workflow)
 
 ```
-                        ┌─────────────────┐
-                        │  STOCK SERVICE  │
-                        │  (Central Hub)  │
-                        └────────┬────────┘
-                                 │
-        ┌────────────────────────┼────────────────────────┐
-        │                        │                        │
-        ▼                        ▼                        ▼
-┌──────────────┐        ┌──────────────┐        ┌──────────────┐
-│ SALES ORDER  │        │ PURCHASE ORD │        │ MANUFACT ORD │
-│   CONFIRM    │        │   RECEIVE    │        │   PRODUCE    │
-│  (Stock OUT) │        │  (Stock IN)  │        │ (OUT + IN)   │
-└──────────────┘        └──────────────┘        └──────────────┘
-        │                        │                        │
-        └────────────────────────┼────────────────────────┘
-                                 ▼
-                        ┌─────────────────┐
-                        │  LOW STOCK      │
-                        │  CHECK &        │
-                        │  NOTIFICATION   │
-                        └─────────────────┘
+  [User Ajukan Dokumen]
+         │
+         ▼
+  [Approval Dibuat - Step 1]
+         │
+         ▼
+  [Notifikasi ke Approver Step 1]
+         │
+    ┌────┴────┐
+    ▼         ▼
+[Setuju]   [Tolak]
+    │         │
+    ▼         ▼
+[Step 2]  [Dokumen Rejected]
+    │       (User dapat resubmit)
+    ▼
+[... dst hingga step terakhir]
+    │
+    ▼
+[Dokumen APPROVED ✓]
 ```
 
-### Flow 5: Finance & Accounting
+**Detail:**
+- Alur persetujuan dikonfigurasi admin per modul (SO, PO, Invoice, dll.)
+- Setiap step bisa memiliki kondisi (misal: hanya berlaku jika nilai > Rp 10 juta)
+- Approver dapat menambahkan catatan saat approve/reject
+- Semua keputusan tercatat di approval log (tidak bisa dihapus)
+
+---
+
+### Flow 5: Integrasi Stok Terpusat
 
 ```
-Sales Order ──► DELIVER ──► INVOICE ──► PAYMENT
-                                │           │
-                                ▼           ▼
-                        ┌─────────────────────────────┐
-                        │       ACCOUNTING SERVICE     │
-                        │  (Double-Entry Journal Auto) │
-                        └────────────┬────────────────┘
-                                     │
-             ┌───────────────────────┼────────────────────────┐
-             │                       │                        │
-             ▼                       ▼                        ▼
-    ┌─────────────┐         ┌──────────────┐        ┌──────────────┐
-    │  JOURNAL    │         │   GENERAL    │        │    TRIAL     │
-    │  ENTRIES    │         │   LEDGER     │        │   BALANCE    │
-    └─────────────┘         └──────────────┘        └──────────────┘
-                                                           │
-                              ┌────────────────────────────┤
-                              │                            │
-                              ▼                            ▼
-                     ┌──────────────┐            ┌──────────────────┐
-                     │   BALANCE    │            │   PROFIT & LOSS  │
-                     │    SHEET     │            │     STATEMENT    │
-                     └──────────────┘            └──────────────────┘
+                    ┌─────────────────────┐
+                    │    STOCK SERVICE    │
+                    │   (Central Hub)     │
+                    └──────────┬──────────┘
+                               │
+    ┌──────────────────────────┼──────────────────────┐
+    │                          │                      │
+    ▼                          ▼                      ▼
+[Sales Order]         [Purchase Order]     [Manufacturing Order]
+  Confirmed             Received               Produce
+  (Stock OUT)          (Stock IN)           (OUT bahan baku)
+                                            (IN barang jadi)
+                                                      │
+            ◄─────────────────────────────────────────┘
+            │
+            ▼
+   [Cek Level Stok]
+            │
+   [Stok < Min Stock?]──YES──► [Buat Notifikasi Low Stock]
+            │
+           NO
+            │
+            ▼
+      [Selesai]
 ```
 
 ---
 
-## ✅ Kelebihan Sistem
+### Flow 6: Akuntansi Terintegrasi
 
-### 1. **Integrasi End-to-End**
-
-- Semua modul terintegrasi (Sales ↔ Inventory ↔ Manufacturing ↔ Purchasing)
-- Stock movement otomatis berdasarkan transaksi
-- Tidak perlu input manual untuk update stok
-
-### 2. **Real-time Inventory**
-
-- Multi-warehouse support
-- Tracking stok per gudang
-- Low stock notification otomatis
-- Stock transfer antar gudang
-
-### 3. **Manufacturing Support**
-
-- Bill of Materials (BOM)
-- Auto material consumption
-- Partial production support
-- Progress tracking
-
-### 4. **Security & Access Control**
-
-- Role-based access (Admin/User)
-- Granular permissions per modul per action
-- Audit trail (created_by tracking)
-
-### 5. **Akuntansi Berentri Ganda (Double-Entry Accounting)**
-
-- Chart of Accounts lengkap (Asset, Liability, Equity, Revenue, Expense)
-- Jurnal otomatis dari Invoice & Payment
-- General Ledger dengan running balance
-- Trial Balance, Balance Sheet, Profit & Loss Statement
-
-### 6. **Modern Tech Stack**
-
-- Laravel 13 (latest)
-- TailwindCSS 4 (modern UI)
-- MySQL (production ready)
-- Clean, maintainable codebase
-
-### 7. **Responsive UI**
-
-- Mobile-friendly design
-- Konsisten design system
-- Intuitive navigation
+```
+  Invoice Terbit ──► Auto Journal: Piutang (D) / Pendapatan (K)
+  Payment Masuk ──► Auto Journal: Kas (D) / Piutang (K)
+  Supplier Bill ──► Auto Journal: Beban (D) / Hutang Usaha (K)
+  Bayar Supplier ──► Auto Journal: Hutang Usaha (D) / Kas (K)
+         │
+         ▼
+  [Journal Entries] ──► [General Ledger per Akun]
+         │                        │
+         ▼                        ▼
+  [Trial Balance]        [Running Balance]
+         │
+    ┌────┴────┐
+    ▼         ▼
+[Balance  [Profit &
+ Sheet]    Loss]
+```
 
 ---
 
-## ❌ Kekurangan & Limitasi Saat Ini
+## 🖥️ Panduan Penggunaan
 
-### 1. **Fitur Belum Lengkap**
+### Cara Menggunakan ManERP untuk Bisnis
 
+#### Langkah 1 — Setup Awal (Admin)
+1. Login sebagai admin (`admin@manerp.com`)
+2. Buka **Settings → Company** → isi data perusahaan (nama, alamat, logo)
+3. Buka **Settings → Users** → buat akun untuk setiap karyawan, atur permission
+4. Buka **Warehouses** → tambahkan gudang utama
+5. Buka **Inventory → Categories** → buat kategori produk
+6. Buka **Inventory → Products** → masukkan semua produk (SKU, harga, min stock)
+7. Masukkan stok awal via **Inventory → Movements** (tipe: Stock In)
 
-| Gap                     | Priority | Deskripsi                            |
-| ----------------------- | -------- | ------------------------------------ |
-| Multi-level BOM         | High     | Tidak support BOM bertingkat         |
-| Product Images          | Medium   | Belum ada upload gambar produk       |
-| PDF Export              | Medium   | Report hanya tersedia dalam CSV      |
-| Email Notification      | Medium   | Notifikasi hanya via database        |
-| Hierarchical Categories | Low      | Tidak ada sub-kategori produk        |
-| Project Task Management | Medium   | Tidak ada task breakdown per project |
-| Delivery Management     | Medium   | Tidak ada tracking pengiriman        |
-| Return / Refund         | Medium   | Tidak ada proses retur barang        |
+#### Langkah 2 — Setup Data Master
+```
+Suppliers → Masukkan data semua vendor/pemasok
+Clients   → Masukkan data semua pelanggan
+BOM       → Buat Bill of Materials untuk setiap produk yang diproduksi
+```
 
-### 2. **Akuntansi Lanjutan**
+#### Langkah 3 — Proses Harian Penjualan
+```
+Sales → New Order
+  → Pilih klien
+  → Tambah item produk + qty + harga
+  → Simpan (Draft)
+  → Confirm (stok otomatis berkurang)
+  → Update status saat diproses / dikirim
+  → Buat Invoice dari SO
+  → Catat Pembayaran saat pelanggan bayar
+```
 
+#### Langkah 4 — Proses Harian Pembelian
+```
+Purchasing → New PO
+  → Pilih supplier
+  → Tambah item + qty + harga beli
+  → Confirm PO
+  → Saat barang tiba: Record Receive (stok otomatis bertambah)
+  → Buat Supplier Bill (AP Payable)
+  → Catat pembayaran ke supplier
+```
 
-| Gap                   | Priority | Deskripsi                              |
-| --------------------- | -------- | -------------------------------------- |
-| Accounts Payable (AP) | Medium   | Belum ada managemen hutang ke supplier |
-| Multi-currency        | Low      | Hanya mendukung satu mata uang         |
-| Depreciation          | Low      | Belum ada penyusutan aset tetap        |
-| Tax Filing Reports    | Low      | Belum ada laporan pajak (PPN/PPh)      |
+#### Langkah 5 — Proses Produksi
+```
+Manufacturing → BOM → Buat BOM untuk produk
+Manufacturing → Orders → New Order
+  → Pilih BOM
+  → Tentukan planned quantity
+  → Confirm
+  → Saat produksi berjalan: klik Produce
+    → Input produced quantity
+    → Bahan baku otomatis berkurang
+    → Produk jadi otomatis bertambah
+```
 
-### 3. **Reporting & Analytics**
-
-
-| Gap              | Priority | Deskripsi                               |
-| ---------------- | -------- | --------------------------------------- |
-| Dashboard Charts | Medium   | Dashboard masih tabel, belum ada grafik |
-| Custom Reports   | Low      | Tidak bisa kustomisasi format laporan   |
-| Forecasting      | Low      | Tidak ada prediksi demand / kebutuhan   |
-
-### 4. **Technical Debt**
-
-
-| Issue              | Priority | Deskripsi                                |
-| ------------------ | -------- | ---------------------------------------- |
-| No Unit Tests      | High     | Belum ada automated testing              |
-| No REST API        | Medium   | Tidak ada API endpoint untuk integrasi   |
-| Limited Validation | Medium   | Validasi bisnis belum sepenuhnya lengkap |
+#### Langkah 6 — Monitoring & Laporan
+```
+Dashboard  → Ringkasan bisnis real-time (AR, AP, revenue, chart)
+Reports    → Sales / Purchasing / Inventory / Manufacturing / Finance
+Accounting → Cek General Ledger, Trial Balance, Balance Sheet, P&L
+```
 
 ---
 
-## 🗺️ Roadmap Pengembangan
+## ✅ Keunggulan Sistem
 
-### ✅ Phase 1: Core ERP (SELESAI)
+### 1. Integrasi End-to-End
+Seluruh modul terhubung dalam satu alur data: Sales → Invoice → Payment → Jurnal. Tidak perlu input ulang data yang sama di modul berbeda.
 
-- Manajemen Inventori (produk, gudang, stok, transfer)
-- Manufacturing (BOM, Work Orders, material consumption)
+### 2. Stok Real-time & Multi-Gudang
+Setiap transaksi (penjualan, pembelian, produksi) langsung memperbarui saldo stok per gudang. Alert otomatis saat stok di bawah minimum.
+
+### 3. Akuntansi Terintegrasi (Double-Entry)
+Setiap transaksi keuangan otomatis menghasilkan jurnal akuntansi yang balance. Laporan keuangan (Balance Sheet, P&L) tergenerate real-time.
+
+### 4. Approval Workflow Fleksibel
+Proses persetujuan multi-level yang bisa dikonfigurasi per modul dan kondisi nilai transaksi. Semua keputusan tercatat dan tidak bisa dimanipulasi.
+
+### 5. Keamanan & Kontrol Akses
+Role-based access + granular permission per modul + audit log lengkap. Admin dapat mengatur siapa boleh melakukan apa dengan detail.
+
+### 6. PDF & Export
+Invoice, PO, Supplier Bill bisa langsung dicetak ke PDF siap kirim ke partner bisnis.
+
+### 7. Multi-bahasa
+Mendukung Bahasa Indonesia, English, dan 中文 (Mandarin). User dapat memilih bahasa dari profil masing-masing.
+
+### 8. Dashboard Komprehensif
+Dashboard menampilkan ringkasan AR/AP, grafik revenue vs expense (6 bulan), pending approvals, proyek aktif, progres manufaktur, dan aktivitas terkini.
+
+### 9. Tech Stack Modern
+Laravel 13 terbaru, TailwindCSS, Alpine.js — codebase bersih, mudah dikembangkan, dan nyaman di-maintain jangka panjang.
+
+---
+
+## ❌ Keterbatasan Saat Ini
+
+### Fitur yang Belum Ada
+
+| Fitur | Prioritas | Keterangan |
+|---|---|---|
+| Multi-level BOM | Tinggi | BOM satu level, tidak support sub-assembly |
+| Gambar Produk | Sedang | Belum ada upload foto produk |
+| Email Notifikasi | Sedang | Notifikasi hanya in-app database |
+| Task Management (Proyek) | Sedang | Belum ada breakdown tugas per proyek |
+| Tracking Pengiriman | Sedang | Belum ada delivery order / resi |
+| Proses Retur Barang | Sedang | Return ke supplier / dari pelanggan |
+| Sub-kategori Produk | Rendah | Kategori masih flat, belum hierarki |
+| Multi-currency | Rendah | Hanya satu mata uang |
+| Penyusutan Aset Tetap | Rendah | Depreciation belum ada |
+| Laporan Pajak | Rendah | Belum ada laporan PPN / PPh |
+| REST API | Sedang | Belum ada API untuk integrasi pihak ketiga |
+| Automated Testing | Tinggi | Belum ada unit / feature test |
+| Mobile App | Rendah | Hanya web-based |
+
+---
+
+## 🗺️ Roadmap
+
+### ✅ Phase 1 — Core ERP (Selesai)
+- Inventori multi-gudang (produk, stok, movement, transfer)
+- Manufacturing: BOM & Work Orders
 - Sales & Purchase Order lifecycle
-- CRM (Clients, Projects)
-- Multi-warehouse support
-- Notification system
+- CRM: Clients, Projects, Suppliers
 - Role-based permissions & Audit Log
+- Notifikasi in-app
 
-### ✅ Phase 2: Finance & Accounting (SELESAI)
+### ✅ Phase 2 — Finance & Accounting (Selesai)
+- Invoice Generation dari Sales Order
+- Payment Tracking (AR)
+- Accounts Payable: Supplier Bills & Payments
+- Chart of Accounts, Double-Entry Journal
+- General Ledger, Trial Balance, Balance Sheet, P&L
+- PDF Generation (Invoice, PO, Supplier Bill)
+- Approval Workflow multi-level
+- Dashboard revamp: AR/AP, grafik Chart.js, widgets
 
-- **Invoice Generation** — dari Sales Order ke Invoice
-- **Payment Tracking** — record pembayaran dan update AR
-- **Chart of Accounts** — daftar akun lengkap
-- **Double-Entry Journal** — manual & otomatis
-- **General Ledger** — buku besar dengan running balance
-- **Trial Balance** — neraca saldo
-- **Balance Sheet** — neraca keuangan
-- **Profit & Loss Statement** — laporan laba rugi
+### 🔄 Phase 3 — Operational Enhancement (Rekomendasi)
+- Delivery Management (Delivery Order, tracking pengiriman)
+- Return & Refund (Sales Return / Purchase Return)
+- Email Notifications (SMTP, template per event)
+- Project Task Management (breakdown tugas per proyek)
 
-### 🔄 Phase 3: Operational Enhancement (Rekomendasi)
-
-1. **Delivery Management**
-
-   - Delivery order generation
-   - Shipping/tracking number
-   - Proof of delivery
-2. **Return & Refund**
-
-   - Sales return (Credit Note)
-   - Purchase return (Debit Note)
-   - Stock adjustment otomatis
-3. **Email Notifications**
-
-   - SMTP configuration
-   - Email templates per event
-   - Notification preferences per user
-4. **PDF Reports**
-
-   - Invoice PDF (printable)
-   - Financial report PDF
-   - Custom templates
-
-### 🔮 Phase 4: Analytics & Integration (Masa Depan)
-
-1. **Advanced Dashboard**
-
-   - Chart visualization (Chart.js / ApexCharts)
-   - KPI widgets
-   - Real-time updates
-2. **REST API**
-
-   - API endpoints for all modules
-   - Sanctum API authentication
-   - Webhook support
-3. **Multi-level BOM**
-
-   - Sub-assembly support
-   - Auto Material Requirements Planning (MRP)
-4. **Accounts Payable (AP)**
-
-   - Hutang ke supplier
-   - Aging report AP
-   - Payment scheduling
+### 🔮 Phase 4 — Advanced & Integration (Masa Depan)
+- REST API + Sanctum authentication
+- Multi-currency support
+- Multi-level BOM & MRP (Material Requirements Planning)
+- Modul HR & Payroll dasar
+- Mobile-optimized PWA
 
 ---
 
-## 🛠️ Technical Stack
+## 🗃️ Struktur Database (43 Tabel)
 
+### Peta Relasi Entitas
 
-| Component        | Technology     | Version           |
-| ---------------- | -------------- | ----------------- |
-| Framework        | Laravel        | 13.2.x            |
-| Language         | PHP            | 8.3+              |
-| Database         | MySQL          | 8.x (XAMPP)       |
-| CSS Framework    | TailwindCSS    | 4.x (Vite Plugin) |
-| JS Framework     | Alpine.js      | 3.x               |
-| Build Tool       | Vite           | 8.x               |
-| Auth Scaffolding | Laravel Breeze | 2.x               |
-| HTTP Client      | Axios          | 1.x               |
+```
+Users ──────────────────────────────────────────────┐
+  │                                                  │
+  ▼                                                  ▼
+Projects ◄──── Clients                         ActivityLogs
+  │
+  ├──► Sales Orders ──► SO Items
+  │          │
+  │          └──► Invoices ──► Invoice Items
+  │                    │
+  │                    └──► Payments
+  │
+  ├──► Purchase Orders ──► PO Items
+  │
+  ├──► Manufacturing Orders ──► BOM ──► BOM Items
+  │
+  └──► (semua terhubung ke Products & Warehouses)
 
-### Key Service Classes
+Products ◄──── Categories
+    │
+    └──► Inventory Stocks (per Warehouse)
+               │
+               └──► Stock Movements
+               └──► Stock Transfer Items ◄── Stock Transfers
 
+Suppliers ──► Purchase Orders
+          └──► Supplier Bills ──► Supplier Bill Items
+                    │
+                    └──► Supplier Payments
 
-| Service             | Tanggung Jawab                                                   |
-| ------------------- | ---------------------------------------------------------------- |
-| `StockService`      | Manajemen stok, movement, validasi inventori                     |
-| `FinanceService`    | Pembuatan invoice, pencatatan pembayaran, pembatalan             |
-| `AccountingService` | Jurnal berentri ganda, ledger, trial balance, balance sheet, P&L |
-| `AuditLogService`   | Pencatatan log aktivitas sistem                                  |
+Chart of Accounts ──► Journal Items ◄── Journal Entries
+
+Approval Flows ──► Approval Steps ──► Approvals ──► Approval Logs
+Approval Roles ◄── approval_role_user (pivot) ──► Users
+
+Company Settings | Settings | Notifications | Sessions | Cache | Jobs
+```
+
+### Daftar Lengkap Tabel
+
+| # | Tabel | Deskripsi |
+|---|---|---|
+| 1 | `users` | User, role, JSON permissions |
+| 2 | `clients` | Data pelanggan/klien |
+| 3 | `suppliers` | Data vendor/pemasok |
+| 4 | `categories` | Kategori produk |
+| 5 | `products` | Master produk (SKU, harga, min_stock) |
+| 6 | `warehouses` | Data lokasi gudang |
+| 7 | `inventory_stocks` | Stok per produk per gudang |
+| 8 | `stock_movements` | Log semua pergerakan stok |
+| 9 | `stock_transfers` | Transfer stok antar gudang |
+| 10 | `stock_transfer_items` | Item per transfer |
+| 11 | `projects` | Data proyek bisnis |
+| 12 | `sales_orders` | Header sales order |
+| 13 | `sales_order_items` | Line item penjualan |
+| 14 | `purchase_orders` | Header purchase order |
+| 15 | `purchase_order_items` | Line item pembelian |
+| 16 | `bill_of_materials` | Header BOM / resep produksi |
+| 17 | `bom_items` | Komponen bahan baku BOM |
+| 18 | `manufacturing_orders` | Work order produksi |
+| 19 | `invoices` | Tagihan ke pelanggan (AR) |
+| 20 | `invoice_items` | Line item invoice |
+| 21 | `payments` | Pembayaran dari pelanggan |
+| 22 | `supplier_bills` | Tagihan dari pemasok (AP) |
+| 23 | `supplier_bill_items` | Line item supplier bill |
+| 24 | `supplier_payments` | Pembayaran ke pemasok |
+| 25 | `chart_of_accounts` | Daftar akun akuntansi |
+| 26 | `journal_entries` | Header jurnal akuntansi |
+| 27 | `journal_items` | Baris debit/kredit |
+| 28 | `approval_roles` | Role approver |
+| 29 | `approval_role_user` | Pivot user ↔ approval role |
+| 30 | `approval_flows` | Definisi alur persetujuan |
+| 31 | `approval_steps` | Tahapan per alur |
+| 32 | `approvals` | Instance persetujuan |
+| 33 | `approval_logs` | Log setiap keputusan approval |
+| 34 | `activity_logs` | Audit log semua aktivitas sistem |
+| 35 | `settings` | Konfigurasi global |
+| 36 | `company_settings` | Informasi perusahaan |
+| 37 | `notifications` | Notifikasi in-app |
+| 38 | `sessions` | Sesi login pengguna |
+| 39 | `cache` | Cache aplikasi |
+| 40 | `cache_locks` | Cache locks |
+| 41 | `jobs` | Antrian pekerjaan |
+| 42 | `job_batches` | Batch job |
+| 43 | `failed_jobs` | Job yang gagal |
 
 ---
 
-## 📁 Struktur Database
+## 🗂️ Ringkasan Route (174 Routes)
 
-### Entity Relationship (Simplified)
-
-```
-Users ─────────────┬──────────────────────────────┐
-                   │                              │
-                   ▼                              ▼
-              Projects ◄────────────────── Clients
-                   │
-    ┌──────────────┼──────────────┐
-    │              │              │
-    ▼              ▼              ▼
-Sales Orders  Purchase Orders  Manufacturing Orders
-    │              │              │
-    ▼              ▼              ▼
-SO Items       PO Items       BOM ──► BOM Items
-    │              │              │
-    └──────────────┼──────────────┘
-                   │
-                   ▼
-              Products ◄──────── Categories
-                   │
-                   ▼
-          Inventory Stocks ◄──── Warehouses
-                   │
-                   ▼
-           Stock Movements ◄──── Stock Transfers
-
-Sales Orders ──► Invoices ──► Payments
-                    │              │
-                    └──────┬───────┘
-                           ▼
-                    Journal Entries ──► Journal Items
-                           │
-                    Charts of Accounts
-```
-
-### Tabel Database (33+ Tables)
-
-
-| Table                 | Deskripsi                                |
-| --------------------- | ---------------------------------------- |
-| users                 | User, role, dan JSON permissions         |
-| clients               | Data customer/client                     |
-| suppliers             | Data vendor/pemasok                      |
-| categories            | Kategori produk                          |
-| products              | Master produk (SKU, harga, stok minimum) |
-| warehouses            | Lokasi gudang                            |
-| inventory_stocks      | Stok per produk per gudang               |
-| stock_movements       | Log pergerakan stok                      |
-| stock_transfers       | Transfer stok antar gudang               |
-| stock_transfer_items  | Item per transfer                        |
-| projects              | Manajemen proyek                         |
-| sales_orders          | Header sales order                       |
-| sales_order_items     | Line item sales order                    |
-| purchase_orders       | Header purchase order                    |
-| purchase_order_items  | Line item purchase order                 |
-| bill_of_materials     | Header BOM                               |
-| bom_items             | Komponen BOM                             |
-| manufacturing_orders  | Work order produksi                      |
-| invoices              | Invoice/tagihan ke customer              |
-| invoice_items         | Line item invoice                        |
-| payments              | Pembayaran dari customer                 |
-| charts_of_accounts    | Daftar akun akuntansi                    |
-| journal_entries       | Header jurnal akuntansi                  |
-| journal_items         | Baris debit/kredit jurnal                |
-| activity_log          | Audit log seluruh aktivitas sistem       |
-| settings              | Konfigurasi aplikasi                     |
-| notifications         | Notifikasi in-app                        |
-| sessions              | Sesi pengguna                            |
-| cache                 | Cache aplikasi                           |
-| jobs                  | Antrian pekerjaan                        |
-| failed_jobs           | Pekerjaan gagal                          |
-| job_batches           | Batch pekerjaan                          |
-| password_reset_tokens | Token reset password                     |
-| migrations            | Riwayat migrasi                          |
+| Prefix | Modul | HTTP Methods |
+|---|---|---|
+| `/dashboard` | Dashboard | GET |
+| `/clients` | CRM – Klien | GET, POST, PUT, DELETE |
+| `/projects` | Proyek | GET, POST, PUT, DELETE |
+| `/warehouses` | Gudang | GET, POST, PUT, DELETE |
+| `/suppliers` | Pemasok | GET, POST, PUT, DELETE |
+| `/inventory/categories` | Kategori Produk | GET, POST, PUT, DELETE |
+| `/inventory/products` | Produk | GET, POST, PUT, DELETE |
+| `/inventory/stocks` | Level Stok | GET |
+| `/inventory/movements` | Pergerakan Stok | GET, POST |
+| `/inventory/transfers` | Transfer Stok | GET, POST, DELETE |
+| `/manufacturing/boms` | Bill of Materials | GET, POST, PUT, DELETE |
+| `/manufacturing/orders` | Work Orders | GET, POST, PUT, DELETE |
+| `/sales` | Sales Orders | GET, POST, PUT, DELETE |
+| `/purchasing` | Purchase Orders | GET, POST, PUT, DELETE |
+| `/finance/invoices` | Invoice AR | GET, POST |
+| `/finance/payments` | Pembayaran AR | POST |
+| `/ap/bills` | Supplier Bills AP | GET, POST, PUT, DELETE |
+| `/ap/payments` | Pembayaran AP | GET |
+| `/ap/aging` | Laporan Aging AP | GET |
+| `/accounting/coa` | Chart of Accounts | GET, POST, PUT, DELETE |
+| `/accounting/journals` | Journal Entries | GET, POST |
+| `/accounting/ledger` | General Ledger | GET |
+| `/accounting/trial-balance` | Trial Balance | GET |
+| `/accounting/balance-sheet` | Balance Sheet | GET |
+| `/accounting/profit-loss` | Profit & Loss | GET |
+| `/approvals` | Approval Tasks | GET, POST |
+| `/approvals/admin/roles` | Manage Roles | GET, PUT |
+| `/approvals/admin/flows` | Manage Flows | GET, PUT |
+| `/reports` | Laporan (6 sub) | GET |
+| `/reports/export` | Export CSV | GET |
+| `/pdf/invoice/{id}` | PDF Invoice | GET |
+| `/pdf/po/{id}` | PDF Purchase Order | GET |
+| `/pdf/bill/{id}` | PDF Supplier Bill | GET |
+| `/notifications` | Notifikasi | GET, POST |
+| `/settings` | Pengaturan | GET, POST |
+| `/settings/users` | Manajemen User | GET, POST, PUT, DELETE |
+| `/audit-logs` | Audit Log | GET |
+| `/lang/{locale}` | Ganti Bahasa | GET |
 
 ---
 
 ## 🚀 Instalasi & Setup
 
-### Prerequisites
+### Prasyarat
 
 - PHP 8.3+
 - Composer 2.x
-- Node.js 20+
-- MySQL 8.x (disarankan via XAMPP)
+- Node.js 20+ & npm
+- MySQL 8.x (disarankan via XAMPP atau Laravel Herd)
 - Git
 
-### Installation Steps
+### Langkah Instalasi
 
 ```bash
 # 1. Clone repository
 git clone https://github.com/your-repo/manerp.git
 cd manerp
 
-# 2. Install PHP dependencies
+# 2. Install dependensi PHP
 composer install
 
-# 3. Install JS dependencies
+# 3. Install dependensi JavaScript
 npm install
 
-# 4. Environment setup
+# 4. Konfigurasi environment
 cp .env.example .env
 php artisan key:generate
 
-# 5. Configure database in .env
+# 5. Konfigurasi database di .env
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
@@ -862,88 +956,94 @@ DB_DATABASE=manerp
 DB_USERNAME=root
 DB_PASSWORD=
 
-# 6. Run migrations & seeder
+# 6. Jalankan migrasi & seeder
 php artisan migrate
 php artisan db:seed
 
-# 7. Build frontend assets
+# 7. Build aset frontend
 npm run build
 
-# 8. Start development server
+# 8. Jalankan server (mode dev)
 php artisan serve
+# atau dengan hot-reload:
+# Terminal 1: php artisan serve
+# Terminal 2: npm run dev
 ```
 
-### Default Login
+### Login Default
 
-- **Email:** admin@manerp.com
-- **Password:** password
+| Role | Email | Password |
+|---|---|---|
+| Admin | admin@manerp.com | password |
+| Staff | staff@manerp.com | password |
 
----
-
-## 🗂️ Ringkasan Route (145 Routes)
-
-
-| Prefix                      | Modul               | Metode                 |
-| --------------------------- | ------------------- | ---------------------- |
-| `/dashboard`                | Dashboard           | GET                    |
-| `/clients`                  | CRM – Clients      | GET, POST, PUT, DELETE |
-| `/projects`                 | Projects            | GET, POST, PUT, DELETE |
-| `/warehouses`               | Gudang              | GET, POST, PUT, DELETE |
-| `/suppliers`                | Pemasok             | GET, POST, PUT, DELETE |
-| `/inventory/categories`     | Kategori Produk     | GET, POST, PUT, DELETE |
-| `/inventory/products`       | Produk              | GET, POST, PUT, DELETE |
-| `/inventory/stocks`         | Level Stok          | GET                    |
-| `/inventory/movements`      | Pergerakan Stok     | GET, POST              |
-| `/inventory/transfers`      | Transfer Stok       | GET, POST, DELETE      |
-| `/manufacturing/boms`       | Bill of Materials   | GET, POST, PUT, DELETE |
-| `/manufacturing/orders`     | Work Orders         | GET, POST, PUT, DELETE |
-| `/sales`                    | Sales Orders        | GET, POST, PUT, DELETE |
-| `/purchasing`               | Purchase Orders     | GET, POST, PUT, DELETE |
-| `/finance/invoices`         | Invoice             | GET, POST              |
-| `/finance/payments`         | Pembayaran          | POST                   |
-| `/accounting/coa`           | Chart of Accounts   | GET, POST, PUT, DELETE |
-| `/accounting/journals`      | Journal Entries     | GET, POST              |
-| `/accounting/ledger`        | General Ledger      | GET                    |
-| `/accounting/trial-balance` | Trial Balance       | GET                    |
-| `/accounting/balance-sheet` | Balance Sheet       | GET                    |
-| `/accounting/profit-loss`   | Profit & Loss       | GET                    |
-| `/reports`                  | Laporan Operasional | GET                    |
-| `/notifications`            | Notifikasi          | GET, POST              |
-| `/settings`                 | Pengaturan Aplikasi | GET, POST              |
-| `/settings/users`           | Manajemen User      | GET, POST, PUT, DELETE |
-| `/audit-logs`               | Audit Log           | GET                    |
+> ⚠️ **Ganti password default segera setelah instalasi pertama!**
 
 ---
 
-## 📝 Catatan untuk Reviewer
+## 🏗️ Struktur Direktori
 
-### Status Implementasi Terkini:
-
-1. **Akuntansi** — Sistem ini memiliki modul akuntansi berentri ganda lengkap: CoA, Jurnal, Ledger, Trial Balance, Balance Sheet, dan Profit & Loss.
-2. **Invoice** — Invoice dibuat otomatis dari Sales Order. Mendukung pembatalan invoice.
-3. **Payment** — Pembayaran dari customer dicatat dan otomatis mengupdate status invoice serta membuat jurnal akuntansi.
-4. **Audit Log** — Seluruh aktivitas CRUD tercatat via `AuditLogService` dan dapat diakses admin.
-5. **Permissions** — Sistem permission granular per modul (view/create/edit/delete) dikelola via JSON column.
-6. **Testing** — Belum ada automated test, diperlukan manual testing.
-
-### Pertanyaan untuk Stakeholder:
-
-1. Apakah perlu integrasi dengan sistem akuntansi eksternal (e.g. Accurate, SAP)?
-2. Apakah perlu fitur multi-currency?
-3. Apakah perlu fitur multi-company/branch?
-4. Apakah proses approval workflow diperlukan (misal SO harus disetujui manager)?
-5. Bagaimana proses retur/refund di lapangan?
-6. Apakah ada kebutuhan mobile app atau REST API?
-7. Apakah laporan pajak (PPN/PPh) perlu diakomodasi?
+```
+manerp/
+├── app/
+│   ├── Http/
+│   │   ├── Controllers/        # 20+ controller modul
+│   │   ├── Middleware/         # Auth, Permission, Locale, dll.
+│   │   └── Requests/           # Form validation
+│   ├── Models/                 # 34 Eloquent models
+│   └── Services/               # Business logic services
+│       ├── StockService.php
+│       ├── FinanceService.php
+│       ├── AccountingService.php
+│       ├── ApprovalService.php
+│       ├── AuditLogService.php
+│       └── PDFService.php
+├── database/
+│   ├── migrations/             # 26 migration files
+│   └── seeders/                # Data awal (CoA, roles, dll.)
+├── lang/
+│   ├── en/                     # Terjemahan bahasa Inggris
+│   ├── id/                     # Terjemahan bahasa Indonesia
+│   └── zh/                     # Terjemahan bahasa Mandarin
+├── resources/
+│   └── views/                  # Blade templates per modul
+├── routes/
+│   └── web.php                 # 174 route definitions
+└── public/                     # Asset publik
+```
 
 ---
 
-## 📞 Kontak & Kontribusi
+## 📝 Catatan Teknis
 
-Untuk pertanyaan, saran, atau kontribusi, silakan buat issue di repository atau hubungi tim pengembang.
+### Service Layer
+Logika bisnis utama dipisahkan ke dalam Service Class, bukan di Controller, untuk menjaga *separation of concerns*:
+
+| Service | Tanggung Jawab |
+|---|---|
+| `StockService` | Semua operasi stok: in, out, transfer, validasi |
+| `FinanceService` | Invoice, payment, update status AR |
+| `AccountingService` | Jurnal double-entry otomatis, ledger, laporan keuangan |
+| `ApprovalService` | Workflow persetujuan: submit, approve, reject, cek kondisi |
+| `AuditLogService` | Pencatatan log aktivitas secara terpusat |
+| `PDFService` | Render template ke file PDF menggunakan DomPDF |
+
+### Keamanan
+- **CSRF Protection** — Semua form POST dilindungi CSRF token Laravel
+- **Auth Middleware** — Semua route memerlukan autentikasi
+- **Permission Middleware** — Akses per-tindakan diverifikasi via JSON permission
+- **Admin Middleware** — Route admin hanya bisa diakses role admin
+- **SQL Injection** — Menggunakan Eloquent / Query Builder dengan parameter binding
+- **Mass Assignment** — Model dilindungi dengan `$fillable`
 
 ---
 
-*Dokumentasi ini diperbarui: Juli 2025*
-*Versi Sistem: 1.2.0*
-*Total Routes: 145 | Total Modul: 13 | Total Tabel: 33+*
+## 📞 Kontribusi & Pengembangan
+
+Untuk laporan bug, permintaan fitur, atau kontribusi kode, silakan buat *issue* atau *pull request* di repository.
+
+---
+
+*📅 Dokumentasi diperbarui: 31 Maret 2026*
+*🔖 Versi: 2.0.0*
+*📊 Total Routes: 174 | Total Modul: 16 | Total Tabel: 43 | Total Model: 34*

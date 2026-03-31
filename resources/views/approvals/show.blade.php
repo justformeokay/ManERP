@@ -71,7 +71,7 @@
                     </div>
                     <div>
                         <dt class="text-sm text-gray-500">{{ __('common.amount') }}</dt>
-                        <dd class="mt-1 text-lg font-bold text-gray-900">Rp {{ number_format($approval->amount, 0, ',', '.') }}</dd>
+                        <dd class="mt-1 text-lg font-bold text-gray-900">{{ format_currency($approval->amount) }}</dd>
                     </div>
                     <div>
                         <dt class="text-sm text-gray-500">{{ __('approval.requested_by') }}</dt>

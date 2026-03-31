@@ -46,7 +46,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
         @include('components.stat-card', [
             'title' => 'Total Revenue',
-            'value' => number_format($summary->total ?? 0, 0),
+            'value' => format_currency($summary->total ?? 0),
             'iconBg' => 'bg-green-50 text-green-600',
             'icon' => '<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>',
         ])
@@ -58,7 +58,7 @@
         ])
         @include('components.stat-card', [
             'title' => 'Average Order Value',
-            'value' => number_format($summary->avg_total ?? 0, 0),
+            'value' => format_currency($summary->avg_total ?? 0),
             'iconBg' => 'bg-purple-50 text-purple-600',
             'icon' => '<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" /></svg>',
         ])
@@ -75,7 +75,7 @@
                     <div class="flex items-center justify-between">
                         <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 {{ $statusColors[$row->status] ?? '' }}">{{ ucfirst($row->status) }}</span>
                         <div class="text-right">
-                            <span class="text-sm font-semibold text-gray-900">{{ number_format($row->total ?? 0, 0) }}</span>
+                            <span class="text-sm font-semibold text-gray-900">{{ format_currency($row->total ?? 0) }}</span>
                             <span class="text-xs text-gray-400 ml-1">({{ $row->count }})</span>
                         </div>
                     </div>
@@ -119,7 +119,7 @@
                                     <p class="text-xs text-gray-500">{{ $p->sku }}</p>
                                 </td>
                                 <td class="px-6 py-3 text-right text-sm text-gray-700">{{ number_format($p->total_qty, 0) }}</td>
-                                <td class="px-6 py-3 text-right text-sm font-semibold text-gray-900">{{ number_format($p->total_revenue, 2) }}</td>
+                                <td class="px-6 py-3 text-right text-sm font-semibold text-gray-900">{{ format_currency($p->total_revenue) }}</td>
                             </tr>
                         @empty
                             <tr>
@@ -154,7 +154,7 @@
                                     @if($c->company)<p class="text-xs text-gray-500">{{ $c->company }}</p>@endif
                                 </td>
                                 <td class="px-6 py-3 text-right text-sm text-gray-700">{{ $c->order_count }}</td>
-                                <td class="px-6 py-3 text-right text-sm font-semibold text-gray-900">{{ number_format($c->total_revenue, 2) }}</td>
+                                <td class="px-6 py-3 text-right text-sm font-semibold text-gray-900">{{ format_currency($c->total_revenue) }}</td>
                             </tr>
                         @empty
                             <tr>

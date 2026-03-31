@@ -101,7 +101,7 @@
                                 @endif
                             </td>
                             <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-700">
-                                {{ $project->budget ? '$' . number_format($project->budget, 0) : '—' }}
+                                {{ $project->budget ? format_currency($project->budget) : '—' }}
                             </td>
                             <td class="whitespace-nowrap px-6 py-4 text-right text-sm space-x-1">
                                 <a href="{{ route('projects.show', $project) }}"

@@ -60,16 +60,16 @@
                 <dl class="space-y-3">
                     <div class="flex justify-between">
                         <dt class="text-sm text-gray-500">Total Debit</dt>
-                        <dd class="text-sm font-semibold text-gray-900">{{ number_format($journal->total_debit, 2) }}</dd>
+                        <dd class="text-sm font-semibold text-gray-900">{{ format_currency($journal->total_debit) }}</dd>
                     </div>
                     <div class="flex justify-between">
                         <dt class="text-sm text-gray-500">Total Credit</dt>
-                        <dd class="text-sm font-semibold text-gray-900">{{ number_format($journal->total_credit, 2) }}</dd>
+                        <dd class="text-sm font-semibold text-gray-900">{{ format_currency($journal->total_credit) }}</dd>
                     </div>
                     <div class="flex justify-between border-t border-gray-100 pt-3">
                         <dt class="text-sm font-semibold text-gray-900">Difference</dt>
                         <dd class="text-sm font-bold {{ $journal->is_balanced ? 'text-green-600' : 'text-red-600' }}">
-                            {{ number_format(abs($journal->total_debit - $journal->total_credit), 2) }}
+                            {{ format_currency(abs($journal->total_debit - $journal->total_credit)) }}
                         </dd>
                     </div>
                 </dl>
@@ -104,10 +104,10 @@
                                         </span>
                                     </td>
                                     <td class="whitespace-nowrap px-6 py-3 text-right text-sm {{ $item->debit > 0 ? 'font-semibold text-gray-900' : 'text-gray-400' }}">
-                                        {{ $item->debit > 0 ? number_format($item->debit, 2) : '—' }}
+                                        {{ $item->debit > 0 ? format_currency($item->debit) : '—' }}
                                     </td>
                                     <td class="whitespace-nowrap px-6 py-3 text-right text-sm {{ $item->credit > 0 ? 'font-semibold text-gray-900' : 'text-gray-400' }}">
-                                        {{ $item->credit > 0 ? number_format($item->credit, 2) : '—' }}
+                                        {{ $item->credit > 0 ? format_currency($item->credit) : '—' }}
                                     </td>
                                 </tr>
                             @endforeach
@@ -115,8 +115,8 @@
                         <tfoot class="bg-gray-50/50">
                             <tr>
                                 <td colspan="2" class="px-6 py-3 text-right text-sm font-semibold text-gray-900">Total</td>
-                                <td class="whitespace-nowrap px-6 py-3 text-right text-sm font-bold text-gray-900">{{ number_format($journal->total_debit, 2) }}</td>
-                                <td class="whitespace-nowrap px-6 py-3 text-right text-sm font-bold text-gray-900">{{ number_format($journal->total_credit, 2) }}</td>
+                                <td class="whitespace-nowrap px-6 py-3 text-right text-sm font-bold text-gray-900">{{ format_currency($journal->total_debit) }}</td>
+                                <td class="whitespace-nowrap px-6 py-3 text-right text-sm font-bold text-gray-900">{{ format_currency($journal->total_credit) }}</td>
                             </tr>
                         </tfoot>
                     </table>

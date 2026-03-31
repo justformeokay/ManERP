@@ -127,23 +127,23 @@
                 <dl class="space-y-3 text-sm">
                     <div class="flex justify-between">
                         <dt class="text-gray-500">Subtotal</dt>
-                        <dd class="font-medium text-gray-900">{{ number_format($order->subtotal, 2) }}</dd>
+                        <dd class="font-medium text-gray-900">{{ format_currency($order->subtotal) }}</dd>
                     </div>
                     @if($order->tax_amount > 0)
                         <div class="flex justify-between">
                             <dt class="text-gray-500">Tax</dt>
-                            <dd class="font-medium text-gray-900">+ {{ number_format($order->tax_amount, 2) }}</dd>
+                            <dd class="font-medium text-gray-900">+ {{ format_currency($order->tax_amount) }}</dd>
                         </div>
                     @endif
                     @if($order->discount > 0)
                         <div class="flex justify-between">
                             <dt class="text-gray-500">Discount</dt>
-                            <dd class="font-medium text-red-600">- {{ number_format($order->discount, 2) }}</dd>
+                            <dd class="font-medium text-red-600">- {{ format_currency($order->discount) }}</dd>
                         </div>
                     @endif
                     <div class="flex justify-between border-t border-gray-100 pt-3">
                         <dt class="font-semibold text-gray-900">Grand Total</dt>
-                        <dd class="text-lg font-bold text-gray-900">{{ number_format($order->total, 2) }}</dd>
+                        <dd class="text-lg font-bold text-gray-900">{{ format_currency($order->total) }}</dd>
                     </div>
                 </dl>
             </div>
@@ -242,11 +242,11 @@
                                         {{ number_format($item->quantity, 0) }}
                                         <span class="text-gray-400">{{ $item->product->unit ?? '' }}</span>
                                     </td>
-                                    <td class="px-6 py-3 text-right text-sm text-gray-700">{{ number_format($item->unit_price, 2) }}</td>
+                                    <td class="px-6 py-3 text-right text-sm text-gray-700">{{ format_currency($item->unit_price) }}</td>
                                     <td class="px-6 py-3 text-right text-sm text-gray-500">
-                                        {{ $item->discount > 0 ? number_format($item->discount, 2) : '—' }}
+                                        {{ $item->discount > 0 ? format_currency($item->discount) : '—' }}
                                     </td>
-                                    <td class="px-6 py-3 text-right text-sm font-semibold text-gray-900">{{ number_format($item->total, 2) }}</td>
+                                    <td class="px-6 py-3 text-right text-sm font-semibold text-gray-900">{{ format_currency($item->total) }}</td>
                                     <td class="px-6 py-3 text-right">
                                         <span class="text-xs font-medium {{ $stock < $item->quantity ? 'text-red-600' : 'text-green-600' }}">
                                             {{ number_format($stock, 0) }}
