@@ -30,6 +30,8 @@ use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\PDFController;
 use App\Http\Controllers\ApprovalController;
+use App\Http\Controllers\QcParameterController;
+use App\Http\Controllers\QcInspectionController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -170,6 +172,31 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/orders/{order}', [ManufacturingOrderController::class, 'destroy'])->name('orders.destroy')->middleware('permission:manufacturing.delete');
         Route::post('orders/{order}/confirm', [ManufacturingOrderController::class, 'confirm'])->name('orders.confirm')->middleware('permission:manufacturing.edit');
         Route::post('orders/{order}/produce', [ManufacturingOrderController::class, 'produce'])->name('orders.produce')->middleware('permission:manufacturing.edit');
+    });
+
+    // Quality Control
+    Route::prefix('qc')->name('qc.')->group(function () {
+        // QC Parameters
+        Route::prefix('parameters')->name('parameters.')->group(function () {
+            Route::get('/', [QcParameterController::class, 'index'])->name('index')->middleware('permission:manufacturing.view');
+            Route::get('/create', [QcParameterController::class, 'create'])->name('create')->middleware('permission:manufacturing.create');
+            Route::post('/', [QcParameterController::class, 'store'])->name('store')->middleware('permission:manufacturing.create');
+            Route::get('/{parameter}/edit', [QcParameterController::class, 'edit'])->name('edit')->middleware('permission:manufacturing.edit');
+            Route::put('/{parameter}', [QcParameterController::class, 'update'])->name('update')->middleware('permission:manufacturing.edit');
+            Route::delete('/{parameter}', [QcParameterController::class, 'destroy'])->name('destroy')->middleware('permission:manufacturing.delete');
+        });
+
+        // QC Inspections
+        Route::prefix('inspections')->name('inspections.')->group(function () {
+            Route::get('/', [QcInspectionController::class, 'index'])->name('index')->middleware('permission:manufacturing.view');
+            Route::get('/create', [QcInspectionController::class, 'create'])->name('create')->middleware('permission:manufacturing.create');
+            Route::post('/', [QcInspectionController::class, 'store'])->name('store')->middleware('permission:manufacturing.create');
+            Route::get('/{inspection}', [QcInspectionController::class, 'show'])->name('show')->middleware('permission:manufacturing.view');
+            Route::get('/{inspection}/edit', [QcInspectionController::class, 'edit'])->name('edit')->middleware('permission:manufacturing.edit');
+            Route::put('/{inspection}', [QcInspectionController::class, 'update'])->name('update')->middleware('permission:manufacturing.edit');
+            Route::post('/{inspection}/record-results', [QcInspectionController::class, 'recordResults'])->name('record-results')->middleware('permission:manufacturing.edit');
+            Route::delete('/{inspection}', [QcInspectionController::class, 'destroy'])->name('destroy')->middleware('permission:manufacturing.delete');
+        });
     });
 
     // Sales
