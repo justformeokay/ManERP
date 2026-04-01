@@ -3,9 +3,9 @@
 @section('title', $bom->name)
 
 @section('breadcrumbs')
-    <a href="{{ route('dashboard') }}" class="hover:text-gray-700">Dashboard</a>
+    <a href="{{ route('dashboard') }}" class="hover:text-gray-700">{{ __('messages.dashboard') }}</a>
     <span class="mx-1">/</span>
-    <a href="{{ route('manufacturing.boms.index') }}" class="hover:text-gray-700">Bill of Materials</a>
+    <a href="{{ route('manufacturing.boms.index') }}" class="hover:text-gray-700">{{ __('messages.bill_of_materials_title') }}</a>
     <span class="mx-1">/</span>
     <span class="text-gray-900 font-medium">{{ $bom->name }}</span>
 @endsection
@@ -14,11 +14,11 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
             <h1 class="text-2xl font-bold text-gray-900">{{ $bom->name }}</h1>
-            <p class="mt-1 text-sm text-gray-500">BOM details and material requirements.</p>
+            <p class="mt-1 text-sm text-gray-500">{{ __('messages.bom_details_subtitle') }}</p>
         </div>
         <div class="flex gap-2">
-            @include('components.button', ['label' => 'Edit', 'type' => 'secondary', 'href' => route('manufacturing.boms.edit', $bom)])
-            @include('components.button', ['label' => 'Back', 'type' => 'ghost', 'href' => route('manufacturing.boms.index')])
+            @include('components.button', ['label' => __('messages.edit_bom_btn'), 'type' => 'secondary', 'href' => route('manufacturing.boms.edit', $bom)])
+            @include('components.button', ['label' => __('messages.cancel'), 'type' => 'ghost', 'href' => route('manufacturing.boms.index')])
         </div>
     </div>
 @endsection
@@ -28,30 +28,30 @@
         {{-- BOM Info --}}
         <div class="lg:col-span-1 space-y-6">
             <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-                <h3 class="text-base font-semibold text-gray-900 mb-4">BOM Info</h3>
+                <h3 class="text-base font-semibold text-gray-900 mb-4">{{ __('messages.bom_info_section') }}</h3>
                 <dl class="space-y-3 text-sm">
                     <div>
-                        <dt class="text-gray-500">Output Product</dt>
+                        <dt class="text-gray-500">{{ __('messages.output_product_label_show') }}</dt>
                         <dd class="font-medium text-gray-900 mt-0.5">{{ $bom->product->name ?? '—' }}</dd>
                         <dd class="text-xs text-gray-400">{{ $bom->product->sku ?? '' }}</dd>
                     </div>
                     <div>
-                        <dt class="text-gray-500">Output Quantity</dt>
+                        <dt class="text-gray-500">{{ __('messages.output_quantity_label_show') }}</dt>
                         <dd class="font-medium text-gray-900 mt-0.5">{{ number_format($bom->output_quantity, 0) }} {{ $bom->product->unit ?? '' }}</dd>
                     </div>
                     <div>
-                        <dt class="text-gray-500">Status</dt>
+                        <dt class="text-gray-500">{{ __('messages.status_label_show') }}</dt>
                         <dd class="mt-0.5">
                             @if($bom->is_active)
-                                <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 bg-green-50 text-green-700 ring-green-600/20">Active</span>
+                                <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 bg-green-50 text-green-700 ring-green-600/20">{{ __('messages.bom_status_active') }}</span>
                             @else
-                                <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 bg-gray-100 text-gray-600 ring-gray-500/20">Inactive</span>
+                                <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 bg-gray-100 text-gray-600 ring-gray-500/20">{{ __('messages.bom_status_inactive') }}</span>
                             @endif
                         </dd>
                     </div>
                     @if($bom->description)
                         <div>
-                            <dt class="text-gray-500">Description</dt>
+                            <dt class="text-gray-500">{{ __('messages.bom_description_label') }}</dt>
                             <dd class="text-gray-700 mt-0.5">{{ $bom->description }}</dd>
                         </div>
                     @endif
@@ -63,17 +63,17 @@
         <div class="lg:col-span-2">
             <div class="rounded-2xl bg-white shadow-sm ring-1 ring-gray-100 overflow-hidden">
                 <div class="px-6 py-4 border-b border-gray-100">
-                    <h3 class="text-base font-semibold text-gray-900">Required Materials</h3>
-                    <p class="text-xs text-gray-500 mt-0.5">Per {{ number_format($bom->output_quantity, 0) }} {{ $bom->product->unit ?? 'unit' }} of output</p>
+                    <h3 class="text-base font-semibold text-gray-900">{{ __('messages.required_materials_section') }}</h3>
+                    <p class="text-xs text-gray-500 mt-0.5">{{ __('messages.per_output_text') }} {{ number_format($bom->output_quantity, 0) }} {{ $bom->product->unit ?? 'unit' }} {{ __('messages.of_output_text') }}</p>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-100">
                         <thead class="bg-gray-50/50">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">#</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Material</th>
-                                <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">Quantity</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Notes</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.item_number_header') }}</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.material_header') }}</th>
+                                <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.quantity_header') }}</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.notes_header') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-50">
@@ -102,7 +102,7 @@
                             @empty
                                 <tr>
                                     <td colspan="4" class="px-6 py-8 text-center text-sm text-gray-400">
-                                        No materials defined.
+                                        {{ __('messages.no_materials_defined') }}
                                     </td>
                                 </tr>
                             @endforelse

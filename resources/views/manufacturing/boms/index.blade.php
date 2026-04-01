@@ -1,21 +1,21 @@
 @extends('layouts.app')
 
-@section('title', 'Bill of Materials')
+@section('title', __('messages.bill_of_materials_title'))
 
 @section('breadcrumbs')
-    <a href="{{ route('dashboard') }}" class="hover:text-gray-700">Dashboard</a>
+    <a href="{{ route('dashboard') }}" class="hover:text-gray-700">{{ __('messages.dashboard') }}</a>
     <span class="mx-1">/</span>
-    <span class="text-gray-900 font-medium">Bill of Materials</span>
+    <span class="text-gray-900 font-medium">{{ __('messages.bill_of_materials_title') }}</span>
 @endsection
 
 @section('page-header')
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900">Bill of Materials</h1>
-            <p class="mt-1 text-sm text-gray-500">Define recipes and material requirements for production.</p>
+            <h1 class="text-2xl font-bold text-gray-900">{{ __('messages.bill_of_materials_title') }}</h1>
+            <p class="mt-1 text-sm text-gray-500">{{ __('messages.bill_of_materials_subtitle') }}</p>
         </div>
         @include('components.button', [
-            'label' => 'Create BOM',
+            'label' => __('messages.create_bom_btn'),
             'type' => 'primary',
             'href' => route('manufacturing.boms.create'),
             'icon' => '<svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>',
@@ -29,13 +29,13 @@
         <form method="GET" action="{{ route('manufacturing.boms.index') }}" class="flex flex-col sm:flex-row gap-3">
             <div class="flex-1">
                 <input type="search" name="search" value="{{ request('search') }}"
-                    placeholder="Search by name or product..."
+                    placeholder="{{ __('messages.search_bom_placeholder') }}"
                     class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 placeholder-gray-400 focus:border-primary-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary-500 transition" />
             </div>
             <div class="flex gap-2">
-                @include('components.button', ['label' => 'Search', 'type' => 'secondary', 'buttonType' => 'submit'])
+                @include('components.button', ['label' => __('messages.filter_btn'), 'type' => 'secondary', 'buttonType' => 'submit'])
                 @if(request()->hasAny(['search']))
-                    @include('components.button', ['label' => 'Clear', 'type' => 'ghost', 'href' => route('manufacturing.boms.index')])
+                    @include('components.button', ['label' => __('messages.clear_btn'), 'type' => 'ghost', 'href' => route('manufacturing.boms.index')])
                 @endif
             </div>
         </form>
@@ -47,12 +47,12 @@
             <table class="min-w-full divide-y divide-gray-100">
                 <thead class="bg-gray-50/50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">BOM Name</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Output Product</th>
-                        <th class="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">Output Qty</th>
-                        <th class="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">Materials</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Status</th>
-                        <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">Actions</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.bom_name_header') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.output_product_header') }}</th>
+                        <th class="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.output_qty_header') }}</th>
+                        <th class="px-6 py-3 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.materials_header') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.status_label_show') }}</th>
+                        <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.bom_actions_header') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50">
@@ -78,31 +78,31 @@
                                 {{ number_format($bom->output_quantity, 0) }}
                                 <span class="text-xs font-normal text-gray-400">{{ $bom->product->unit ?? '' }}</span>
                             </td>
-                            <td class="whitespace-nowrap px-6 py-4 text-center">
+                            <td class="whitespace-nowrap px-6 py-4">
                                 <span class="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-700">
-                                    {{ $bom->items_count ?? $bom->items->count() }} items
+                                    {{ $bom->items_count ?? $bom->items->count() }} {{ __('messages.bom_items_badge') }}
                                 </span>
                             </td>
                             <td class="whitespace-nowrap px-6 py-4">
                                 @if($bom->is_active)
-                                    <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 bg-green-50 text-green-700 ring-green-600/20">Active</span>
+                                    <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 bg-green-50 text-green-700 ring-green-600/20">{{ __('messages.bom_status_active') }}</span>
                                 @else
-                                    <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 bg-gray-100 text-gray-600 ring-gray-500/20">Inactive</span>
+                                    <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 bg-gray-100 text-gray-600 ring-gray-500/20">{{ __('messages.bom_status_inactive') }}</span>
                                 @endif
                             </td>
                             <td class="whitespace-nowrap px-6 py-4 text-right text-sm space-x-1">
                                 <a href="{{ route('manufacturing.boms.show', $bom) }}"
                                    class="inline-flex items-center rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 transition">
-                                    View
+                                    {{ __('messages.view_bom_btn') }}
                                 </a>
                                 <a href="{{ route('manufacturing.boms.edit', $bom) }}"
                                    class="inline-flex items-center rounded-lg px-2.5 py-1.5 text-xs font-medium text-primary-700 bg-primary-50 hover:bg-primary-100 transition">
-                                    Edit
+                                    {{ __('messages.edit_bom_btn') }}
                                 </a>
-                                <form method="POST" action="{{ route('manufacturing.boms.destroy', $bom) }}" class="inline" onsubmit="return confirm('Delete this BOM?')">
+                                <form method="POST" action="{{ route('manufacturing.boms.destroy', $bom) }}" class="inline" onsubmit="return confirm('{{ __('messages.delete_bom_confirm') }}')">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="inline-flex items-center rounded-lg px-2.5 py-1.5 text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 transition">
-                                        Delete
+                                        {{ __('messages.delete_bom_btn') }}
                                     </button>
                                 </form>
                             </td>
@@ -114,9 +114,9 @@
                                     <svg class="h-12 w-12 text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                                     </svg>
-                                    <p class="mt-2 text-sm text-gray-500">No bill of materials found.</p>
+                                    <p class="mt-2 text-sm text-gray-500">{{ __('messages.no_boms_found') }}</p>
                                     <a href="{{ route('manufacturing.boms.create') }}" class="mt-3 text-sm font-medium text-primary-600 hover:text-primary-700">
-                                        + Create your first BOM
+                                        {{ __('messages.create_first_bom') }}
                                     </a>
                                 </div>
                             </td>

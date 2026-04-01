@@ -1,21 +1,21 @@
 @extends('layouts.app')
 
-@section('title', 'Stock Transfers')
+@section('title', __('messages.stock_transfers_title'))
 
 @section('breadcrumbs')
-    <a href="{{ route('dashboard') }}" class="hover:text-gray-700">Dashboard</a>
+    <a href="{{ route('dashboard') }}" class="hover:text-gray-700">{{ __('messages.dashboard') }}</a>
     <span class="mx-1">/</span>
-    <span class="text-gray-900 font-medium">Stock Transfers</span>
+    <span class="text-gray-900 font-medium">{{ __('messages.stock_transfers_title') }}</span>
 @endsection
 
 @section('page-header')
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900">Stock Transfers</h1>
-            <p class="mt-1 text-sm text-gray-500">Transfer inventory between warehouses.</p>
+            <h1 class="text-2xl font-bold text-gray-900">{{ __('messages.stock_transfers_title') }}</h1>
+            <p class="mt-1 text-sm text-gray-500">{{ __('messages.stock_transfers_subtitle') }}</p>
         </div>
         @include('components.button', [
-            'label' => 'New Transfer',
+            'label' => __('messages.new_transfer'),
             'type' => 'primary',
             'href' => route('inventory.transfers.create'),
             'icon' => '<svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>',
@@ -29,19 +29,19 @@
         <form method="GET" action="{{ route('inventory.transfers.index') }}" class="flex flex-col sm:flex-row gap-3">
             <div class="flex-1">
                 <input type="search" name="search" value="{{ request('search') }}"
-                    placeholder="Search by transfer #, product, or warehouse..."
+                    placeholder="{{ __('messages.search_transfer_placeholder') }}"
                     class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 placeholder-gray-400 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 transition" />
             </div>
             <select name="status" class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
-                <option value="">All Status</option>
+                <option value="">{{ __('messages.all_status') }}</option>
                 @foreach(\App\Models\StockTransfer::statusOptions() as $s)
-                    <option value="{{ $s }}" @selected(request('status') === $s)>{{ ucfirst($s) }}</option>
+                    <option value="{{ $s }}" @selected(request('status') === $s)>{{ __('messages.status_' . $s) }}</option>
                 @endforeach
             </select>
             <div class="flex gap-2">
-                @include('components.button', ['label' => 'Filter', 'type' => 'secondary', 'buttonType' => 'submit'])
+                @include('components.button', ['label' => __('messages.filter_btn'), 'type' => 'secondary', 'buttonType' => 'submit'])
                 @if(request()->hasAny(['search', 'status']))
-                    @include('components.button', ['label' => 'Clear', 'type' => 'ghost', 'href' => route('inventory.transfers.index')])
+                    @include('components.button', ['label' => __('messages.clear_btn'), 'type' => 'ghost', 'href' => route('inventory.transfers.index')])
                 @endif
             </div>
         </form>
@@ -53,13 +53,13 @@
             <table class="min-w-full divide-y divide-gray-100">
                 <thead class="bg-gray-50/50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Transfer #</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Product</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">From → To</th>
-                        <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">Qty</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Date</th>
-                        <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">Actions</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.transfer_number_header') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.transfer_product_header') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.transfer_from_to_header') }}</th>
+                        <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.transfer_qty_header') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.transfer_status_header') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.transfer_date_header') }}</th>
+                        <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.transfer_actions_header') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50">
@@ -85,7 +85,7 @@
                             </td>
                             <td class="whitespace-nowrap px-6 py-4">
                                 <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 {{ $statusColors[$transfer->status] ?? '' }}">
-                                    {{ ucfirst($transfer->status) }}
+                                    {{ __('messages.status_' . $transfer->status) }}
                                 </span>
                             </td>
                             <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
@@ -94,25 +94,25 @@
                             <td class="whitespace-nowrap px-6 py-4 text-right text-sm space-x-1">
                                 @if($transfer->status === 'pending')
                                     <form method="POST" action="{{ route('inventory.transfers.execute', $transfer) }}" class="inline"
-                                          onsubmit="return confirm('Execute this transfer? Stock will be moved.')">
+                                          onsubmit="return confirm('{{ __('messages.execute_transfer_confirm') }}')">
                                         @csrf
                                         <button type="submit" class="inline-flex items-center rounded-lg px-2.5 py-1.5 text-xs font-medium text-green-700 bg-green-50 hover:bg-green-100 transition">
-                                            Execute
+                                            {{ __('messages.execute_transfer_label') }}
                                         </button>
                                     </form>
                                     <form method="POST" action="{{ route('inventory.transfers.destroy', $transfer) }}" class="inline"
-                                          onsubmit="return confirm('Delete this transfer?')">
+                                          onsubmit="return confirm('{{ __('messages.delete_transfer_confirm') }}')">
                                         @csrf @method('DELETE')
                                         <button type="submit" class="inline-flex items-center rounded-lg px-2.5 py-1.5 text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 transition">
-                                            Delete
+                                            {{ __('messages.delete_transfer_label') }}
                                         </button>
                                     </form>
                                 @elseif($transfer->status === 'completed')
                                     <form method="POST" action="{{ route('inventory.transfers.cancel', $transfer) }}" class="inline"
-                                          onsubmit="return confirm('Cancel this transfer? Stock movements will be reversed.')">
+                                          onsubmit="return confirm('{{ __('messages.reverse_transfer_confirm') }}')">
                                         @csrf
                                         <button type="submit" class="inline-flex items-center rounded-lg px-2.5 py-1.5 text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 transition">
-                                            Reverse
+                                            {{ __('messages.reverse_transfer_label') }}
                                         </button>
                                     </form>
                                 @else
@@ -127,9 +127,9 @@
                                     <svg class="h-12 w-12 text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                                     </svg>
-                                    <p class="mt-2 text-sm text-gray-500">No transfers found.</p>
+                                    <p class="mt-2 text-sm text-gray-500">{{ __('messages.no_transfers_found') }}</p>
                                     <a href="{{ route('inventory.transfers.create') }}" class="mt-3 text-sm font-medium text-blue-600 hover:text-blue-700">
-                                        + Create your first transfer
+                                        {{ __('messages.create_first_transfer') }}
                                     </a>
                                 </div>
                             </td>

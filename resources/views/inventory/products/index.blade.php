@@ -3,19 +3,19 @@
 @section('title', 'Products')
 
 @section('breadcrumbs')
-    <a href="{{ route('dashboard') }}" class="hover:text-gray-700">Dashboard</a>
+    <a href="{{ route('dashboard') }}" class="hover:text-gray-700">{{ __('messages.dashboard') }}</a>
     <span class="mx-1">/</span>
-    <span class="text-gray-900 font-medium">Products</span>
+    <span class="text-gray-900 font-medium">{{ __('messages.products') }}</span>
 @endsection
 
 @section('page-header')
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900">Products</h1>
-            <p class="mt-1 text-sm text-gray-500">Manage your product catalog and inventory items.</p>
+            <h1 class="text-2xl font-bold text-gray-900">{{ __('messages.products') }}</h1>
+            <p class="mt-1 text-sm text-gray-500">{{ __('messages.manage_stock') }}</p>
         </div>
         @include('components.button', [
-            'label' => 'Add Product',
+            'label' => __('messages.add_product'),
             'type' => 'primary',
             'href' => route('inventory.products.create'),
             'icon' => '<svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>',
@@ -29,25 +29,25 @@
         <form method="GET" action="{{ route('inventory.products.index') }}" class="flex flex-col sm:flex-row gap-3">
             <div class="flex-1">
                 <input type="search" name="search" value="{{ request('search') }}"
-                    placeholder="Search by name or SKU..."
+                    placeholder="{{ __('messages.search_by_name_or_sku') }}"
                     class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 placeholder-gray-400 focus:border-primary-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary-500 transition" />
             </div>
             <select name="category_id" class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
-                <option value="">All Categories</option>
+                <option value="">{{ __('messages.all_categories') }}</option>
                 @foreach($categories as $cat)
                     <option value="{{ $cat->id }}" @selected(request('category_id') == $cat->id)>{{ $cat->name }}</option>
                 @endforeach
             </select>
             <select name="type" class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
-                <option value="">All Types</option>
+                <option value="">{{ __('messages.all_types') }}</option>
                 @foreach(\App\Models\Product::typeOptions() as $type)
-                    <option value="{{ $type }}" @selected(request('type') === $type)>{{ ucwords(str_replace('_', ' ', $type)) }}</option>
+                    <option value="{{ $type }}" @selected(request('type') === $type)>{{ __('messages.' . str_replace('_', '_', $type)) ?? ucwords(str_replace('_', ' ', $type)) }}</option>
                 @endforeach
             </select>
             <div class="flex gap-2">
-                @include('components.button', ['label' => 'Filter', 'type' => 'secondary', 'buttonType' => 'submit'])
+                @include('components.button', ['label' => __('messages.filter_btn'), 'type' => 'secondary', 'buttonType' => 'submit'])
                 @if(request()->hasAny(['search', 'category_id', 'type']))
-                    @include('components.button', ['label' => 'Clear', 'type' => 'ghost', 'href' => route('inventory.products.index')])
+                    @include('components.button', ['label' => __('messages.clear_btn'), 'type' => 'ghost', 'href' => route('inventory.products.index')])
                 @endif
             </div>
         </form>
@@ -59,13 +59,13 @@
             <table class="min-w-full divide-y divide-gray-100">
                 <thead class="bg-gray-50/50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Product</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Category</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Type</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Unit</th>
-                        <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">Price</th>
-                        <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">Stock</th>
-                        <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">Actions</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.product_header') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.category_header') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.type_header') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.unit_header') }}</th>
+                        <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.price_header') }}</th>
+                        <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.stock_header') }}</th>
+                        <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.actions_header') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50">
@@ -108,7 +108,7 @@
                             </td>
                             <td class="whitespace-nowrap px-6 py-4 text-right text-sm text-gray-700">
                                 <p>{{ format_currency($product->sell_price) }}</p>
-                                <p class="text-xs text-gray-400">Cost: {{ format_currency($product->cost_price) }}</p>
+                                <p class="text-xs text-gray-400">{{ __('messages.cost_label') }}: {{ format_currency($product->cost_price) }}</p>
                             </td>
                             <td class="whitespace-nowrap px-6 py-4 text-right">
                                 <span class="inline-flex items-center gap-1 text-sm font-semibold {{ $lowStock ? 'text-red-600' : 'text-gray-900' }}">
@@ -118,18 +118,18 @@
                                     {{ number_format($totalStock, 0) }}
                                 </span>
                                 @if($product->min_stock > 0)
-                                    <p class="text-xs {{ $lowStock ? 'text-red-400' : 'text-gray-400' }}">Min: {{ $product->min_stock }}</p>
+                                    <p class="text-xs {{ $lowStock ? 'text-red-400' : 'text-gray-400' }}">{{ __('messages.min_label') }}: {{ $product->min_stock }}</p>
                                 @endif
                             </td>
                             <td class="whitespace-nowrap px-6 py-4 text-right text-sm space-x-1">
                                 <a href="{{ route('inventory.products.edit', $product) }}"
                                    class="inline-flex items-center rounded-lg px-2.5 py-1.5 text-xs font-medium text-primary-700 bg-primary-50 hover:bg-primary-100 transition">
-                                    Edit
+                                    {{ __('messages.edit_btn') }}
                                 </a>
-                                <form method="POST" action="{{ route('inventory.products.destroy', $product) }}" class="inline" onsubmit="return confirm('Delete product {{ $product->name }}?')">
+                                <form method="POST" action="{{ route('inventory.products.destroy', $product) }}" class="inline" onsubmit="return confirm('{{ __('messages.delete_product_confirm') }} {{ $product->name }}?')">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="inline-flex items-center rounded-lg px-2.5 py-1.5 text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 transition">
-                                        Delete
+                                        {{ __('messages.delete_btn') }}
                                     </button>
                                 </form>
                             </td>
@@ -141,9 +141,9 @@
                                     <svg class="h-12 w-12 text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                                     </svg>
-                                    <p class="mt-2 text-sm text-gray-500">No products found.</p>
+                                    <p class="mt-2 text-sm text-gray-500">{{ __('messages.no_products_found') }}</p>
                                     <a href="{{ route('inventory.products.create') }}" class="mt-3 text-sm font-medium text-primary-600 hover:text-primary-700">
-                                        + Add your first product
+                                        {{ __('messages.add_your_first_product') }}
                                     </a>
                                 </div>
                             </td>
