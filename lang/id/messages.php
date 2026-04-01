@@ -212,6 +212,10 @@ return [
     'stock_warning_message' => 'Peringatan: Beberapa item melebihi stok yang tersedia. Pesanan dapat disimpan sebagai draf tetapi tidak dapat dikonfirmasi.',
     'create_order' => 'Buat Pesanan',
     'update_order' => 'Perbarui Pesanan',
+    'manage_sales_orders' => 'Kelola pesanan penjualan dan lacak pengiriman.',
+    'search_order_or_client' => 'Cari berdasarkan nomor pesanan atau klien...',
+    'no_sales_orders_message' => 'Tidak ada pesanan penjualan yang ditemukan.',
+    'create_first_order_link' => 'Buat pesanan pertama Anda',
 
     /*
     |--------------------------------------------------------------------------
@@ -733,4 +737,7 @@ return [
     'actions_table_header' => 'Tindakan',
     'cancel_btn' => 'Batal',
     'create_btn' => 'Buat',
+    'client_header' => 'Klien',
+    'date_header' => 'Tanggal',
+    'total_header' => 'Total',
 ];

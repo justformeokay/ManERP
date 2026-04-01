@@ -212,6 +212,10 @@ return [
     'stock_warning_message' => '경고: 일부 항목이 사용 가능한 재고를 초과합니다. 주문은 초안으로 저장할 수 있지만 확인할 수 없습니다.',
     'create_order' => '주문 생성',
     'update_order' => '주문 업데이트',
+    'manage_sales_orders' => '판매 주문을 관리하고 배송을 추적하세요.',
+    'search_order_or_client' => '주문 번호 또는 고객으로 검색...',
+    'no_sales_orders_message' => '판매 주문을 찾을 수 없습니다.',
+    'create_first_order_link' => '첫 번째 주문 생성',
 
     /*
     |--------------------------------------------------------------------------
@@ -727,4 +731,7 @@ return [
     'actions_table_header' => '작업',
     'cancel_btn' => '취소',
     'create_btn' => '생성',
+    'client_header' => '고객',
+    'date_header' => '날짜',
+    'total_header' => '합계',
 ];

@@ -1,21 +1,21 @@
 @extends('layouts.app')
 
-@section('title', 'Sales Orders')
+@section('title', __('messages.sales_orders'))
 
 @section('breadcrumbs')
-    <a href="{{ route('dashboard') }}" class="hover:text-gray-700">Dashboard</a>
+    <a href="{{ route('dashboard') }}" class="hover:text-gray-700">{{ __('messages.dashboard') }}</a>
     <span class="mx-1">/</span>
-    <span class="text-gray-900 font-medium">Sales Orders</span>
+    <span class="text-gray-900 font-medium">{{ __('messages.sales_orders') }}</span>
 @endsection
 
 @section('page-header')
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900">Sales Orders</h1>
-            <p class="mt-1 text-sm text-gray-500">Manage sales orders and track deliveries.</p>
+            <h1 class="text-2xl font-bold text-gray-900">{{ __('messages.sales_orders') }}</h1>
+            <p class="mt-1 text-sm text-gray-500">{{ __('messages.manage_sales_orders') }}</p>
         </div>
         @include('components.button', [
-            'label' => 'New Order',
+            'label' => __('messages.new_btn'),
             'type' => 'primary',
             'href' => route('sales.create'),
             'icon' => '<svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>',
@@ -29,19 +29,19 @@
         <form method="GET" action="{{ route('sales.index') }}" class="flex flex-col sm:flex-row gap-3">
             <div class="flex-1">
                 <input type="search" name="search" value="{{ request('search') }}"
-                    placeholder="Search by order number or client..."
+                    placeholder="{{ __('messages.search_order_or_client') }}"
                     class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 placeholder-gray-400 focus:border-primary-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary-500 transition" />
             </div>
             <select name="status" class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
-                <option value="">All Status</option>
+                <option value="">{{ __('messages.all_status') }}</option>
                 @foreach(\App\Models\SalesOrder::statusOptions() as $s)
-                    <option value="{{ $s }}" @selected(request('status') === $s)>{{ ucfirst($s) }}</option>
+                    <option value="{{ $s }}" @selected(request('status') === $s)>{{ __('messages.sales_order_status_' . $s) }}</option>
                 @endforeach
             </select>
             <div class="flex gap-2">
-                @include('components.button', ['label' => 'Filter', 'type' => 'secondary', 'buttonType' => 'submit'])
+                @include('components.button', ['label' => __('messages.filter_btn'), 'type' => 'secondary', 'buttonType' => 'submit'])
                 @if(request()->hasAny(['search', 'status']))
-                    @include('components.button', ['label' => 'Clear', 'type' => 'ghost', 'href' => route('sales.index')])
+                    @include('components.button', ['label' => __('messages.clear_btn'), 'type' => 'ghost', 'href' => route('sales.index')])
                 @endif
             </div>
         </form>
@@ -53,12 +53,12 @@
             <table class="min-w-full divide-y divide-gray-100">
                 <thead class="bg-gray-50/50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Order #</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Client</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Date</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Status</th>
-                        <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">Total</th>
-                        <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">Actions</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.order_number_header') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.client_header') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.date_header') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.status_table_header') }}</th>
+                        <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.total_header') }}</th>
+                        <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.actions_table_header') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50">
@@ -79,7 +79,7 @@
                             </td>
                             <td class="whitespace-nowrap px-6 py-4">
                                 <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 {{ $statusColors[$order->status] ?? '' }}">
-                                    {{ ucfirst($order->status) }}
+                                    {{ __('messages.sales_order_status_' . $order->status) }}
                                 </span>
                             </td>
                             <td class="whitespace-nowrap px-6 py-4 text-right text-sm font-semibold text-gray-900">
@@ -88,27 +88,27 @@
                             <td class="whitespace-nowrap px-6 py-4 text-right text-sm space-x-1">
                                 <a href="{{ route('sales.show', $order) }}"
                                    class="inline-flex items-center rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 transition">
-                                    View
+                                    {{ __('messages.view_btn') }}
                                 </a>
                                 @if($order->status === 'draft')
                                     <a href="{{ route('sales.edit', $order) }}"
                                        class="inline-flex items-center rounded-lg px-2.5 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 transition">
-                                        Edit
+                                        {{ __('messages.edit_btn') }}
                                     </a>
                                     <form method="POST" action="{{ route('sales.confirm', $order) }}" class="inline"
-                                          onsubmit="return confirm('Confirm order {{ $order->number }}? Stock will be deducted.')">
+                                          onsubmit="return confirm('{{ __('messages.confirm_order_message', ['number' => $order->number]) }}')">
                                         @csrf
                                         <button type="submit" class="inline-flex items-center rounded-lg px-2.5 py-1.5 text-xs font-medium text-green-700 bg-green-50 hover:bg-green-100 transition">
-                                            Confirm
+                                            {{ __('messages.confirm_order_btn') }}
                                         </button>
                                     </form>
                                 @endif
                                 @if(!in_array($order->status, ['completed', 'cancelled', 'draft']))
                                     <form method="POST" action="{{ route('sales.cancel', $order) }}" class="inline"
-                                          onsubmit="return confirm('Cancel order {{ $order->number }}?')">
+                                          onsubmit="return confirm('{{ __('messages.cancel_order_message', ['number' => $order->number]) }}')">
                                         @csrf
                                         <button type="submit" class="inline-flex items-center rounded-lg px-2.5 py-1.5 text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 transition">
-                                            Cancel
+                                            {{ __('messages.cancel_btn') }}
                                         </button>
                                     </form>
                                 @endif
@@ -121,9 +121,9 @@
                                     <svg class="h-12 w-12 text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                                     </svg>
-                                    <p class="mt-2 text-sm text-gray-500">No sales orders found.</p>
+                                    <p class="mt-2 text-sm text-gray-500">{{ __('messages.no_sales_orders_found') }}</p>
                                     <a href="{{ route('sales.create') }}" class="mt-3 text-sm font-medium text-primary-600 hover:text-primary-700">
-                                        + Create your first order
+                                        {{ __('messages.create_first_sales_order') }}
                                     </a>
                                 </div>
                             </td>

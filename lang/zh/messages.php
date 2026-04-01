@@ -212,6 +212,10 @@ return [
     'stock_warning_message' => '警告：部分项目超出可用库存。订单可以保存为草稿，但不能确认。',
     'create_order' => '创建订单',
     'update_order' => '更新订单',
+    'manage_sales_orders' => '管理销售订单并追踪交货。',
+    'search_order_or_client' => '按订单号或客户搜索...',
+    'no_sales_orders_message' => '未找到销售订单。',
+    'create_first_order_link' => '创建您的第一个订单',
 
     /*
     |--------------------------------------------------------------------------
@@ -730,4 +734,7 @@ return [
     'actions_table_header' => '操作',
     'cancel_btn' => '取消',
     'create_btn' => '创建',
+    'client_header' => '客户',
+    'date_header' => '日期',
+    'total_header' => '总计',
 ];
