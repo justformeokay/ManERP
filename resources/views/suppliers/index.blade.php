@@ -3,19 +3,19 @@
 @section('title', 'Suppliers')
 
 @section('breadcrumbs')
-    <a href="{{ route('dashboard') }}" class="hover:text-gray-700">Dashboard</a>
+    <a href="{{ route('dashboard') }}" class="hover:text-gray-700">{{ __('messages.dashboard') }}</a>
     <span class="mx-1">/</span>
-    <span class="text-gray-900 font-medium">Suppliers</span>
+    <span class="text-gray-900 font-medium">{{ __('messages.suppliers_title') }}</span>
 @endsection
 
 @section('page-header')
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900">Suppliers</h1>
-            <p class="mt-1 text-sm text-gray-500">Manage your suppliers and vendor contacts.</p>
+            <h1 class="text-2xl font-bold text-gray-900">{{ __('messages.suppliers_title') }}</h1>
+            <p class="mt-1 text-sm text-gray-500">{{ __('messages.suppliers_subtitle') }}</p>
         </div>
         @include('components.button', [
-            'label' => 'Add Supplier',
+            'label' => __('messages.add_supplier_btn'),
             'type' => 'primary',
             'href' => route('suppliers.create'),
             'icon' => '<svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>',
@@ -29,18 +29,18 @@
         <form method="GET" action="{{ route('suppliers.index') }}" class="flex flex-col sm:flex-row gap-3">
             <div class="flex-1">
                 <input type="search" name="search" value="{{ request('search') }}"
-                    placeholder="Search by name, company, email, or code..."
+                    placeholder="{{ __('messages.search_supplier_placeholder') }}"
                     class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 placeholder-gray-400 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 transition" />
             </div>
             <select name="status" class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
-                <option value="">All Status</option>
-                <option value="active" @selected(request('status') === 'active')>Active</option>
-                <option value="inactive" @selected(request('status') === 'inactive')>Inactive</option>
+                <option value="">{{ __('messages.all_status') }}</option>
+                <option value="active" @selected(request('status') === 'active')>{{ __('messages.supplier_status_active') }}</option>
+                <option value="inactive" @selected(request('status') === 'inactive')>{{ __('messages.supplier_status_inactive') }}</option>
             </select>
             <div class="flex gap-2">
-                @include('components.button', ['label' => 'Filter', 'type' => 'secondary', 'buttonType' => 'submit'])
+                @include('components.button', ['label' => __('messages.filter_btn'), 'type' => 'secondary', 'buttonType' => 'submit'])
                 @if(request()->hasAny(['search', 'status']))
-                    @include('components.button', ['label' => 'Clear', 'type' => 'ghost', 'href' => route('suppliers.index')])
+                    @include('components.button', ['label' => __('messages.clear_btn'), 'type' => 'ghost', 'href' => route('suppliers.index')])
                 @endif
             </div>
         </form>
@@ -52,12 +52,12 @@
             <table class="min-w-full divide-y divide-gray-100">
                 <thead class="bg-gray-50/50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Supplier</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Contact</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Location</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Created</th>
-                        <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">Actions</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.supplier_col_header') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.contact_col_header') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.location_col_header') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.status_table_header') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.created_col_header') }}</th>
+                        <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.actions_table_header') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50">
@@ -86,7 +86,7 @@
                                     {{ $supplier->status === 'active'
                                         ? 'bg-green-50 text-green-700 ring-green-600/20'
                                         : 'bg-gray-100 text-gray-600 ring-gray-500/20' }}">
-                                    {{ ucfirst($supplier->status) }}
+                                    {{ __('messages.supplier_status_' . $supplier->status) }}
                                 </span>
                             </td>
                             <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
@@ -95,13 +95,13 @@
                             <td class="whitespace-nowrap px-6 py-4 text-right text-sm space-x-1">
                                 <a href="{{ route('suppliers.edit', $supplier) }}"
                                    class="inline-flex items-center rounded-lg px-2.5 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 transition">
-                                    Edit
+                                    {{ __('messages.edit_btn') }}
                                 </a>
                                 <form method="POST" action="{{ route('suppliers.destroy', $supplier) }}" class="inline"
-                                      onsubmit="return confirm('Delete supplier {{ $supplier->name }}?')">
+                                      onsubmit="return confirm('{{ __('messages.delete_supplier_confirm') }} {{ $supplier->name }}?')">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="inline-flex items-center rounded-lg px-2.5 py-1.5 text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 transition">
-                                        Delete
+                                        {{ __('messages.delete_btn') }}
                                     </button>
                                 </form>
                             </td>
@@ -113,9 +113,9 @@
                                     <svg class="h-12 w-12 text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                     </svg>
-                                    <p class="mt-2 text-sm text-gray-500">No suppliers found.</p>
+                                    <p class="mt-2 text-sm text-gray-500">{{ __('messages.no_suppliers_found') }}</p>
                                     <a href="{{ route('suppliers.create') }}" class="mt-3 text-sm font-medium text-blue-600 hover:text-blue-700">
-                                        + Add your first supplier
+                                        {{ __('messages.add_first_supplier') }}
                                     </a>
                                 </div>
                             </td>
