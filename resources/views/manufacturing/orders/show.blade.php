@@ -11,9 +11,9 @@
 @endphp
 
 @section('breadcrumbs')
-    <a href="{{ route('dashboard') }}" class="hover:text-gray-700">Dashboard</a>
+    <a href="{{ route('dashboard') }}" class="hover:text-gray-700">{{ __('messages.dashboard') }}</a>
     <span class="mx-1">/</span>
-    <a href="{{ route('manufacturing.orders.index') }}" class="hover:text-gray-700">Work Orders</a>
+    <a href="{{ route('manufacturing.orders.index') }}" class="hover:text-gray-700">{{ __('messages.work_orders') }}</a>
     <span class="mx-1">/</span>
     <span class="text-gray-900 font-medium">{{ $order->number }}</span>
 @endsection
@@ -28,14 +28,14 @@
             @if($order->status === 'draft')
                 <form method="POST" action="{{ route('manufacturing.orders.confirm', $order) }}" class="inline">
                     @csrf
-                    @include('components.button', ['label' => 'Confirm Order', 'type' => 'primary', 'buttonType' => 'submit'])
+                    @include('components.button', ['label' => __('messages.confirm_order_btn'), 'type' => 'primary', 'buttonType' => 'submit'])
                 </form>
             @endif
-            @include('components.button', ['label' => 'Edit', 'type' => 'secondary', 'href' => route('manufacturing.orders.edit', $order)])
+            @include('components.button', ['label' => __('messages.edit_order_btn'), 'type' => 'secondary', 'href' => route('manufacturing.orders.edit', $order)])
             <form method="POST" action="{{ route('manufacturing.orders.destroy', $order) }}" class="inline"
-                  onsubmit="return confirm('Delete this manufacturing order?')">
+                  onsubmit="return confirm('{{ __('messages.delete_order_confirm') }}')">
                 @csrf @method('DELETE')
-                @include('components.button', ['label' => 'Delete', 'type' => 'danger', 'buttonType' => 'submit'])
+                @include('components.button', ['label' => __('messages.delete_order_btn'), 'type' => 'danger', 'buttonType' => 'submit'])
             </form>
         </div>
     </div>
@@ -60,16 +60,16 @@
                     </svg>
                     <span class="absolute text-xl font-bold text-gray-900">{{ $progress }}%</span>
                 </div>
-                <p class="mt-3 text-sm text-gray-500">{{ number_format($order->produced_quantity, 0) }} of {{ number_format($order->planned_quantity, 0) }} produced</p>
-                <p class="text-xs text-gray-400 mt-0.5">{{ number_format($remaining, 0) }} remaining</p>
+                <p class="mt-3 text-sm text-gray-500">{{ number_format($order->produced_quantity, 0) }} {{ __('messages.produced_of_planned') }} {{ number_format($order->planned_quantity, 0) }}</p>
+                <p class="text-xs text-gray-400 mt-0.5">{{ number_format($remaining, 0) }} {{ __('messages.remaining_text') }}</p>
             </div>
 
             {{-- Details Card --}}
             <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-                <h3 class="text-sm font-semibold text-gray-900 mb-4">Order Details</h3>
+                <h3 class="text-sm font-semibold text-gray-900 mb-4">{{ __('messages.order_info_card') }}</h3>
                 <dl class="space-y-3 text-sm">
                     <div class="flex justify-between">
-                        <dt class="text-gray-500">Status</dt>
+                        <dt class="text-gray-500">{{ __('messages.status_header') }}</dt>
                         <dd>
                             <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 {{ $statusColors[$order->status] ?? '' }}">
                                 {{ ucwords(str_replace('_', ' ', $order->status)) }}
@@ -77,7 +77,7 @@
                         </dd>
                     </div>
                     <div class="flex justify-between">
-                        <dt class="text-gray-500">Priority</dt>
+                        <dt class="text-gray-500">{{ __('messages.priority_header') }}</dt>
                         <dd>
                             <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 {{ $priorityColors[$order->priority] ?? '' }}">
                                 {{ ucfirst($order->priority) }}
@@ -85,7 +85,7 @@
                         </dd>
                     </div>
                     <div class="flex justify-between">
-                        <dt class="text-gray-500">BOM</dt>
+                        <dt class="text-gray-500">{{ __('messages.bom_info_text') }}</dt>
                         <dd class="font-medium text-gray-900">
                             <a href="{{ route('manufacturing.boms.show', $order->bom) }}" class="text-primary-700 hover:text-primary-800">
                                 {{ $order->bom->name ?? '—' }}
@@ -93,12 +93,12 @@
                         </dd>
                     </div>
                     <div class="flex justify-between">
-                        <dt class="text-gray-500">Warehouse</dt>
+                        <dt class="text-gray-500">{{ __('messages.warehouse_text') }}</dt>
                         <dd class="font-medium text-gray-900">{{ $order->warehouse->name ?? '—' }}</dd>
                     </div>
                     @if($order->project)
                         <div class="flex justify-between">
-                            <dt class="text-gray-500">Project</dt>
+                            <dt class="text-gray-500">{{ __('messages.project_text') }}</dt>
                             <dd class="font-medium text-gray-900">{{ $order->project->name }}</dd>
                         </div>
                     @endif
@@ -107,24 +107,24 @@
 
             {{-- Schedule Card --}}
             <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-                <h3 class="text-sm font-semibold text-gray-900 mb-4">Schedule</h3>
+                <h3 class="text-sm font-semibold text-gray-900 mb-4">{{ __('messages.schedule_card') }}</h3>
                 <dl class="space-y-3 text-sm">
                     <div class="flex justify-between">
-                        <dt class="text-gray-500">Planned Start</dt>
+                        <dt class="text-gray-500">{{ __('messages.start_date_text') }}</dt>
                         <dd class="font-medium text-gray-900">{{ $order->planned_start?->format('M d, Y') ?? '—' }}</dd>
                     </div>
                     <div class="flex justify-between">
-                        <dt class="text-gray-500">Planned End</dt>
+                        <dt class="text-gray-500">{{ __('messages.due_date_text') }}</dt>
                         <dd class="font-medium text-gray-900">{{ $order->planned_end?->format('M d, Y') ?? '—' }}</dd>
                     </div>
                     <div class="flex justify-between">
-                        <dt class="text-gray-500">Actual Start</dt>
+                        <dt class="text-gray-500">{{ __('messages.start_date_text') }} ({{ __('messages.delivered_text') }})</dt>
                         <dd class="font-medium {{ $order->actual_start ? 'text-gray-900' : 'text-gray-400' }}">
-                            {{ $order->actual_start?->format('M d, Y') ?? 'Not started' }}
+                            {{ $order->actual_start?->format('M d, Y') ?? '—' }}
                         </dd>
                     </div>
                     <div class="flex justify-between">
-                        <dt class="text-gray-500">Actual End</dt>
+                        <dt class="text-gray-500">{{ __('messages.due_date_text') }} ({{ __('messages.delivered_text') }})</dt>
                         <dd class="font-medium {{ $order->actual_end ? 'text-gray-900' : 'text-gray-400' }}">
                             {{ $order->actual_end?->format('M d, Y') ?? '—' }}
                         </dd>
@@ -134,7 +134,7 @@
 
             @if($order->notes)
                 <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-                    <h3 class="text-sm font-semibold text-gray-900 mb-2">Notes</h3>
+                    <h3 class="text-sm font-semibold text-gray-900 mb-2">{{ __('messages.quality_notes_text') }}</h3>
                     <p class="text-sm text-gray-600 whitespace-pre-line">{{ $order->notes }}</p>
                 </div>
             @endif
@@ -146,7 +146,7 @@
             {{-- Produce Action --}}
             @if($canProduce)
                 <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-primary-100 border border-primary-100">
-                    <h3 class="text-base font-semibold text-gray-900 mb-3">Record Production</h3>
+                    <h3 class="text-base font-semibold text-gray-900 mb-3">{{ __('messages.produce_label', ['default' => 'Record Production']) }}</h3>
                     <form method="POST" action="{{ route('manufacturing.orders.produce', $order) }}" class="flex flex-col sm:flex-row items-end gap-3">
                         @csrf
                         <div class="flex-1 w-full">

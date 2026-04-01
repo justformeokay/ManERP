@@ -11,11 +11,11 @@
 @section('page-header')
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900">Manufacturing Orders</h1>
-            <p class="mt-1 text-sm text-gray-500">Track and manage production work orders.</p>
+            <h1 class="text-2xl font-bold text-gray-900">{{ __('messages.work_orders_title') }}</h1>
+            <p class="mt-1 text-sm text-gray-500">{{ __('messages.work_orders_subtitle') }}</p>
         </div>
         @include('components.button', [
-            'label' => 'New Order',
+            'label' => __('messages.new_order_btn'),
             'type' => 'primary',
             'href' => route('manufacturing.orders.create'),
             'icon' => '<svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>',
@@ -29,25 +29,25 @@
         <form method="GET" action="{{ route('manufacturing.orders.index') }}" class="flex flex-col sm:flex-row gap-3">
             <div class="flex-1">
                 <input type="search" name="search" value="{{ request('search') }}"
-                    placeholder="Search by order number or product..."
+                    placeholder="{{ __('messages.search_order_placeholder') }}"
                     class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 placeholder-gray-400 focus:border-primary-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary-500 transition" />
             </div>
             <select name="status" class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
-                <option value="">All Status</option>
+                <option value="">{{ __('messages.all_status_filter') }}</option>
                 @foreach(\App\Models\ManufacturingOrder::statusOptions() as $s)
                     <option value="{{ $s }}" @selected(request('status') === $s)>{{ ucwords(str_replace('_', ' ', $s)) }}</option>
                 @endforeach
             </select>
             <select name="priority" class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
-                <option value="">All Priority</option>
+                <option value="">{{ __('messages.all_priority_filter') }}</option>
                 @foreach(\App\Models\ManufacturingOrder::priorityOptions() as $p)
                     <option value="{{ $p }}" @selected(request('priority') === $p)>{{ ucfirst($p) }}</option>
                 @endforeach
             </select>
             <div class="flex gap-2">
-                @include('components.button', ['label' => 'Filter', 'type' => 'secondary', 'buttonType' => 'submit'])
+                @include('components.button', ['label' => __('messages.filter_btn'), 'type' => 'secondary', 'buttonType' => 'submit'])
                 @if(request()->hasAny(['search', 'status', 'priority']))
-                    @include('components.button', ['label' => 'Clear', 'type' => 'ghost', 'href' => route('manufacturing.orders.index')])
+                    @include('components.button', ['label' => __('messages.clear_btn'), 'type' => 'ghost', 'href' => route('manufacturing.orders.index')])
                 @endif
             </div>
         </form>
@@ -59,14 +59,14 @@
             <table class="min-w-full divide-y divide-gray-100">
                 <thead class="bg-gray-50/50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Order #</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Product</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">BOM</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Priority</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Progress</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Schedule</th>
-                        <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">Actions</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.order_header') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.product_header') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.bom_header') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.status_header') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.priority_header') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.progress_header') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.schedule_header') }}</th>
+                        <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.actions_header') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50">
@@ -121,11 +121,11 @@
                             <td class="whitespace-nowrap px-6 py-4 text-right text-sm space-x-1">
                                 <a href="{{ route('manufacturing.orders.show', $order) }}"
                                    class="inline-flex items-center rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 transition">
-                                    View
+                                    {{ __('messages.view_order_btn') }}
                                 </a>
                                 <a href="{{ route('manufacturing.orders.edit', $order) }}"
                                    class="inline-flex items-center rounded-lg px-2.5 py-1.5 text-xs font-medium text-primary-700 bg-primary-50 hover:bg-primary-100 transition">
-                                    Edit
+                                    {{ __('messages.edit_order_btn') }}
                                 </a>
                             </td>
                         </tr>
@@ -136,9 +136,9 @@
                                     <svg class="h-12 w-12 text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0" />
                                     </svg>
-                                    <p class="mt-2 text-sm text-gray-500">No manufacturing orders found.</p>
+                                    <p class="mt-2 text-sm text-gray-500">{{ __('messages.no_orders_found') }}</p>
                                     <a href="{{ route('manufacturing.orders.create') }}" class="mt-3 text-sm font-medium text-primary-600 hover:text-primary-700">
-                                        + Create your first order
+                                        + {{ __('messages.create_order_btn') }}
                                     </a>
                                 </div>
                             </td>
