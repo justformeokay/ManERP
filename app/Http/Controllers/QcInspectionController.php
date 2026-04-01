@@ -89,8 +89,9 @@ class QcInspectionController extends Controller
 
     public function edit(QcInspection $inspection)
     {
-        if ($inspection->status === 'completed') {
-            return back()->withErrors(['status' => __('messages.qc_cannot_edit_completed')]);
+        $check = $inspection->requireStatus(['draft', 'in_progress']);
+        if ($check !== true) {
+            return back()->withErrors(['status' => $check]);
         }
 
         $inspection->load('items');
@@ -105,8 +106,9 @@ class QcInspectionController extends Controller
 
     public function update(QcInspectionRequest $request, QcInspection $inspection)
     {
-        if ($inspection->status === 'completed') {
-            return back()->withErrors(['status' => __('messages.qc_cannot_edit_completed')]);
+        $check = $inspection->requireStatus(['draft', 'in_progress']);
+        if ($check !== true) {
+            return back()->withErrors(['status' => $check]);
         }
 
         $data = $request->validated();
@@ -185,8 +187,9 @@ class QcInspectionController extends Controller
 
     public function destroy(QcInspection $inspection)
     {
-        if ($inspection->status === 'completed') {
-            return back()->withErrors(['status' => __('messages.qc_cannot_delete_completed')]);
+        $check = $inspection->requireStatus(['draft', 'in_progress']);
+        if ($check !== true) {
+            return back()->withErrors(['status' => $check]);
         }
 
         $this->logDelete($inspection);

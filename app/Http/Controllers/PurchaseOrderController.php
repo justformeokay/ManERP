@@ -87,9 +87,9 @@ class PurchaseOrderController extends Controller
 
     public function edit(PurchaseOrder $order)
     {
-        if ($order->status !== 'draft') {
-            return redirect()->route('purchasing.show', $order)
-                ->with('error', 'Only draft orders can be edited.');
+        $check = $order->requireStatus('draft');
+        if ($check !== true) {
+            return redirect()->route('purchasing.show', $order)->with('error', $check);
         }
 
         $order->load('items');
@@ -105,9 +105,9 @@ class PurchaseOrderController extends Controller
 
     public function update(PurchaseOrderRequest $request, PurchaseOrder $order)
     {
-        if ($order->status !== 'draft') {
-            return redirect()->route('purchasing.show', $order)
-                ->with('error', 'Only draft orders can be edited.');
+        $check = $order->requireStatus('draft');
+        if ($check !== true) {
+            return redirect()->route('purchasing.show', $order)->with('error', $check);
         }
 
         $data = $request->validated();
@@ -146,12 +146,13 @@ class PurchaseOrderController extends Controller
      */
     public function confirm(PurchaseOrder $order)
     {
-        if ($order->status !== 'draft') {
-            return back()->with('error', 'Only draft orders can be confirmed.');
+        $check = $order->requireTransition('confirmed');
+        if ($check !== true) {
+            return back()->with('error', $check);
         }
 
         $oldData = $order->toArray();
-        $order->update(['status' => 'confirmed']);
+        $order->transitionToAndSave('confirmed');
         $this->logAction($order, 'confirm', "Purchase order {$order->number} confirmed", $oldData);
 
         return back()->with('success', 'Purchase order confirmed.');
@@ -162,8 +163,9 @@ class PurchaseOrderController extends Controller
      */
     public function receive(Request $request, PurchaseOrder $order)
     {
-        if (!in_array($order->status, ['confirmed', 'partial'])) {
-            return back()->with('error', 'Order must be confirmed before receiving.');
+        $check = $order->requireStatus(['confirmed', 'partial']);
+        if ($check !== true) {
+            return back()->with('error', $check);
         }
 
         $request->validate([
@@ -209,9 +211,7 @@ class PurchaseOrderController extends Controller
         $oldData = $order->toArray();
         $order->refresh()->load('items');
         $isFullyReceived = $order->isFullyReceived();
-        $order->update([
-            'status' => $isFullyReceived ? 'received' : 'partial',
-        ]);
+        $order->transitionToAndSave($isFullyReceived ? 'received' : 'partial');
         $this->logAction($order, 'receive', "Purchase order {$order->number} items received", $oldData);
 
         // Notify admin users when fully received
@@ -231,8 +231,9 @@ class PurchaseOrderController extends Controller
      */
     public function cancel(PurchaseOrder $order)
     {
-        if (in_array($order->status, ['received', 'cancelled'])) {
-            return back()->with('error', 'This order cannot be cancelled.');
+        $check = $order->requireTransition('cancelled');
+        if ($check !== true) {
+            return back()->with('error', $check);
         }
 
         // Reverse any partially received stock
@@ -253,7 +254,7 @@ class PurchaseOrderController extends Controller
         }
 
         $oldData = $order->toArray();
-        $order->update(['status' => 'cancelled']);
+        $order->transitionToAndSave('cancelled');
         $this->logAction($order, 'cancel', "Purchase order {$order->number} cancelled", $oldData);
 
         return back()->with('success', 'Purchase order cancelled.');
@@ -261,8 +262,9 @@ class PurchaseOrderController extends Controller
 
     public function destroy(PurchaseOrder $order)
     {
-        if ($order->status !== 'draft') {
-            return back()->with('error', 'Only draft orders can be deleted.');
+        $check = $order->requireStatus('draft');
+        if ($check !== true) {
+            return back()->with('error', $check);
         }
 
         $this->logDelete($order);

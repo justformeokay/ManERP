@@ -364,6 +364,13 @@ return [
     'system_preferences' => '시스템 환경설정',
     'default_currency' => '기본 통화',
     'timezone' => '시간대',
+    'business_defaults' => '비즈니스 기본값',
+    'business_defaults_desc' => '송장, 주문 및 재고에 사용되는 시스템 전체 기본값을 구성합니다.',
+    'default_payment_terms' => '기본 결제 조건',
+    'days' => '일',
+    'default_tax_rate' => '기본 세율',
+    'low_stock_threshold' => '저재고 알림 기준',
+    'items_per_page' => '페이지당 항목 수',
     'save_settings' => '설정 저장',
 
     /*

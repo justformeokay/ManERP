@@ -175,10 +175,21 @@
         </div>
     </form>
 
+    @php
+        $existingItems = $inspection->exists
+            ? $inspection->items->map(fn($i) => [
+                'qc_parameter_id' => $i->qc_parameter_id,
+                'min_value'       => $i->min_value,
+                'max_value'       => $i->max_value,
+              ])->values()->toArray()
+            : [];
+        $initialItems = old('items', $existingItems);
+    @endphp
+
     <script>
         function inspectionForm() {
             return {
-                items: @json(old('items', $inspection->exists ? $inspection->items->map(fn($i) => ['qc_parameter_id' => $i->qc_parameter_id, 'min_value' => $i->min_value, 'max_value' => $i->max_value]) : [])),
+                items: @json($initialItems),
                 addItem() {
                     this.items.push({ qc_parameter_id: '', min_value: '', max_value: '' });
                 },
@@ -186,7 +197,7 @@
                     this.items.splice(index, 1);
                 },
                 onParameterChange(index) {
-                    const select = document.querySelectorAll('[name="items[' + index + '][qc_parameter_id]"]')[0];
+                    const select = document.querySelector(`[name="items[${index}][qc_parameter_id]"]`);
                     if (!select) return;
                     const option = select.selectedOptions[0];
                     if (option) {

@@ -374,6 +374,13 @@ return [
     'system_preferences' => 'System Preferences',
     'default_currency' => 'Default Currency',
     'timezone' => 'Timezone',
+    'business_defaults' => 'Business Defaults',
+    'business_defaults_desc' => 'Configure default values used across the system for invoices, orders, and inventory.',
+    'default_payment_terms' => 'Default Payment Terms',
+    'days' => 'days',
+    'default_tax_rate' => 'Default Tax Rate',
+    'low_stock_threshold' => 'Low Stock Alert Threshold',
+    'items_per_page' => 'Items Per Page',
     'save_settings' => 'Save Settings',
 
     /*

@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\HasStateMachine;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class StockTransfer extends Model
 {
-    use HasFactory;
+    use HasFactory, HasStateMachine;
 
     protected $fillable = [
         'from_warehouse_id', 'to_warehouse_id', 'product_id',
@@ -82,6 +83,15 @@ class StockTransfer extends Model
             'pending'   => 'bg-amber-50 text-amber-700 ring-amber-600/20',
             'completed' => 'bg-green-50 text-green-700 ring-green-600/20',
             'cancelled' => 'bg-red-50 text-red-700 ring-red-600/20',
+        ];
+    }
+
+    public static function statusTransitions(): array
+    {
+        return [
+            'pending'   => ['completed', 'cancelled'],
+            'completed' => ['cancelled'],
+            'cancelled' => [],
         ];
     }
 }

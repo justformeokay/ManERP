@@ -93,12 +93,13 @@ class ManufacturingOrderController extends Controller
      */
     public function confirm(ManufacturingOrder $order)
     {
-        if ($order->status !== 'draft') {
-            return back()->withErrors(['status' => 'Only draft orders can be confirmed.']);
+        $check = $order->requireTransition('confirmed');
+        if ($check !== true) {
+            return back()->withErrors(['status' => $check]);
         }
 
         $oldData = $order->toArray();
-        $order->update(['status' => 'confirmed']);
+        $order->transitionToAndSave('confirmed');
         $this->logAction($order, 'confirm', "Manufacturing order {$order->number} confirmed", $oldData);
 
         return back()->with('success', 'Manufacturing order confirmed successfully.');
@@ -171,13 +172,13 @@ class ManufacturingOrderController extends Controller
 
         if (!$order->actual_start) {
             $order->actual_start = now();
-            if ($order->status === 'confirmed') {
-                $order->status = 'in_progress';
+            if ($order->canTransitionTo('in_progress')) {
+                $order->transitionTo('in_progress');
             }
         }
 
         if ($order->produced_quantity >= $order->planned_quantity) {
-            $order->status = 'done';
+            $order->transitionTo('done');
             $order->actual_end = now();
             
             // Notify admin users when manufacturing order is completed

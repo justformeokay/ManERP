@@ -369,6 +369,13 @@ return [
     'system_preferences' => 'Preferensi Sistem',
     'default_currency' => 'Mata Uang Default',
     'timezone' => 'Zona Waktu',
+    'business_defaults' => 'Pengaturan Bisnis Default',
+    'business_defaults_desc' => 'Konfigurasi nilai default yang digunakan di seluruh sistem untuk faktur, pesanan, dan inventaris.',
+    'default_payment_terms' => 'Syarat Pembayaran Default',
+    'days' => 'hari',
+    'default_tax_rate' => 'Tarif Pajak Default',
+    'low_stock_threshold' => 'Batas Peringatan Stok Rendah',
+    'items_per_page' => 'Item Per Halaman',
     'save_settings' => 'Simpan Pengaturan',
 
     /*

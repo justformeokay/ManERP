@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasStateMachine;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,7 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class QcInspection extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, HasStateMachine;
 
     protected $fillable = [
         'number', 'inspection_type', 'reference_type', 'reference_id',
@@ -99,6 +100,15 @@ class QcInspection extends Model
             'draft'       => 'bg-gray-100 text-gray-700 ring-gray-500/20',
             'in_progress' => 'bg-amber-50 text-amber-700 ring-amber-600/20',
             'completed'   => 'bg-green-50 text-green-700 ring-green-600/20',
+        ];
+    }
+
+    public static function statusTransitions(): array
+    {
+        return [
+            'draft'       => ['in_progress', 'completed'],
+            'in_progress' => ['completed'],
+            'completed'   => [],
         ];
     }
 

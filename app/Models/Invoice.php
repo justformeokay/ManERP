@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasStateMachine;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,7 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Invoice extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, HasStateMachine;
 
     protected $fillable = [
         'invoice_number', 'sales_order_id', 'client_id', 'invoice_date', 'due_date',
@@ -113,6 +114,17 @@ class Invoice extends Model
             'partial'   => 'bg-amber-50 text-amber-700 ring-amber-300',
             'paid'      => 'bg-green-50 text-green-700 ring-green-300',
             'cancelled' => 'bg-red-100 text-red-800 ring-red-400',
+        ];
+    }
+
+    public static function statusTransitions(): array
+    {
+        return [
+            'draft'     => ['unpaid', 'cancelled'],
+            'unpaid'    => ['partial', 'paid', 'cancelled'],
+            'partial'   => ['paid', 'cancelled'],
+            'paid'      => [],
+            'cancelled' => [],
         ];
     }
 

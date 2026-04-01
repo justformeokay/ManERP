@@ -82,8 +82,9 @@ class StockTransferController extends Controller
 
     public function execute(StockTransfer $transfer)
     {
-        if ($transfer->status !== 'pending') {
-            return back()->with('error', 'Only pending transfers can be executed.');
+        $check = $transfer->requireStatus('pending');
+        if ($check !== true) {
+            return back()->with('error', $check);
         }
 
         try {
@@ -98,8 +99,9 @@ class StockTransferController extends Controller
 
     public function cancel(StockTransfer $transfer)
     {
-        if ($transfer->status === 'cancelled') {
-            return back()->with('error', 'Transfer is already cancelled.');
+        $check = $transfer->requireTransition('cancelled');
+        if ($check !== true) {
+            return back()->with('error', $check);
         }
 
         try {
@@ -121,8 +123,9 @@ class StockTransferController extends Controller
 
     public function destroy(StockTransfer $transfer)
     {
-        if ($transfer->status !== 'pending') {
-            return back()->with('error', 'Only pending transfers can be deleted.');
+        $check = $transfer->requireStatus('pending');
+        if ($check !== true) {
+            return back()->with('error', $check);
         }
 
         $this->logDelete($transfer);

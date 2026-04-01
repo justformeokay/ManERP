@@ -16,6 +16,10 @@ class SettingsController extends Controller
             'company_address' => Setting::get('company_address', ''),
             'default_currency' => Setting::get('default_currency', 'USD'),
             'timezone' => Setting::get('timezone', 'UTC'),
+            'default_payment_terms' => Setting::get('default_payment_terms', '30'),
+            'default_tax_rate' => Setting::get('default_tax_rate', '11'),
+            'low_stock_threshold' => Setting::get('low_stock_threshold', '10'),
+            'items_per_page' => Setting::get('items_per_page', '15'),
         ];
 
         $currencies = [
@@ -46,6 +50,10 @@ class SettingsController extends Controller
             'company_address' => 'nullable|string|max:1000',
             'default_currency' => 'required|string|max:10',
             'timezone' => 'required|string|timezone',
+            'default_payment_terms' => 'required|integer|min:0|max:365',
+            'default_tax_rate' => 'required|numeric|min:0|max:100',
+            'low_stock_threshold' => 'required|integer|min:0',
+            'items_per_page' => 'required|integer|min:5|max:100',
         ]);
 
         Setting::setMany($validated);

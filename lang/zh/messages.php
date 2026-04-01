@@ -369,6 +369,13 @@ return [
     'system_preferences' => '系统偏好',
     'default_currency' => '默认货币',
     'timezone' => '时区',
+    'business_defaults' => '业务默认值',
+    'business_defaults_desc' => '配置系统中用于发票、订单和库存的默认值。',
+    'default_payment_terms' => '默认付款期限',
+    'days' => '天',
+    'default_tax_rate' => '默认税率',
+    'low_stock_threshold' => '低库存警告阈值',
+    'items_per_page' => '每页显示条数',
     'save_settings' => '保存设置',
 
     /*

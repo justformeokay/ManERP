@@ -91,9 +91,9 @@ class SalesOrderController extends Controller
 
     public function edit(SalesOrder $order)
     {
-        if ($order->status !== 'draft') {
-            return redirect()->route('sales.show', $order)
-                ->with('error', 'Only draft orders can be edited.');
+        $check = $order->requireStatus('draft');
+        if ($check !== true) {
+            return redirect()->route('sales.show', $order)->with('error', $check);
         }
 
         $order->load('items');
@@ -109,9 +109,9 @@ class SalesOrderController extends Controller
 
     public function update(SalesOrderRequest $request, SalesOrder $order)
     {
-        if ($order->status !== 'draft') {
-            return redirect()->route('sales.show', $order)
-                ->with('error', 'Only draft orders can be edited.');
+        $check = $order->requireStatus('draft');
+        if ($check !== true) {
+            return redirect()->route('sales.show', $order)->with('error', $check);
         }
 
         $data = $request->validated();
@@ -155,8 +155,9 @@ class SalesOrderController extends Controller
      */
     public function confirm(SalesOrder $order)
     {
-        if ($order->status !== 'draft') {
-            return back()->with('error', 'Only draft orders can be confirmed.');
+        $check = $order->requireTransition('confirmed');
+        if ($check !== true) {
+            return back()->with('error', $check);
         }
 
         $order->load('items.product');
@@ -188,7 +189,7 @@ class SalesOrderController extends Controller
         }
 
         $oldData = $order->toArray();
-        $order->update(['status' => 'confirmed']);
+        $order->transitionToAndSave('confirmed');
         $this->logAction($order, 'confirm', "Sales order {$order->number} confirmed", $oldData);
 
         // Notify admin users
@@ -206,12 +207,13 @@ class SalesOrderController extends Controller
      */
     public function deliver(SalesOrder $order)
     {
-        if (!in_array($order->status, ['confirmed', 'processing'])) {
-            return back()->with('error', 'Only confirmed or processing orders can be delivered.');
+        $check = $order->requireTransition('shipped');
+        if ($check !== true) {
+            return back()->with('error', $check);
         }
 
         $oldData = $order->toArray();
-        $order->update(['status' => 'shipped']);
+        $order->transitionToAndSave('shipped');
         $this->logAction($order, 'deliver', "Sales order {$order->number} delivered", $oldData);
 
         return back()->with('success', 'Order marked as shipped / delivered.');
@@ -222,7 +224,7 @@ class SalesOrderController extends Controller
      */
     public function invoice(SalesOrder $order)
     {
-        if (!in_array($order->status, ['confirmed', 'shipped'])) {
+        if (! $order->canTransitionTo('shipped') && ! in_array($order->status, ['confirmed', 'shipped'])) {
             return back()->with('error', 'Only confirmed or shipped orders can be invoiced.');
         }
 
@@ -239,8 +241,9 @@ class SalesOrderController extends Controller
      */
     public function cancel(SalesOrder $order)
     {
-        if (in_array($order->status, ['completed', 'cancelled'])) {
-            return back()->with('error', 'This order cannot be cancelled.');
+        $check = $order->requireTransition('cancelled');
+        if ($check !== true) {
+            return back()->with('error', $check);
         }
 
         $wasConfirmed = in_array($order->status, ['confirmed', 'processing', 'shipped']);
@@ -261,7 +264,7 @@ class SalesOrderController extends Controller
         }
 
         $oldData = $order->toArray();
-        $order->update(['status' => 'cancelled']);
+        $order->transitionToAndSave('cancelled');
         $this->logAction($order, 'cancel', "Sales order {$order->number} cancelled", $oldData);
 
         $msg = $wasConfirmed
@@ -273,8 +276,9 @@ class SalesOrderController extends Controller
 
     public function destroy(SalesOrder $order)
     {
-        if ($order->status !== 'draft') {
-            return back()->with('error', 'Only draft orders can be deleted.');
+        $check = $order->requireStatus('draft');
+        if ($check !== true) {
+            return back()->with('error', $check);
         }
 
         $this->logDelete($order);

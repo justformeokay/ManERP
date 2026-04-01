@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasStateMachine;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,7 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ManufacturingOrder extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, HasStateMachine;
 
     protected $fillable = [
         'number', 'bom_id', 'product_id', 'warehouse_id', 'project_id',
@@ -97,6 +98,17 @@ class ManufacturingOrder extends Model
             'in_progress' => 'bg-amber-50 text-amber-700 ring-amber-600/20',
             'done'        => 'bg-green-50 text-green-700 ring-green-600/20',
             'cancelled'   => 'bg-red-50 text-red-700 ring-red-600/20',
+        ];
+    }
+
+    public static function statusTransitions(): array
+    {
+        return [
+            'draft'       => ['confirmed', 'cancelled'],
+            'confirmed'   => ['in_progress', 'cancelled'],
+            'in_progress' => ['done', 'cancelled'],
+            'done'        => [],
+            'cancelled'   => [],
         ];
     }
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\PurchaseOrder;
+use App\Models\Setting;
 use App\Models\Supplier;
 use App\Models\SupplierBill;
 use App\Models\SupplierPayment;
@@ -60,9 +61,11 @@ class AccountsPayableController extends Controller
             ->latest()
             ->get();
 
+        $paymentTerms = (int) Setting::get('default_payment_terms', 30);
+
         $bill = new SupplierBill([
             'bill_date' => now()->format('Y-m-d'),
-            'due_date'  => now()->addDays(30)->format('Y-m-d'),
+            'due_date'  => now()->addDays($paymentTerms)->format('Y-m-d'),
         ]);
 
         // If creating from PO

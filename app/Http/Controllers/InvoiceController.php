@@ -80,12 +80,9 @@ class InvoiceController extends Controller
 
     public function cancel(Invoice $invoice)
     {
-        if ($invoice->status === 'cancelled') {
-            return back()->with('error', 'Invoice is already cancelled.');
-        }
-
-        if ($invoice->status === 'paid') {
-            return back()->with('error', 'Cannot cancel a fully paid invoice.');
+        $check = $invoice->requireTransition('cancelled');
+        if ($check !== true) {
+            return back()->with('error', $check);
         }
 
         $oldData = $invoice->toArray();
