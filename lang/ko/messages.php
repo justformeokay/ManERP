@@ -734,4 +734,30 @@ return [
     'client_header' => '고객',
     'date_header' => '날짜',
     'total_header' => '합계',
+    'po_status_draft' => '초안',
+    'po_status_confirmed' => '확인됨',
+    'po_status_partial' => '부분',
+    'po_status_received' => '수신됨',
+    'po_status_cancelled' => '취소됨',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Purchase Orders (Purchasing)
+    |--------------------------------------------------------------------------
+    */
+    'purchase_orders' => '구매 주문',
+    'manage_purchase_orders' => '구매 주문을 관리하고 재고를 수령하세요.',
+    'new_po_btn' => '새 PO',
+    'search_po_or_supplier' => 'PO 번호 또는 공급업체로 검색...',
+    'all_status_filter' => '모든 상태',
+    'po_number_header' => 'PO #',
+    'supplier_header' => '공급업체',
+    'warehouse_header' => '창고',
+    'no_purchase_orders_message' => '구매 주문이 없습니다.',
+    'create_first_po_link' => '첫 번째 구매 주문 생성',
+    'confirm_po_btn' => '확인',
+    'confirm_po_message' => 'PO 확인',
+    'receive_po_btn' => '수령',
+    'cancel_po_btn' => '취소',
+    'cancel_po_message' => 'PO 취소',
 ];

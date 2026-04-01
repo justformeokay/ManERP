@@ -743,4 +743,30 @@ return [
     'client_header' => 'Client',
     'date_header' => 'Date',
     'total_header' => 'Total',
+    'po_status_draft' => 'Draft',
+    'po_status_confirmed' => 'Confirmed',
+    'po_status_partial' => 'Partial',
+    'po_status_received' => 'Received',
+    'po_status_cancelled' => 'Cancelled',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Purchase Orders (Purchasing)
+    |--------------------------------------------------------------------------
+    */
+    'purchase_orders' => 'Purchase Orders',
+    'manage_purchase_orders' => 'Manage purchase orders and receive inventory.',
+    'new_po_btn' => 'New PO',
+    'search_po_or_supplier' => 'Search by PO number or supplier...',
+    'all_status_filter' => 'All Status',
+    'po_number_header' => 'PO #',
+    'supplier_header' => 'Supplier',
+    'warehouse_header' => 'Warehouse',
+    'no_purchase_orders_message' => 'No purchase orders found.',
+    'create_first_po_link' => 'Create your first purchase order',
+    'confirm_po_btn' => 'Confirm',
+    'confirm_po_message' => 'Confirm PO',
+    'receive_po_btn' => 'Receive',
+    'cancel_po_btn' => 'Cancel',
+    'cancel_po_message' => 'Cancel PO',
 ];

@@ -737,4 +737,30 @@ return [
     'client_header' => '客户',
     'date_header' => '日期',
     'total_header' => '总计',
+    'po_status_draft' => '草稿',
+    'po_status_confirmed' => '已确认',
+    'po_status_partial' => '部分',
+    'po_status_received' => '已收到',
+    'po_status_cancelled' => '已取消',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Purchase Orders (Purchasing)
+    |--------------------------------------------------------------------------
+    */
+    'purchase_orders' => '采购订单',
+    'manage_purchase_orders' => '管理采购订单并接收库存。',
+    'new_po_btn' => '新PO',
+    'search_po_or_supplier' => '按采购订单号或供应商搜索...',
+    'all_status_filter' => '所有状态',
+    'po_number_header' => 'PO #',
+    'supplier_header' => '供应商',
+    'warehouse_header' => '仓库',
+    'no_purchase_orders_message' => '未找到采购订单。',
+    'create_first_po_link' => '创建您的第一个采购订单',
+    'confirm_po_btn' => '确认',
+    'confirm_po_message' => '确认采购订单',
+    'receive_po_btn' => '接收',
+    'cancel_po_btn' => '取消',
+    'cancel_po_message' => '取消采购订单',
 ];

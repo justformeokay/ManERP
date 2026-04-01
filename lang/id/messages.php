@@ -740,4 +740,30 @@ return [
     'client_header' => 'Klien',
     'date_header' => 'Tanggal',
     'total_header' => 'Total',
+    'po_status_draft' => 'Draft',
+    'po_status_confirmed' => 'Dikonfirmasi',
+    'po_status_partial' => 'Sebagian',
+    'po_status_received' => 'Diterima',
+    'po_status_cancelled' => 'Dibatalkan',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Purchase Orders (Purchasing)
+    |--------------------------------------------------------------------------
+    */
+    'purchase_orders' => 'Pesanan Pembelian',
+    'manage_purchase_orders' => 'Kelola pesanan pembelian dan terima inventaris.',
+    'new_po_btn' => 'PO Baru',
+    'search_po_or_supplier' => 'Cari berdasarkan nomor PO atau pemasok...',
+    'all_status_filter' => 'Semua Status',
+    'po_number_header' => 'PO #',
+    'supplier_header' => 'Pemasok',
+    'warehouse_header' => 'Gudang',
+    'no_purchase_orders_message' => 'Tidak ada pesanan pembelian yang ditemukan.',
+    'create_first_po_link' => 'Buat pesanan pembelian pertama Anda',
+    'confirm_po_btn' => 'Konfirmasi',
+    'confirm_po_message' => 'Konfirmasi PO',
+    'receive_po_btn' => 'Terima',
+    'cancel_po_btn' => 'Batalkan',
+    'cancel_po_message' => 'Batalkan PO',
 ];
