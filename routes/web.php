@@ -36,6 +36,13 @@ use App\Http\Controllers\CostingController;
 use App\Http\Controllers\PurchaseRequestController;
 use App\Http\Controllers\TaxController;
 use App\Http\Controllers\FiscalPeriodController;
+use App\Http\Controllers\BankAccountController;
+use App\Http\Controllers\BankReconciliationController;
+use App\Http\Controllers\BudgetController;
+use App\Http\Controllers\FixedAssetController;
+use App\Http\Controllers\CreditNoteController;
+use App\Http\Controllers\DebitNoteController;
+use App\Http\Controllers\FinancialRatioController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -341,6 +348,61 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/profit-loss', [FinancialReportController::class, 'profitLoss'])->name('profit-loss')->middleware('permission:accounting.view');
         Route::get('/cash-flow', [FinancialReportController::class, 'cashFlow'])->name('cash-flow')->middleware('permission:accounting.view');
         Route::get('/ar-aging', [FinancialReportController::class, 'arAging'])->name('ar-aging')->middleware('permission:accounting.view');
+        Route::get('/financial-ratios', [FinancialRatioController::class, 'index'])->name('financial-ratios')->middleware('permission:accounting.view');
+
+        // Bank Accounts & Reconciliation
+        Route::prefix('bank')->name('bank.')->middleware('permission:accounting.view')->group(function () {
+            Route::get('/', [BankAccountController::class, 'index'])->name('index');
+            Route::get('/create', [BankAccountController::class, 'create'])->name('create')->middleware('permission:accounting.create');
+            Route::post('/', [BankAccountController::class, 'store'])->name('store')->middleware('permission:accounting.create');
+            Route::get('/{bankAccount}', [BankAccountController::class, 'show'])->name('show');
+            Route::get('/{bankAccount}/transactions', [BankAccountController::class, 'transactions'])->name('transactions');
+            Route::post('/{bankAccount}/transactions', [BankAccountController::class, 'storeTransaction'])->name('transactions.store')->middleware('permission:accounting.create');
+
+            Route::prefix('reconciliation')->name('reconciliation.')->group(function () {
+                Route::get('/', [BankReconciliationController::class, 'index'])->name('index');
+                Route::post('/', [BankReconciliationController::class, 'create'])->name('create')->middleware('permission:accounting.create');
+                Route::get('/{reconciliation}/edit', [BankReconciliationController::class, 'edit'])->name('edit');
+                Route::post('/{reconciliation}/toggle/{transaction}', [BankReconciliationController::class, 'toggleTransaction'])->name('toggle')->middleware('permission:accounting.edit');
+                Route::post('/{reconciliation}/complete', [BankReconciliationController::class, 'complete'])->name('complete')->middleware('permission:accounting.edit');
+            });
+        });
+
+        // Budgets
+        Route::prefix('budgets')->name('budgets.')->middleware('permission:accounting.view')->group(function () {
+            Route::get('/', [BudgetController::class, 'index'])->name('index');
+            Route::get('/create', [BudgetController::class, 'create'])->name('create')->middleware('permission:accounting.create');
+            Route::post('/', [BudgetController::class, 'store'])->name('store')->middleware('permission:accounting.create');
+            Route::get('/{budget}', [BudgetController::class, 'show'])->name('show');
+            Route::post('/{budget}/approve', [BudgetController::class, 'approve'])->name('approve')->middleware('permission:accounting.edit');
+            Route::delete('/{budget}', [BudgetController::class, 'destroy'])->name('destroy')->middleware('permission:accounting.delete');
+        });
+
+        // Fixed Assets
+        Route::prefix('assets')->name('assets.')->middleware('permission:accounting.view')->group(function () {
+            Route::get('/', [FixedAssetController::class, 'index'])->name('index');
+            Route::get('/create', [FixedAssetController::class, 'create'])->name('create')->middleware('permission:accounting.create');
+            Route::post('/', [FixedAssetController::class, 'store'])->name('store')->middleware('permission:accounting.create');
+            Route::get('/{asset}', [FixedAssetController::class, 'show'])->name('show');
+            Route::post('/run-depreciation', [FixedAssetController::class, 'runDepreciation'])->name('run-depreciation')->middleware('permission:accounting.edit');
+            Route::post('/{asset}/dispose', [FixedAssetController::class, 'dispose'])->name('dispose')->middleware('permission:accounting.edit');
+        });
+
+        // Credit Notes
+        Route::prefix('credit-notes')->name('credit-notes.')->middleware('permission:accounting.view')->group(function () {
+            Route::get('/', [CreditNoteController::class, 'index'])->name('index');
+            Route::get('/create', [CreditNoteController::class, 'create'])->name('create')->middleware('permission:accounting.create');
+            Route::post('/', [CreditNoteController::class, 'store'])->name('store')->middleware('permission:accounting.create');
+            Route::post('/{creditNote}/approve', [CreditNoteController::class, 'approve'])->name('approve')->middleware('permission:accounting.edit');
+        });
+
+        // Debit Notes
+        Route::prefix('debit-notes')->name('debit-notes.')->middleware('permission:accounting.view')->group(function () {
+            Route::get('/', [DebitNoteController::class, 'index'])->name('index');
+            Route::get('/create', [DebitNoteController::class, 'create'])->name('create')->middleware('permission:accounting.create');
+            Route::post('/', [DebitNoteController::class, 'store'])->name('store')->middleware('permission:accounting.create');
+            Route::post('/{debitNote}/approve', [DebitNoteController::class, 'approve'])->name('approve')->middleware('permission:accounting.edit');
+        });
     });
 
     // Reports
