@@ -14,7 +14,7 @@ class PurchaseOrder extends Model
     use HasFactory, SoftDeletes, HasStateMachine;
 
     protected $fillable = [
-        'supplier_id', 'warehouse_id', 'project_id', 'status',
+        'supplier_id', 'warehouse_id', 'project_id', 'purchase_request_id', 'status',
         'order_date', 'expected_date', 'subtotal', 'tax_amount',
         'total', 'notes', 'created_by',
     ];

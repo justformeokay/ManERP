@@ -9,6 +9,7 @@ use App\Models\Project;
 use App\Models\User;
 use App\Models\Warehouse;
 use App\Notifications\ManufacturingOrderCompletedNotification;
+use App\Services\CostingService;
 use App\Services\StockService;
 use App\Traits\Auditable;
 use Illuminate\Http\Request;
@@ -19,7 +20,10 @@ class ManufacturingOrderController extends Controller
 
     protected string $model = 'manufacturing';
 
-    public function __construct(private StockService $stockService) {}
+    public function __construct(
+        private StockService $stockService,
+        private CostingService $costingService,
+    ) {}
 
     public function index(Request $request)
     {
@@ -180,6 +184,9 @@ class ManufacturingOrderController extends Controller
         if ($order->produced_quantity >= $order->planned_quantity) {
             $order->transitionTo('done');
             $order->actual_end = now();
+
+            // Auto-calculate HPP (production cost)
+            $this->costingService->calculateProductionCost($order);
             
             // Notify admin users when manufacturing order is completed
             $order->load('product');

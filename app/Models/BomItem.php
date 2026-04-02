@@ -10,12 +10,17 @@ class BomItem extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['bom_id', 'product_id', 'quantity', 'notes'];
+    protected $fillable = [
+        'bom_id', 'product_id', 'sub_bom_id', 'quantity',
+        'unit_cost', 'line_cost', 'notes',
+    ];
 
     protected function casts(): array
     {
         return [
-            'quantity' => 'decimal:4',
+            'quantity'  => 'decimal:4',
+            'unit_cost' => 'decimal:2',
+            'line_cost' => 'decimal:2',
         ];
     }
 
@@ -28,5 +33,18 @@ class BomItem extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function subBom(): BelongsTo
+    {
+        return $this->belongsTo(BillOfMaterial::class, 'sub_bom_id');
+    }
+
+    /**
+     * Whether this item references a sub-assembly BOM.
+     */
+    public function isSubAssembly(): bool
+    {
+        return $this->sub_bom_id !== null;
     }
 }

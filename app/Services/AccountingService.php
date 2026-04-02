@@ -3,7 +3,10 @@
 namespace App\Services;
 
 use App\Models\ChartOfAccount;
+use App\Models\FiscalPeriod;
+use App\Models\Invoice;
 use App\Models\JournalEntry;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
@@ -295,5 +298,247 @@ class AccountingService
     public function resolveAccount(string $code): ?ChartOfAccount
     {
         return ChartOfAccount::where('code', $code)->first();
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // C: ACCOUNTS RECEIVABLE AGING
+    // ════════════════════════════════════════════════════════════════
+
+    /**
+     * Get AR aging report grouped by client.
+     */
+    public function getARAgingReport(?int $clientId = null): array
+    {
+        $query = Invoice::with('client')
+            ->whereIn('status', ['unpaid', 'partial'])
+            ->orderBy('due_date');
+
+        if ($clientId) {
+            $query->where('client_id', $clientId);
+        }
+
+        $invoices = $query->get();
+
+        $grouped = [];
+        $totals  = ['total' => 0, 'current' => 0, '1-30' => 0, '31-60' => 0, '61-90' => 0, '90+' => 0];
+
+        foreach ($invoices as $inv) {
+            $clientName = $inv->client->name ?? 'Unknown';
+            $outstanding = $inv->remaining_balance;
+            $daysOverdue = max(0, (int) now()->startOfDay()->diffInDays($inv->due_date, false) * -1);
+
+            if (!isset($grouped[$inv->client_id])) {
+                $grouped[$inv->client_id] = [
+                    'client_id'   => $inv->client_id,
+                    'client_name' => $clientName,
+                    'invoice_count' => 0,
+                    'current' => 0, '1-30' => 0, '31-60' => 0, '61-90' => 0, '90+' => 0, 'total' => 0,
+                ];
+            }
+
+            $bucket = 'current';
+            if ($daysOverdue > 90) $bucket = '90+';
+            elseif ($daysOverdue > 60) $bucket = '61-90';
+            elseif ($daysOverdue > 30) $bucket = '31-60';
+            elseif ($daysOverdue > 0) $bucket = '1-30';
+
+            $grouped[$inv->client_id][$bucket] += $outstanding;
+            $grouped[$inv->client_id]['total'] += $outstanding;
+            $grouped[$inv->client_id]['invoice_count']++;
+
+            $totals[$bucket] += $outstanding;
+            $totals['total'] += $outstanding;
+        }
+
+        // Round all values
+        foreach ($grouped as &$row) {
+            foreach (['current', '1-30', '31-60', '61-90', '90+', 'total'] as $k) {
+                $row[$k] = round($row[$k], 2);
+            }
+        }
+        foreach ($totals as &$v) {
+            $v = round($v, 2);
+        }
+
+        return [
+            'report'  => array_values($grouped),
+            'totals'  => $totals,
+        ];
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // D: FISCAL PERIOD / CLOSING
+    // ════════════════════════════════════════════════════════════════
+
+    /**
+     * Check if a journal date falls in a closed period.
+     */
+    public function isDateInClosedPeriod(string $date): bool
+    {
+        return FiscalPeriod::closed()
+            ->where('start_date', '<=', $date)
+            ->where('end_date', '>=', $date)
+            ->exists();
+    }
+
+    /**
+     * Close a fiscal period — creates a closing journal entry that
+     * transfers revenue and expense balances to retained earnings.
+     */
+    public function closePeriod(FiscalPeriod $period, ?string $notes = null): FiscalPeriod
+    {
+        if ($period->isClosed()) {
+            throw new InvalidArgumentException('This period is already closed.');
+        }
+
+        return DB::transaction(function () use ($period, $notes) {
+            // Get P&L for the period
+            $pl = $this->getProfitLoss(
+                $period->start_date->toDateString(),
+                $period->end_date->toDateString()
+            );
+
+            $closingEntries = [];
+
+            // Close revenue accounts (Debit revenue, Credit retained earnings)
+            foreach ($pl['revenue'] as $rev) {
+                if ($rev->balance > 0) {
+                    $closingEntries[] = [
+                        'account_id' => $rev->id,
+                        'debit'      => $rev->balance,
+                        'credit'     => 0,
+                    ];
+                }
+            }
+
+            // Close expense accounts (Credit expense, Debit retained earnings)
+            foreach ($pl['expenses'] as $exp) {
+                if ($exp->balance > 0) {
+                    $closingEntries[] = [
+                        'account_id' => $exp->id,
+                        'debit'      => 0,
+                        'credit'     => $exp->balance,
+                    ];
+                }
+            }
+
+            // Retained earnings account — net profit goes here
+            $retainedEarnings = ChartOfAccount::where('code', '3200')->first();
+
+            $closingJournal = null;
+            if (!empty($closingEntries) && $retainedEarnings) {
+                $netProfit = $pl['net_profit'];
+
+                if ($netProfit >= 0) {
+                    $closingEntries[] = [
+                        'account_id' => $retainedEarnings->id,
+                        'debit'      => 0,
+                        'credit'     => $netProfit,
+                    ];
+                } else {
+                    $closingEntries[] = [
+                        'account_id' => $retainedEarnings->id,
+                        'debit'      => abs($netProfit),
+                        'credit'     => 0,
+                    ];
+                }
+
+                $closingJournal = $this->createJournalEntry(
+                    'CLOSE-' . $period->end_date->format('Ym'),
+                    $period->end_date->toDateString(),
+                    "Closing entry for period: {$period->name}",
+                    $closingEntries
+                );
+
+                $closingJournal->update([
+                    'entry_type' => 'closing',
+                    'is_posted'  => true,
+                ]);
+            }
+
+            $period->update([
+                'status'             => 'closed',
+                'closed_by'          => Auth::id(),
+                'closed_at'          => now(),
+                'closing_notes'      => $notes,
+                'closing_journal_id' => $closingJournal?->id,
+            ]);
+
+            return $period->fresh();
+        });
+    }
+
+    /**
+     * Reopen a closed period (admin only).
+     */
+    public function reopenPeriod(FiscalPeriod $period): FiscalPeriod
+    {
+        if ($period->isOpen()) {
+            throw new InvalidArgumentException('This period is already open.');
+        }
+
+        $period->update([
+            'status'    => 'open',
+            'closed_by' => null,
+            'closed_at' => null,
+        ]);
+
+        return $period->fresh();
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // E: REVERSING / ADJUSTING JOURNAL ENTRIES
+    // ════════════════════════════════════════════════════════════════
+
+    /**
+     * Create a reversing entry for an existing journal.
+     */
+    public function createReversingEntry(JournalEntry $original, ?string $date = null): JournalEntry
+    {
+        $date ??= now()->toDateString();
+
+        $reversingItems = $original->items->map(fn($item) => [
+            'account_id' => $item->account_id,
+            'debit'      => (float) $item->credit,
+            'credit'     => (float) $item->debit,
+        ])->toArray();
+
+        $journal = $this->createJournalEntry(
+            'REV-' . $original->reference,
+            $date,
+            "Reversing: {$original->description}",
+            $reversingItems
+        );
+
+        $journal->update([
+            'entry_type'        => 'reversing',
+            'reversed_entry_id' => $original->id,
+            'is_posted'         => true,
+        ]);
+
+        return $journal;
+    }
+
+    /**
+     * Create an adjusting journal entry.
+     */
+    public function createAdjustingEntry(
+        string $date,
+        string $description,
+        array $entries
+    ): JournalEntry {
+        $ref = 'ADJ-' . now()->format('Ymd') . '-' . str_pad(
+            JournalEntry::where('entry_type', 'adjusting')->whereDate('date', $date)->count() + 1,
+            4, '0', STR_PAD_LEFT
+        );
+
+        $journal = $this->createJournalEntry($ref, $date, $description, $entries);
+
+        $journal->update([
+            'entry_type' => 'adjusting',
+            'is_posted'  => true,
+        ]);
+
+        return $journal;
     }
 }

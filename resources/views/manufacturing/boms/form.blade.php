@@ -30,6 +30,7 @@
             foreach ($bom->items as $item) {
                 $initialItems[] = [
                     'product_id' => $item->product_id,
+                    'sub_bom_id' => $item->sub_bom_id,
                     'quantity' => $item->quantity,
                     'notes' => $item->notes
                 ];
@@ -129,6 +130,16 @@
                                 class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition"
                                 placeholder="0">
                         </div>
+                        <div class="w-44">
+                            <label class="block text-xs font-medium text-gray-500 mb-1">{{ __('messages.sub_bom_label') }}</label>
+                            <select :name="`items[${index}][sub_bom_id]`" x-model="item.sub_bom_id"
+                                class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition">
+                                <option value="">{{ __('messages.none') }}</option>
+                                @foreach($bomList ?? [] as $b)
+                                    <option value="{{ $b->id }}">{{ $b->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                         <div class="flex-1 min-w-0">
                             <label class="block text-xs font-medium text-gray-500 mb-1">{{ __('messages.material_notes_label') }}</label>
                             <input type="text" :name="`items[${index}][notes]`" x-model="item.notes"
@@ -169,7 +180,7 @@
         return {
             items: @json(old('items', $initialItems)),
             addItem() {
-                this.items.push({ product_id: '', quantity: '', notes: '' });
+                this.items.push({ product_id: '', sub_bom_id: '', quantity: '', notes: '' });
             },
             removeItem(index) {
                 this.items.splice(index, 1);

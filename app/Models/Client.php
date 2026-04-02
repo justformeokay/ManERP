@@ -13,8 +13,16 @@ class Client extends Model
 
     protected $fillable = [
         'code', 'name', 'email', 'phone', 'company', 'tax_id',
+        'npwp', 'tax_address', 'is_pkp',
         'address', 'city', 'country', 'type', 'status', 'notes',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'is_pkp' => 'boolean',
+        ];
+    }
 
     // Relationships
     public function projects(): HasMany

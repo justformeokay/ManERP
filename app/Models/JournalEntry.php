@@ -8,7 +8,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class JournalEntry extends Model
 {
-    protected $fillable = ['reference', 'date', 'description', 'is_posted', 'created_by'];
+    protected $fillable = [
+        'reference', 'date', 'description', 'is_posted',
+        'entry_type', 'cash_flow_category', 'reversed_entry_id',
+        'created_by',
+    ];
 
     protected function casts(): array
     {
@@ -16,6 +20,21 @@ class JournalEntry extends Model
             'date' => 'date',
             'is_posted' => 'boolean',
         ];
+    }
+
+    public function reversedEntry(): BelongsTo
+    {
+        return $this->belongsTo(JournalEntry::class, 'reversed_entry_id');
+    }
+
+    public function reversingEntry(): HasMany
+    {
+        return $this->hasMany(JournalEntry::class, 'reversed_entry_id');
+    }
+
+    public static function entryTypeOptions(): array
+    {
+        return ['manual', 'auto', 'adjusting', 'closing', 'reversing'];
     }
 
     protected static function booted(): void

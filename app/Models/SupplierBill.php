@@ -20,6 +20,9 @@ class SupplierBill extends Model
         'subtotal',
         'tax_amount',
         'total',
+        'tax_rate',
+        'dpp',
+        'faktur_pajak_number',
         'paid_amount',
         'status',
         'notes',
@@ -34,6 +37,8 @@ class SupplierBill extends Model
             'due_date'    => 'date',
             'subtotal'    => 'decimal:2',
             'tax_amount'  => 'decimal:2',
+            'tax_rate'    => 'decimal:2',
+            'dpp'         => 'decimal:2',
             'total'       => 'decimal:2',
             'paid_amount' => 'decimal:2',
         ];

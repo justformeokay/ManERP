@@ -13,8 +13,16 @@ class Supplier extends Model
 
     protected $fillable = [
         'code', 'name', 'email', 'phone', 'company', 'tax_id',
+        'npwp', 'tax_address', 'is_pkp',
         'address', 'city', 'country', 'status', 'notes',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'is_pkp' => 'boolean',
+        ];
+    }
 
     // Relationships
     public function purchaseOrders(): HasMany

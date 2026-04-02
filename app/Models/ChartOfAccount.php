@@ -8,13 +8,24 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ChartOfAccount extends Model
 {
-    protected $fillable = ['code', 'name', 'type', 'parent_id', 'is_active'];
+    protected $fillable = ['code', 'name', 'type', 'parent_id', 'is_active', 'is_tax_account', 'tax_type'];
 
     protected function casts(): array
     {
         return [
             'is_active' => 'boolean',
+            'is_tax_account' => 'boolean',
         ];
+    }
+
+    public function scopeTax($query)
+    {
+        return $query->where('is_tax_account', true);
+    }
+
+    public static function taxTypeOptions(): array
+    {
+        return ['ppn_keluaran', 'ppn_masukan', 'pph21', 'pph23', 'pph25', 'pph29', 'pph4_2'];
     }
 
     // ── Relationships ───────────────────────────────────────────

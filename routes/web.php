@@ -32,6 +32,10 @@ use App\Http\Controllers\PDFController;
 use App\Http\Controllers\ApprovalController;
 use App\Http\Controllers\QcParameterController;
 use App\Http\Controllers\QcInspectionController;
+use App\Http\Controllers\CostingController;
+use App\Http\Controllers\PurchaseRequestController;
+use App\Http\Controllers\TaxController;
+use App\Http\Controllers\FiscalPeriodController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -161,7 +165,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/boms/{bom}/edit', [BomController::class, 'edit'])->name('boms.edit')->middleware('permission:manufacturing.edit');
         Route::put('/boms/{bom}', [BomController::class, 'update'])->name('boms.update')->middleware('permission:manufacturing.edit');
         Route::delete('/boms/{bom}', [BomController::class, 'destroy'])->name('boms.destroy')->middleware('permission:manufacturing.delete');
-        
+        Route::post('/boms/{bom}/new-version', [BomController::class, 'newVersion'])->name('boms.new-version')->middleware('permission:manufacturing.create');
         // Manufacturing Orders
         Route::get('/orders', [ManufacturingOrderController::class, 'index'])->name('orders.index')->middleware('permission:manufacturing.view');
         Route::get('/orders/create', [ManufacturingOrderController::class, 'create'])->name('orders.create')->middleware('permission:manufacturing.create');
@@ -172,6 +176,14 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/orders/{order}', [ManufacturingOrderController::class, 'destroy'])->name('orders.destroy')->middleware('permission:manufacturing.delete');
         Route::post('orders/{order}/confirm', [ManufacturingOrderController::class, 'confirm'])->name('orders.confirm')->middleware('permission:manufacturing.edit');
         Route::post('orders/{order}/produce', [ManufacturingOrderController::class, 'produce'])->name('orders.produce')->middleware('permission:manufacturing.edit');
+
+        // Costing / HPP
+        Route::get('/costing', [CostingController::class, 'index'])->name('costing.index')->middleware('permission:manufacturing.view');
+        Route::get('/costing/simulate', [CostingController::class, 'simulateForm'])->name('costing.simulate-form')->middleware('permission:manufacturing.view');
+        Route::post('/costing/simulate', [CostingController::class, 'simulate'])->name('costing.simulate')->middleware('permission:manufacturing.view');
+        Route::get('/costing/{order}', [CostingController::class, 'show'])->name('costing.show')->middleware('permission:manufacturing.view');
+        Route::post('/costing/{order}/recalculate', [CostingController::class, 'recalculate'])->name('costing.recalculate')->middleware('permission:manufacturing.edit');
+        Route::post('/costing/standard-cost/{product}', [CostingController::class, 'updateStandardCost'])->name('costing.update-standard-cost')->middleware('permission:manufacturing.edit');
     });
 
     // Quality Control
@@ -197,6 +209,22 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/{inspection}/record-results', [QcInspectionController::class, 'recordResults'])->name('record-results')->middleware('permission:manufacturing.edit');
             Route::delete('/{inspection}', [QcInspectionController::class, 'destroy'])->name('destroy')->middleware('permission:manufacturing.delete');
         });
+    });
+
+    // Purchase Requests
+    Route::prefix('purchase-requests')->name('purchase-requests.')->group(function () {
+        Route::get('/', [PurchaseRequestController::class, 'index'])->name('index')->middleware('permission:purchasing.view');
+        Route::get('/create', [PurchaseRequestController::class, 'create'])->name('create')->middleware('permission:purchasing.create');
+        Route::post('/', [PurchaseRequestController::class, 'store'])->name('store')->middleware('permission:purchasing.create');
+        Route::get('/{purchaseRequest}', [PurchaseRequestController::class, 'show'])->name('show')->middleware('permission:purchasing.view');
+        Route::get('/{purchaseRequest}/edit', [PurchaseRequestController::class, 'edit'])->name('edit')->middleware('permission:purchasing.edit');
+        Route::put('/{purchaseRequest}', [PurchaseRequestController::class, 'update'])->name('update')->middleware('permission:purchasing.edit');
+        Route::delete('/{purchaseRequest}', [PurchaseRequestController::class, 'destroy'])->name('destroy')->middleware('permission:purchasing.delete');
+        Route::post('/{purchaseRequest}/submit', [PurchaseRequestController::class, 'submit'])->name('submit')->middleware('permission:purchasing.edit');
+        Route::post('/{purchaseRequest}/approve', [PurchaseRequestController::class, 'approve'])->name('approve')->middleware('permission:purchasing.edit');
+        Route::post('/{purchaseRequest}/reject', [PurchaseRequestController::class, 'reject'])->name('reject')->middleware('permission:purchasing.edit');
+        Route::get('/{purchaseRequest}/convert', [PurchaseRequestController::class, 'convertToPo'])->name('convert')->middleware('permission:purchasing.create');
+        Route::post('/{purchaseRequest}/convert', [PurchaseRequestController::class, 'storeConversion'])->name('store-conversion')->middleware('permission:purchasing.create');
     });
 
     // Sales
@@ -280,13 +308,39 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/', [JournalEntryController::class, 'index'])->name('index')->middleware('permission:accounting.view');
             Route::get('/create', [JournalEntryController::class, 'create'])->name('create')->middleware('permission:accounting.create');
             Route::post('/', [JournalEntryController::class, 'store'])->name('store')->middleware('permission:accounting.create');
+            Route::get('/adjusting', [JournalEntryController::class, 'createAdjusting'])->name('adjusting')->middleware('permission:accounting.create');
+            Route::post('/adjusting', [JournalEntryController::class, 'storeAdjusting'])->name('store-adjusting')->middleware('permission:accounting.create');
+            Route::get('/templates', [JournalEntryController::class, 'templates'])->name('templates')->middleware('permission:accounting.view');
+            Route::get('/templates/create', [JournalEntryController::class, 'createTemplate'])->name('templates.create')->middleware('permission:accounting.create');
+            Route::post('/templates', [JournalEntryController::class, 'storeTemplate'])->name('templates.store')->middleware('permission:accounting.create');
+            Route::delete('/templates/{template}', [JournalEntryController::class, 'destroyTemplate'])->name('templates.destroy')->middleware('permission:accounting.delete');
             Route::get('/{journal}', [JournalEntryController::class, 'show'])->name('show')->middleware('permission:accounting.view');
+            Route::post('/{journal}/reverse', [JournalEntryController::class, 'reverse'])->name('reverse')->middleware('permission:accounting.create');
+        });
+
+        // Fiscal Periods (Closing)
+        Route::prefix('fiscal-periods')->name('fiscal-periods.')->group(function () {
+            Route::get('/', [FiscalPeriodController::class, 'index'])->name('index')->middleware('permission:accounting.view');
+            Route::get('/create', [FiscalPeriodController::class, 'create'])->name('create')->middleware('permission:accounting.create');
+            Route::post('/', [FiscalPeriodController::class, 'store'])->name('store')->middleware('permission:accounting.create');
+            Route::post('/generate-year', [FiscalPeriodController::class, 'generateYear'])->name('generate-year')->middleware('permission:accounting.create');
+            Route::post('/{period}/close', [FiscalPeriodController::class, 'close'])->name('close')->middleware('permission:accounting.edit');
+            Route::post('/{period}/reopen', [FiscalPeriodController::class, 'reopen'])->name('reopen')->middleware('permission:accounting.edit');
+        });
+
+        // Tax Management
+        Route::prefix('tax')->name('tax.')->middleware('permission:accounting.view')->group(function () {
+            Route::get('/spt-masa-ppn', [TaxController::class, 'sptMasaPPN'])->name('spt-masa-ppn');
+            Route::get('/annual', [TaxController::class, 'annualSummary'])->name('annual');
+            Route::get('/calculator', [TaxController::class, 'calculator'])->name('calculator');
         });
 
         Route::get('/ledger', [AccountingReportController::class, 'ledger'])->name('ledger')->middleware('permission:accounting.view');
         Route::get('/trial-balance', [AccountingReportController::class, 'trialBalance'])->name('trial-balance')->middleware('permission:accounting.view');
         Route::get('/balance-sheet', [FinancialReportController::class, 'balanceSheet'])->name('balance-sheet')->middleware('permission:accounting.view');
         Route::get('/profit-loss', [FinancialReportController::class, 'profitLoss'])->name('profit-loss')->middleware('permission:accounting.view');
+        Route::get('/cash-flow', [FinancialReportController::class, 'cashFlow'])->name('cash-flow')->middleware('permission:accounting.view');
+        Route::get('/ar-aging', [FinancialReportController::class, 'arAging'])->name('ar-aging')->middleware('permission:accounting.view');
     });
 
     // Reports

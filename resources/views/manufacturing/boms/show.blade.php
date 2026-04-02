@@ -14,9 +14,18 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
             <h1 class="text-2xl font-bold text-gray-900">{{ $bom->name }}</h1>
-            <p class="mt-1 text-sm text-gray-500">{{ __('messages.bom_details_subtitle') }}</p>
+            <p class="mt-1 text-sm text-gray-500">{{ __('messages.bom_details_subtitle') }}
+                @if($bom->version > 1) <span class="ml-1 inline-flex rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700 ring-1 ring-indigo-600/20">v{{ $bom->version }}</span> @endif
+                @if($maxDepth > 0) <span class="ml-1 inline-flex rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700 ring-1 ring-amber-600/20">{{ __('messages.bom_depth_label') }}: {{ $maxDepth }}</span> @endif
+            </p>
         </div>
         <div class="flex gap-2">
+            <form action="{{ route('manufacturing.boms.new-version', $bom) }}" method="POST" class="inline">
+                @csrf
+                <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-indigo-50 px-4 py-2.5 text-sm font-semibold text-indigo-700 hover:bg-indigo-100 transition">
+                    {{ __('messages.new_version_btn') }}
+                </button>
+            </form>
             @include('components.button', ['label' => __('messages.edit_bom_btn'), 'type' => 'secondary', 'href' => route('manufacturing.boms.edit', $bom)])
             @include('components.button', ['label' => __('messages.cancel'), 'type' => 'ghost', 'href' => route('manufacturing.boms.index')])
         </div>
@@ -55,8 +64,37 @@
                             <dd class="text-gray-700 mt-0.5">{{ $bom->description }}</dd>
                         </div>
                     @endif
+                    @if($bom->version > 1)
+                        <div>
+                            <dt class="text-gray-500">{{ __('messages.bom_version_label') }}</dt>
+                            <dd class="font-medium text-gray-900 mt-0.5">v{{ $bom->version }}</dd>
+                        </div>
+                    @endif
+                    @if($bom->parentBom)
+                        <div>
+                            <dt class="text-gray-500">{{ __('messages.parent_bom_label') }}</dt>
+                            <dd class="mt-0.5"><a href="{{ route('manufacturing.boms.show', $bom->parentBom) }}" class="text-primary-600 hover:underline text-sm font-medium">{{ $bom->parentBom->name }}</a></dd>
+                        </div>
+                    @endif
                 </dl>
             </div>
+
+            {{-- Cost Summary --}}
+            @if($costBreakdown)
+                <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+                    <h3 class="text-base font-semibold text-gray-900 mb-4">{{ __('messages.cost_summary') }}</h3>
+                    <dl class="space-y-3 text-sm">
+                        <div>
+                            <dt class="text-gray-500">{{ __('messages.total_material_cost') }}</dt>
+                            <dd class="font-semibold text-gray-900 mt-0.5">{{ format_currency($costBreakdown['material_cost'] ?? 0) }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-gray-500">{{ __('messages.cost_per_unit_label') }}</dt>
+                            <dd class="font-semibold text-lg text-primary-600 mt-0.5">{{ format_currency($costBreakdown['cost_per_unit'] ?? 0) }}</dd>
+                        </div>
+                    </dl>
+                </div>
+            @endif
         </div>
 
         {{-- Materials Table --}}
@@ -73,6 +111,8 @@
                                 <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.item_number_header') }}</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.material_header') }}</th>
                                 <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.quantity_header') }}</th>
+                                <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.unit_cost_label') }}</th>
+                                <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.line_cost_label') }}</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.notes_header') }}</th>
                             </tr>
                         </thead>
@@ -82,12 +122,15 @@
                                     <td class="px-6 py-3 text-sm text-gray-400">{{ $loop->iteration }}</td>
                                     <td class="px-6 py-3">
                                         <div class="flex items-center gap-3">
-                                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-700 font-semibold text-xs">
+                                            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg {{ $item->isSubAssembly() ? 'bg-indigo-50 text-indigo-700' : 'bg-amber-50 text-amber-700' }} font-semibold text-xs">
                                                 {{ strtoupper(substr($item->product->name ?? '?', 0, 2)) }}
                                             </div>
                                             <div>
                                                 <p class="text-sm font-medium text-gray-900">{{ $item->product->name ?? '—' }}</p>
                                                 <p class="text-xs text-gray-500">{{ $item->product->sku ?? '' }}</p>
+                                                @if($item->isSubAssembly())
+                                                    <a href="{{ route('manufacturing.boms.show', $item->sub_bom_id) }}" class="text-xs text-indigo-600 hover:underline">{{ __('messages.view_sub_bom') }} &rarr;</a>
+                                                @endif
                                             </div>
                                         </div>
                                     </td>
@@ -95,13 +138,13 @@
                                         {{ rtrim(rtrim(number_format($item->quantity, 4), '0'), '.') }}
                                         <span class="text-xs font-normal text-gray-400">{{ $item->product->unit ?? '' }}</span>
                                     </td>
-                                    <td class="px-6 py-3 text-sm text-gray-500">
-                                        {{ $item->notes ?? '—' }}
-                                    </td>
+                                    <td class="whitespace-nowrap px-6 py-3 text-right text-sm text-gray-600">{{ format_currency($item->unit_cost ?? 0) }}</td>
+                                    <td class="whitespace-nowrap px-6 py-3 text-right text-sm font-semibold text-gray-900">{{ format_currency($item->line_cost ?? 0) }}</td>
+                                    <td class="px-6 py-3 text-sm text-gray-500">{{ $item->notes ?? '—' }}</td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="px-6 py-8 text-center text-sm text-gray-400">
+                                    <td colspan="6" class="px-6 py-8 text-center text-sm text-gray-400">
                                         {{ __('messages.no_materials_defined') }}
                                     </td>
                                 </tr>
@@ -110,6 +153,46 @@
                     </table>
                 </div>
             </div>
+
+            {{-- Flattened Multi-level BOM --}}
+            @if($maxDepth > 0 && count($flattenedMaterials) > 0)
+                <div class="rounded-2xl bg-white shadow-sm ring-1 ring-gray-100 overflow-hidden mt-6">
+                    <div class="px-6 py-4 border-b border-gray-100">
+                        <h3 class="text-base font-semibold text-gray-900">{{ __('messages.flattened_bom_title') }}</h3>
+                        <p class="text-xs text-gray-500 mt-0.5">{{ __('messages.flattened_bom_subtitle') }}</p>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-100">
+                            <thead class="bg-gray-50/50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-500">{{ __('messages.bom_level') }}</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-gray-500">{{ __('messages.material_header') }}</th>
+                                    <th class="px-6 py-3 text-right text-xs font-semibold uppercase text-gray-500">{{ __('messages.total_qty_label') }}</th>
+                                    <th class="px-6 py-3 text-right text-xs font-semibold uppercase text-gray-500">{{ __('messages.unit_cost_label') }}</th>
+                                    <th class="px-6 py-3 text-right text-xs font-semibold uppercase text-gray-500">{{ __('messages.line_cost_label') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-50">
+                                @foreach($flattenedMaterials as $mat)
+                                    <tr class="hover:bg-gray-50/50">
+                                        <td class="px-6 py-3 text-sm">
+                                            <span class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium {{ ($mat['depth'] ?? 0) === 0 ? 'bg-blue-50 text-blue-700' : 'bg-gray-100 text-gray-600' }}">
+                                                L{{ $mat['depth'] ?? 0 }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-3 text-sm" style="padding-left: {{ 1.5 + ($mat['depth'] ?? 0) * 1.5 }}rem">
+                                            <span class="font-medium text-gray-900">{{ $mat['product_name'] ?? '—' }}</span>
+                                        </td>
+                                        <td class="px-6 py-3 text-right text-sm font-semibold text-gray-900">{{ number_format($mat['quantity'] ?? 0, 4) }}</td>
+                                        <td class="px-6 py-3 text-right text-sm text-gray-600">{{ format_currency($mat['unit_cost'] ?? 0) }}</td>
+                                        <td class="px-6 py-3 text-right text-sm font-semibold text-gray-900">{{ format_currency(($mat['quantity'] ?? 0) * ($mat['unit_cost'] ?? 0)) }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
 @endsection

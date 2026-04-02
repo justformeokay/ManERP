@@ -14,7 +14,8 @@ class Invoice extends Model
 
     protected $fillable = [
         'invoice_number', 'sales_order_id', 'client_id', 'invoice_date', 'due_date',
-        'subtotal', 'tax_amount', 'discount', 'total_amount', 'paid_amount',
+        'subtotal', 'tax_amount', 'tax_rate', 'dpp', 'faktur_pajak_number',
+        'discount', 'total_amount', 'paid_amount',
         'status', 'notes', 'created_by',
     ];
 
@@ -26,6 +27,8 @@ class Invoice extends Model
             'subtotal' => 'decimal:2',
             'tax_amount' => 'decimal:2',
             'discount' => 'decimal:2',
+            'tax_rate' => 'decimal:2',
+            'dpp' => 'decimal:2',
             'total_amount' => 'decimal:2',
             'paid_amount' => 'decimal:2',
         ];

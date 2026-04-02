@@ -14,16 +14,20 @@ class Product extends Model
 
     protected $fillable = [
         'sku', 'name', 'description', 'category_id', 'type',
-        'unit', 'cost_price', 'sell_price', 'min_stock', 'is_active',
+        'unit', 'cost_price', 'overhead_cost', 'labor_cost', 'standard_cost',
+        'sell_price', 'min_stock', 'is_active',
     ];
 
     protected function casts(): array
     {
         return [
-            'cost_price' => 'decimal:2',
-            'sell_price' => 'decimal:2',
-            'min_stock'  => 'integer',
-            'is_active'  => 'boolean',
+            'cost_price'    => 'decimal:2',
+            'overhead_cost' => 'decimal:2',
+            'labor_cost'    => 'decimal:2',
+            'standard_cost' => 'decimal:2',
+            'sell_price'    => 'decimal:2',
+            'min_stock'     => 'integer',
+            'is_active'     => 'boolean',
         ];
     }
 
