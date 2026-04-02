@@ -2,6 +2,14 @@
 
 @section('content')
 <div class="space-y-6">
+    {{-- Tab Navigation: Products & Categories --}}
+    <div class="border-b border-gray-200">
+        <nav class="-mb-px flex gap-6">
+            <a href="{{ route('inventory.products.index') }}" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 whitespace-nowrap border-b-2 py-3 px-1 text-sm font-medium transition">{{ __('messages.products') }}</a>
+            <a href="{{ route('inventory.categories.index') }}" class="border-primary-500 text-primary-600 whitespace-nowrap border-b-2 py-3 px-1 text-sm font-medium transition">{{ __('messages.categories') }}</a>
+        </nav>
+    </div>
+
     <!-- Header -->
     <div class="flex justify-between items-start">
         <div>

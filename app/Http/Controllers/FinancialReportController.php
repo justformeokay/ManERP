@@ -14,6 +14,11 @@ class FinancialReportController extends Controller
         private CashFlowService $cashFlowService,
     ) {}
 
+    public function index()
+    {
+        return view('accounting.reports.index');
+    }
+
     public function balanceSheet(Request $request)
     {
         $date = $request->input('date', now()->toDateString());

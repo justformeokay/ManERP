@@ -24,6 +24,14 @@
 @endsection
 
 @section('content')
+    {{-- Tab Navigation: Products & Categories --}}
+    <div class="mb-6 border-b border-gray-200">
+        <nav class="-mb-px flex gap-6">
+            <a href="{{ route('inventory.products.index') }}" class="border-primary-500 text-primary-600 whitespace-nowrap border-b-2 py-3 px-1 text-sm font-medium transition">{{ __('messages.products') }}</a>
+            <a href="{{ route('inventory.categories.index') }}" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 whitespace-nowrap border-b-2 py-3 px-1 text-sm font-medium transition">{{ __('messages.categories') }}</a>
+        </nav>
+    </div>
+
     {{-- Filters --}}
     <div class="mb-6 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-gray-100">
         <form method="GET" action="{{ route('inventory.products.index') }}" class="flex flex-col sm:flex-row gap-3">

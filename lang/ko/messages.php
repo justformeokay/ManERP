@@ -1292,4 +1292,25 @@ return [
     'reason' => '사유',
     'already_approved' => '이 문서는 이미 승인되었습니다.',
     'bill' => '청구서',
+
+    // =========================================================================
+    // 메뉴 재구성
+    // =========================================================================
+    'sales_heading' => '판매',
+    'purchasing_heading' => '구매',
+    'stock_management' => '재고',
+    'stock_management_subtitle' => '재고 수준, 입출고 및 창고 간 이동',
+    'bank_and_cash' => '은행 & 현금',
+    'financial_reports_title' => '재무 보고서',
+    'financial_reports_subtitle' => '재무제표, 분석 및 세무 보고서',
+    'general_ledger_desc' => '계정별 상세 거래 내역',
+    'trial_balance_desc' => '전체 계정의 차변/대변 잔액 요약',
+    'balance_sheet_desc' => '자산, 부채 및 자본 현황',
+    'profit_loss_desc' => '수익, 비용 및 순이익 보고서',
+    'cash_flow_desc' => '영업, 투자 및 재무 현금 흐름',
+    'ar_aging_desc' => '고객별 매출채권 경과 분석',
+    'financial_ratios_desc' => '유동성, 수익성, 레버리지 및 효율성 지표',
+    'ppn_tax_desc' => '부가가치세/PPN 월별 세금 신고 (SPT Masa)',
+    'ap_aging_title' => '매입채무 경과',
+    'ap_aging_desc' => '공급업체별 매입채무 경과 분석',
 ];

@@ -1295,4 +1295,25 @@ return [
     'reason' => '原因',
     'already_approved' => '此文档已审批。',
     'bill' => '账单',
+
+    // =========================================================================
+    // 菜单重组
+    // =========================================================================
+    'sales_heading' => '销售',
+    'purchasing_heading' => '采购',
+    'stock_management' => '库存',
+    'stock_management_subtitle' => '库存水平、库存变动和仓库间调拨',
+    'bank_and_cash' => '银行与现金',
+    'financial_reports_title' => '财务报表',
+    'financial_reports_subtitle' => '财务报表、分析和税务报告',
+    'general_ledger_desc' => '各账户级别详细交易记录',
+    'trial_balance_desc' => '所有账户借贷余额汇总',
+    'balance_sheet_desc' => '资产、负债和权益状况',
+    'profit_loss_desc' => '收入、费用和净利润报表',
+    'cash_flow_desc' => '经营、投资和筹资现金流量',
+    'ar_aging_desc' => '按客户的应收账款账龄分析',
+    'financial_ratios_desc' => '流动性、盈利能力、杠杆率和效率指标',
+    'ppn_tax_desc' => '增值税/PPN月度纳税申报（SPT Masa）',
+    'ap_aging_title' => '应付账龄',
+    'ap_aging_desc' => '按供应商的应付账款账龄分析',
 ];

@@ -1307,4 +1307,25 @@ return [
     'reason' => 'Reason',
     'already_approved' => 'This document has already been approved.',
     'bill' => 'Bill',
+
+    // =========================================================================
+    // MENU REORGANIZATION
+    // =========================================================================
+    'sales_heading' => 'Sales',
+    'purchasing_heading' => 'Purchasing',
+    'stock_management' => 'Stock',
+    'stock_management_subtitle' => 'Stock levels, movements and inter-warehouse transfers',
+    'bank_and_cash' => 'Bank & Cash',
+    'financial_reports_title' => 'Financial Reports',
+    'financial_reports_subtitle' => 'Financial statements, analysis and tax reports',
+    'general_ledger_desc' => 'Detailed account-level transaction history',
+    'trial_balance_desc' => 'Debit and credit balance summary for all accounts',
+    'balance_sheet_desc' => 'Assets, liabilities and equity position',
+    'profit_loss_desc' => 'Revenue, expenses and net income statement',
+    'cash_flow_desc' => 'Operating, investing and financing cash movements',
+    'ar_aging_desc' => 'Accounts receivable aging analysis by client',
+    'financial_ratios_desc' => 'Liquidity, profitability, leverage and efficiency metrics',
+    'ppn_tax_desc' => 'VAT / PPN monthly tax return (SPT Masa)',
+    'ap_aging_title' => 'AP Aging',
+    'ap_aging_desc' => 'Accounts payable aging analysis by supplier',
 ];

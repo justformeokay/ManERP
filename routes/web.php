@@ -147,6 +147,7 @@ Route::middleware(['auth'])->group(function () {
         
         // Stock
         Route::get('stocks', [StockController::class, 'index'])->name('stocks.index')->middleware('permission:inventory.view');
+        Route::get('stock', [StockController::class, 'hub'])->name('stock.index')->middleware('permission:inventory.view');
         
         // Stock Movements
         Route::get('/movements', [StockMovementController::class, 'index'])->name('movements.index')->middleware('permission:inventory.view');
@@ -342,6 +343,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/calculator', [TaxController::class, 'calculator'])->name('calculator');
         });
 
+        Route::get('/reports', [FinancialReportController::class, 'index'])->name('reports.index')->middleware('permission:accounting.view');
         Route::get('/ledger', [AccountingReportController::class, 'ledger'])->name('ledger')->middleware('permission:accounting.view');
         Route::get('/trial-balance', [AccountingReportController::class, 'trialBalance'])->name('trial-balance')->middleware('permission:accounting.view');
         Route::get('/balance-sheet', [FinancialReportController::class, 'balanceSheet'])->name('balance-sheet')->middleware('permission:accounting.view');

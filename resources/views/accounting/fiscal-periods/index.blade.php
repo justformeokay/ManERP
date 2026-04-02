@@ -31,6 +31,14 @@
 @endsection
 
 @section('content')
+    {{-- Tab Navigation: COA & Fiscal Periods --}}
+    <div class="mb-6 border-b border-gray-200">
+        <nav class="-mb-px flex gap-6">
+            <a href="{{ route('accounting.coa.index') }}" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 whitespace-nowrap border-b-2 py-3 px-1 text-sm font-medium transition">{{ __('messages.chart_of_accounts') }}</a>
+            <a href="{{ route('accounting.fiscal-periods.index') }}" class="border-primary-500 text-primary-600 whitespace-nowrap border-b-2 py-3 px-1 text-sm font-medium transition">{{ __('messages.fiscal_periods_title') }}</a>
+        </nav>
+    </div>
+
     {{-- Summary --}}
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">

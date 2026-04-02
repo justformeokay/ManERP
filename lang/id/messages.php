@@ -1298,4 +1298,25 @@ return [
     'reason' => 'Alasan',
     'already_approved' => 'Dokumen ini sudah disetujui.',
     'bill' => 'Tagihan',
+
+    // =========================================================================
+    // REORGANISASI MENU
+    // =========================================================================
+    'sales_heading' => 'Penjualan',
+    'purchasing_heading' => 'Pembelian',
+    'stock_management' => 'Stok',
+    'stock_management_subtitle' => 'Level stok, mutasi dan transfer antar gudang',
+    'bank_and_cash' => 'Bank & Kas',
+    'financial_reports_title' => 'Laporan Keuangan',
+    'financial_reports_subtitle' => 'Laporan keuangan, analisis dan laporan pajak',
+    'general_ledger_desc' => 'Riwayat transaksi detail per akun',
+    'trial_balance_desc' => 'Ringkasan saldo debit dan kredit semua akun',
+    'balance_sheet_desc' => 'Posisi aset, kewajiban dan ekuitas',
+    'profit_loss_desc' => 'Laporan pendapatan, beban dan laba bersih',
+    'cash_flow_desc' => 'Arus kas operasi, investasi dan pendanaan',
+    'ar_aging_desc' => 'Analisis umur piutang per klien',
+    'financial_ratios_desc' => 'Rasio likuiditas, profitabilitas, leverage dan efisiensi',
+    'ppn_tax_desc' => 'SPT Masa PPN bulanan',
+    'ap_aging_title' => 'Umur Hutang',
+    'ap_aging_desc' => 'Analisis umur hutang per pemasok',
 ];
