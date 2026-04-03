@@ -46,6 +46,7 @@ use App\Http\Controllers\FinancialRatioController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\SalaryStructureController;
 use App\Http\Controllers\PayrollController;
+use App\Http\Controllers\TwoFactorController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -81,6 +82,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Two-Factor Authentication Management
+    Route::get('/two-factor/setup', [TwoFactorController::class, 'setup'])->name('two-factor.setup');
+    Route::post('/two-factor/enable', [TwoFactorController::class, 'enable'])->name('two-factor.enable');
+    Route::delete('/two-factor/disable', [TwoFactorController::class, 'disable'])->name('two-factor.disable');
 
     // Notifications
     Route::prefix('notifications')->name('notifications.')->group(function () {
@@ -488,6 +494,7 @@ Route::middleware(['auth'])->group(function () {
         // Audit Logs
         Route::prefix('audit-logs')->name('audit-logs.')->group(function () {
             Route::get('/', [AuditLogController::class, 'index'])->name('index');
+            Route::get('/verify-integrity', [AuditLogController::class, 'verifyIntegrity'])->name('verify-integrity');
             Route::get('/{activityLog}', [AuditLogController::class, 'show'])->name('show');
         });
 

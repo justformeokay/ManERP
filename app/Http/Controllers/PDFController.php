@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\AuditLogService;
 use App\Services\PDFService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -15,45 +16,24 @@ class PDFController extends Controller
         $this->pdfService = $pdfService;
     }
 
-    /**
-     * Generate and stream/download Invoice PDF.
-     *
-     * @param Request $request
-     * @param int $id
-     * @return Response
-     */
     public function invoice(Request $request, int $id): Response
     {
+        AuditLogService::log('finance', 'export', "Invoice PDF generated: #{$id}");
         $download = $request->boolean('download', false);
-
         return $this->pdfService->generateInvoicePDF($id, $download);
     }
 
-    /**
-     * Generate and stream/download Purchase Order PDF.
-     *
-     * @param Request $request
-     * @param int $id
-     * @return Response
-     */
     public function purchaseOrder(Request $request, int $id): Response
     {
+        AuditLogService::log('inventory', 'export', "Purchase Order PDF generated: #{$id}");
         $download = $request->boolean('download', false);
-
         return $this->pdfService->generatePurchaseOrderPDF($id, $download);
     }
 
-    /**
-     * Generate and stream/download Supplier Bill PDF.
-     *
-     * @param Request $request
-     * @param int $id
-     * @return Response
-     */
     public function supplierBill(Request $request, int $id): Response
     {
+        AuditLogService::log('finance', 'export', "Supplier Bill PDF generated: #{$id}");
         $download = $request->boolean('download', false);
-
         return $this->pdfService->generateSupplierBillPDF($id, $download);
     }
 }

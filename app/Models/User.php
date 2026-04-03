@@ -39,15 +39,17 @@ class User extends Authenticatable
 
     public const PERMISSION_ACTIONS = ['view', 'create', 'edit', 'delete'];
 
-    protected $fillable = ['name', 'email', 'password', 'role', 'permissions', 'phone', 'status', 'locale'];
+    protected $fillable = ['name', 'email', 'password', 'password_changed_at', 'role', 'permissions', 'phone', 'status', 'locale'];
 
-    protected $hidden = ['password', 'remember_token'];
+    protected $hidden = ['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes'];
 
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'password_changed_at' => 'datetime',
+            'two_factor_confirmed_at' => 'datetime',
             'permissions' => 'array',
         ];
     }

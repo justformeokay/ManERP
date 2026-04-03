@@ -21,6 +21,8 @@ class ActivityLog extends Model
         'changes',
         'ip_address',
         'user_agent',
+        'session_id',
+        'checksum',
         'created_at',
     ];
 

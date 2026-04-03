@@ -9,6 +9,7 @@ use App\Models\Payment;
 use App\Models\Product;
 use App\Models\PurchaseOrder;
 use App\Models\SalesOrder;
+use App\Services\AuditLogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -353,6 +354,14 @@ class ReportController extends Controller
     {
         $type = $request->input('type', 'sales');
         $range = $this->resolveDateRange($request);
+
+        AuditLogService::log(
+            'reports',
+            'export',
+            "Report exported: {$type}",
+            null,
+            ['type' => $type, 'date_from' => $range[0], 'date_to' => $range[1]]
+        );
 
         return match ($type) {
             'sales' => $this->exportSales($range),

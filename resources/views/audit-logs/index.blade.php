@@ -14,6 +14,53 @@
             <h1 class="text-2xl font-bold text-gray-900">Audit Logs</h1>
             <p class="mt-1 text-sm text-gray-500">View all system activity and change history.</p>
         </div>
+        <div x-data="integrityChecker()" class="flex-shrink-0">
+            <button @click="verify()" :disabled="loading"
+                class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 disabled:opacity-50 transition">
+                <svg x-show="!loading" class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+                </svg>
+                <svg x-show="loading" class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                </svg>
+                <span x-text="loading ? 'Verifying...' : 'Verify Integrity'"></span>
+            </button>
+
+            {{-- Results Panel --}}
+            <template x-if="result">
+                <div class="mt-3 rounded-xl border p-4 text-sm" :class="result.tampered.length ? 'border-red-200 bg-red-50' : 'border-green-200 bg-green-50'">
+                    <div class="flex items-center gap-2 font-semibold" :class="result.tampered.length ? 'text-red-800' : 'text-green-800'">
+                        <template x-if="!result.tampered.length">
+                            <svg class="h-5 w-5 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        </template>
+                        <template x-if="result.tampered.length">
+                            <svg class="h-5 w-5 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z" /></svg>
+                        </template>
+                        <span x-text="result.tampered.length ? 'Integrity Issues Detected' : 'All Records Verified'"></span>
+                    </div>
+                    <div class="mt-2 grid grid-cols-3 gap-3 text-xs">
+                        <div><span class="text-gray-500">Total:</span> <span class="font-medium" x-text="result.total"></span></div>
+                        <div><span class="text-gray-500">Verified:</span> <span class="font-medium text-green-700" x-text="result.verified"></span></div>
+                        <div><span class="text-gray-500">Legacy:</span> <span class="font-medium text-gray-500" x-text="result.legacy"></span></div>
+                    </div>
+                    <template x-if="result.tampered.length">
+                        <div class="mt-3 border-t border-red-200 pt-3">
+                            <p class="text-xs font-medium text-red-700 mb-2">Tampered Records (<span x-text="result.tampered.length"></span>):</p>
+                            <div class="max-h-40 overflow-y-auto space-y-1">
+                                <template x-for="r in result.tampered" :key="r.id">
+                                    <div class="flex items-center gap-2 text-xs text-red-600">
+                                        <span class="font-mono">#<span x-text="r.id"></span></span>
+                                        <span x-text="r.module + ' / ' + r.action"></span>
+                                        <span class="text-red-400 truncate" x-text="r.description"></span>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+        </div>
     </div>
 @endsection
 
@@ -147,4 +194,28 @@
             </div>
         @endif
     </div>
+
+@push('scripts')
+<script>
+function integrityChecker() {
+    return {
+        loading: false,
+        result: null,
+        async verify() {
+            this.loading = true;
+            this.result = null;
+            try {
+                const res = await fetch('{{ route("audit-logs.verify-integrity") }}', {
+                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                });
+                this.result = await res.json();
+            } catch (e) {
+                alert('Integrity check failed. Please try again.');
+            }
+            this.loading = false;
+        }
+    };
+}
+</script>
+@endpush
 @endsection

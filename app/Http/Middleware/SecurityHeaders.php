@@ -33,13 +33,20 @@ class SecurityHeaders
         }
 
         // Content Security Policy — restrict resource loading
+        $devSources = app()->isLocal()
+            ? ' http://localhost:5173 http://127.0.0.1:5173'
+            : '';
+        $devWs = app()->isLocal()
+            ? ' ws://localhost:5173 ws://127.0.0.1:5173'
+            : '';
+
         $response->headers->set('Content-Security-Policy', implode('; ', [
             "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-            "font-src 'self' https://fonts.gstatic.com",
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net" . $devSources,
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.bunny.net" . $devSources,
+            "font-src 'self' https://fonts.gstatic.com https://fonts.bunny.net",
             "img-src 'self' data: blob:",
-            "connect-src 'self'",
+            "connect-src 'self'" . $devSources . $devWs,
             "frame-ancestors 'self'",
             "base-uri 'self'",
             "form-action 'self'",

@@ -6,6 +6,7 @@ use App\Models\ActivityLog;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request;
+use Illuminate\Support\Facades\Session;
 
 class AuditLogService
 {
@@ -14,7 +15,8 @@ class AuditLogService
      */
     private const EXCLUDED_FIELDS = [
         'id', 'created_at', 'updated_at', 'deleted_at',
-        'remember_token', 'password',
+        'remember_token', 'password', 'two_factor_secret',
+        'two_factor_recovery_codes',
     ];
 
     public static function log(
@@ -32,7 +34,7 @@ class AuditLogService
             $changes = static::computeChanges($oldData, $newData);
         }
 
-        return ActivityLog::create([
+        $record = [
             'user_id'        => Auth::id(),
             'module'         => $module,
             'action'         => $action,
@@ -44,8 +46,14 @@ class AuditLogService
             'changes'        => $changes,
             'ip_address'     => Request::ip(),
             'user_agent'     => Request::userAgent(),
+            'session_id'     => Session::getId() ?: null,
             'created_at'     => now(),
-        ]);
+        ];
+
+        // HMAC checksum for anti-tampering verification
+        $record['checksum'] = static::computeChecksum($record);
+
+        return ActivityLog::create($record);
     }
 
     /**
@@ -95,5 +103,47 @@ class AuditLogService
         }
 
         return (string) $old !== (string) $new;
+    }
+
+    /**
+     * Compute HMAC-SHA256 checksum for tamper detection.
+     * Uses APP_KEY as secret — if a record is modified directly in DB,
+     * the checksum will no longer match.
+     */
+    public static function computeChecksum(array $record): string
+    {
+        $payload = json_encode([
+            $record['user_id'],
+            $record['module'],
+            $record['action'],
+            $record['description'],
+            $record['ip_address'],
+            $record['created_at'] instanceof \DateTimeInterface
+                ? $record['created_at']->toIso8601String()
+                : (string) $record['created_at'],
+        ]);
+
+        return hash_hmac('sha256', $payload, config('app.key'));
+    }
+
+    /**
+     * Verify integrity of an existing audit log record.
+     */
+    public static function verifyChecksum(ActivityLog $log): bool
+    {
+        if (! $log->checksum) {
+            return false; // Legacy record without checksum
+        }
+
+        $payload = json_encode([
+            $log->user_id,
+            $log->module,
+            $log->action,
+            $log->description,
+            $log->ip_address,
+            $log->created_at->toIso8601String(),
+        ]);
+
+        return hash_equals($log->checksum, hash_hmac('sha256', $payload, config('app.key')));
     }
 }

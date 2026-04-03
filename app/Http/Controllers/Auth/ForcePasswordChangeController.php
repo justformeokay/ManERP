@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\AuditLogService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
@@ -30,6 +31,9 @@ class ForcePasswordChangeController extends Controller
             'password'            => Hash::make($validated['password']),
             'password_changed_at' => now(),
         ]);
+
+        // Session hardening: invalidate all other sessions
+        Auth::logoutOtherDevices($validated['password']);
 
         AuditLogService::log(
             'auth',

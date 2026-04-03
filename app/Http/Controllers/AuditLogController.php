@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\ActivityLog;
 use App\Models\User;
+use App\Services\AuditLogService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class AuditLogController extends Controller
@@ -31,5 +33,50 @@ class AuditLogController extends Controller
         $activityLog->load('user');
 
         return view('audit-logs.show', ['log' => $activityLog]);
+    }
+
+    /**
+     * Verify integrity of all audit log records.
+     * Runs HMAC checksum validation and returns results as JSON.
+     */
+    public function verifyIntegrity(): JsonResponse
+    {
+        $total = ActivityLog::count();
+        $tampered = [];
+        $legacy = 0;
+
+        // Process in chunks to avoid memory issues
+        ActivityLog::orderBy('id')->chunk(500, function ($logs) use (&$tampered, &$legacy) {
+            foreach ($logs as $log) {
+                if (! $log->checksum) {
+                    $legacy++;
+                    continue;
+                }
+
+                if (! AuditLogService::verifyChecksum($log)) {
+                    $tampered[] = [
+                        'id'          => $log->id,
+                        'created_at'  => $log->created_at->toIso8601String(),
+                        'module'      => $log->module,
+                        'action'      => $log->action,
+                        'description' => $log->description,
+                        'user'        => $log->user?->name ?? 'System',
+                    ];
+                }
+            }
+        });
+
+        AuditLogService::log(
+            'system',
+            'integrity_check',
+            'Audit log integrity verification: ' . count($tampered) . ' tampered of ' . $total . ' records',
+        );
+
+        return response()->json([
+            'total'    => $total,
+            'verified' => $total - $legacy - count($tampered),
+            'legacy'   => $legacy,
+            'tampered' => $tampered,
+        ]);
     }
 }

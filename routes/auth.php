@@ -4,9 +4,11 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\ConfirmablePasswordController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Auth\EmailVerificationPromptController;
+use App\Http\Controllers\Auth\ForcePasswordChangeController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
+use App\Http\Controllers\Auth\TwoFactorChallengeController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
@@ -64,6 +66,18 @@ Route::middleware('auth')->group(function () {
 
     // Password Update
     Route::put('password', [PasswordController::class, 'update'])->name('password.update');
+
+    // Force Password Change (expired passwords)
+    Route::get('password/force-change', [ForcePasswordChangeController::class, 'show'])
+        ->name('password.force-change');
+    Route::post('password/force-change', [ForcePasswordChangeController::class, 'update'])
+        ->name('password.force-change.update');
+
+    // Two-Factor Authentication Challenge (login step 2)
+    Route::get('two-factor-challenge', [TwoFactorChallengeController::class, 'create'])
+        ->name('two-factor.challenge');
+    Route::post('two-factor-challenge', [TwoFactorChallengeController::class, 'store'])
+        ->name('two-factor.challenge.verify');
 
     // Logout
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
