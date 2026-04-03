@@ -12,7 +12,8 @@ class StockMovement extends Model
 
     protected $fillable = [
         'product_id', 'warehouse_id', 'type', 'quantity',
-        'balance_after', 'reference_type', 'reference_id', 'notes', 'created_by',
+        'balance_after', 'unit_cost', 'total_value',
+        'reference_type', 'reference_id', 'notes', 'created_by',
     ];
 
     protected function casts(): array
@@ -20,6 +21,8 @@ class StockMovement extends Model
         return [
             'quantity'      => 'decimal:2',
             'balance_after' => 'decimal:2',
+            'unit_cost'     => 'decimal:4',
+            'total_value'   => 'decimal:4',
         ];
     }
 

@@ -11,6 +11,7 @@ use App\Models\Warehouse;
 use App\Notifications\ManufacturingOrderCompletedNotification;
 use App\Services\CostingService;
 use App\Services\StockService;
+use App\Services\StockValuationService;
 use App\Traits\Auditable;
 use Illuminate\Http\Request;
 
@@ -23,6 +24,7 @@ class ManufacturingOrderController extends Controller
     public function __construct(
         private StockService $stockService,
         private CostingService $costingService,
+        private StockValuationService $valuationService,
     ) {}
 
     public function index(Request $request)
@@ -143,30 +145,70 @@ class ManufacturingOrderController extends Controller
         }
 
         try {
+            $totalMaterialCost = 0;
+
             // Consume raw materials
             foreach ($order->bom->items as $item) {
                 $consumeQty = round($item->quantity * $ratio, 4);
-                $this->stockService->processMovement([
+                $product = $item->product;
+                $unitCost = (float) $product->avg_cost;
+
+                $movement = $this->stockService->processMovement([
                     'product_id'     => $item->product_id,
                     'warehouse_id'   => $order->warehouse_id,
                     'type'           => 'out',
                     'quantity'       => $consumeQty,
+                    'unit_cost'      => $unitCost,
                     'reference_type' => 'manufacturing_order',
                     'reference_id'   => $order->id,
                     'notes'          => "Consumed for {$order->number}",
                 ]);
+
+                // Record WAC outgoing for raw material
+                $this->valuationService->recordOutgoing(
+                    $item->product_id,
+                    $order->warehouse_id,
+                    $consumeQty,
+                    $movement,
+                    'manufacturing_order',
+                    $order->id,
+                    'MO ' . $order->number . ' — consumed ' . ($product->name ?? '')
+                );
+
+                $totalMaterialCost = bcadd(
+                    (string) $totalMaterialCost,
+                    bcmul((string) $consumeQty, (string) $unitCost, 4),
+                    4
+                );
             }
 
-            // Produce finished goods
-            $this->stockService->processMovement([
+            // Produce finished goods with WAC = total material cost / quantity
+            $fgUnitCost = $quantity > 0
+                ? (float) bcdiv((string) $totalMaterialCost, (string) $quantity, 4)
+                : 0;
+
+            $fgMovement = $this->stockService->processMovement([
                 'product_id'     => $order->product_id,
                 'warehouse_id'   => $order->warehouse_id,
                 'type'           => 'in',
                 'quantity'       => $quantity,
+                'unit_cost'      => $fgUnitCost,
                 'reference_type' => 'manufacturing_order',
                 'reference_id'   => $order->id,
                 'notes'          => "Produced from {$order->number}",
             ]);
+
+            // Record WAC incoming for finished goods
+            $this->valuationService->recordManufacturingIncoming(
+                $order->product_id,
+                $order->warehouse_id,
+                $quantity,
+                (float) $totalMaterialCost,
+                $fgMovement,
+                'manufacturing_order',
+                $order->id,
+                'MO ' . $order->number . ' — produced ' . ($order->product->name ?? '')
+            );
         } catch (\InvalidArgumentException $e) {
             return back()->withErrors(['quantity' => $e->getMessage()]);
         }

@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Models\Warehouse;
 use App\Notifications\SalesOrderConfirmedNotification;
 use App\Services\StockService;
+use App\Services\StockValuationService;
 use App\Traits\Auditable;
 use Illuminate\Http\Request;
 
@@ -20,7 +21,10 @@ class SalesOrderController extends Controller
 
     protected string $model = 'sales';
 
-    public function __construct(private StockService $stockService) {}
+    public function __construct(
+        private StockService $stockService,
+        private StockValuationService $valuationService,
+    ) {}
 
     public function index(Request $request)
     {
@@ -176,16 +180,44 @@ class SalesOrderController extends Controller
         }
 
         // Deduct stock for each item
+        $totalCogs = 0;
         foreach ($order->items as $item) {
-            $this->stockService->processMovement([
+            $product = $item->product;
+            $unitCost = (float) $product->avg_cost;
+
+            $movement = $this->stockService->processMovement([
                 'product_id'     => $item->product_id,
                 'warehouse_id'   => $order->warehouse_id,
                 'type'           => 'out',
                 'quantity'       => $item->quantity,
+                'unit_cost'      => $unitCost,
                 'reference_type' => 'sales_order',
                 'reference_id'   => $order->id,
                 'notes'          => "Sales order {$order->number}",
             ]);
+
+            // Record WAC outgoing layer
+            $this->valuationService->recordOutgoing(
+                $item->product_id,
+                $order->warehouse_id,
+                $item->quantity,
+                $movement,
+                'sales_order',
+                $order->id,
+                'SO ' . $order->number . ' — ' . ($product->name ?? '')
+            );
+
+            $totalCogs = bcadd((string) $totalCogs, bcmul((string) $item->quantity, (string) $unitCost, 4), 4);
+        }
+
+        // Auto-journal: Dr COGS / Cr Inventory
+        if ($totalCogs > 0) {
+            $this->valuationService->journalSalesCogs(
+                $order->number . '-COGS',
+                now()->toDateString(),
+                (float) $totalCogs,
+                "COGS — {$order->number}"
+            );
         }
 
         $oldData = $order->toArray();
@@ -249,17 +281,50 @@ class SalesOrderController extends Controller
         $wasConfirmed = in_array($order->status, ['confirmed', 'processing', 'shipped']);
 
         if ($wasConfirmed) {
-            $order->load('items');
+            $order->load('items.product');
+            $totalReverseCogs = 0;
             foreach ($order->items as $item) {
-                $this->stockService->processMovement([
+                $product = $item->product;
+                $unitCost = (float) $product->avg_cost;
+
+                $movement = $this->stockService->processMovement([
                     'product_id'     => $item->product_id,
                     'warehouse_id'   => $order->warehouse_id,
                     'type'           => 'in',
                     'quantity'       => $item->quantity,
+                    'unit_cost'      => $unitCost,
                     'reference_type' => 'sales_order_cancel',
                     'reference_id'   => $order->id,
                     'notes'          => "Stock restored — cancelled {$order->number}",
                 ]);
+
+                // Record WAC incoming layer (return at current avg_cost)
+                $this->valuationService->recordIncoming(
+                    $item->product_id,
+                    $order->warehouse_id,
+                    $item->quantity,
+                    $unitCost,
+                    $movement,
+                    'sales_order_cancel',
+                    $order->id,
+                    'SO cancel ' . $order->number . ' — ' . ($product->name ?? '')
+                );
+
+                $totalReverseCogs = bcadd(
+                    (string) $totalReverseCogs,
+                    bcmul((string) $item->quantity, (string) $unitCost, 4),
+                    4
+                );
+            }
+
+            // Auto-journal: Dr Inventory / Cr COGS (reverse)
+            if ($totalReverseCogs > 0) {
+                $this->valuationService->journalSalesCancel(
+                    $order->number . '-COGS-REV',
+                    now()->toDateString(),
+                    (float) $totalReverseCogs,
+                    "COGS reversal — {$order->number}"
+                );
             }
         }
 

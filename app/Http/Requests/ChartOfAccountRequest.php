@@ -22,6 +22,7 @@ class ChartOfAccountRequest extends FormRequest
             'code' => ['required', 'string', 'max:20', $uniqueRule],
             'name' => 'required|string|max:255',
             'type' => 'required|in:asset,liability,equity,revenue,expense',
+            'cash_flow_category' => 'nullable|in:operating,investing,financing,cash,none',
             'parent_id' => 'nullable|exists:chart_of_accounts,id',
             'is_active' => 'boolean',
         ];

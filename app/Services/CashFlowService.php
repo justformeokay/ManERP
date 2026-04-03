@@ -4,6 +4,18 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Cash Flow Statement — Indirect Method (PSAK 2 / IAS 7).
+ *
+ * Starts from net income and adjusts for:
+ *  1. Non-cash charges (depreciation, amortization)
+ *  2. Changes in operating working capital
+ *  3. Investing activities (fixed/intangible assets, LT investments)
+ *  4. Financing activities (debt, equity)
+ *
+ * Account categorisation is driven by `chart_of_accounts.cash_flow_category`:
+ *   operating | investing | financing | cash | none
+ */
 class CashFlowService
 {
     /**
@@ -12,52 +24,69 @@ class CashFlowService
     public const CASH_CODES = ['1100', '1101', '1102', '1110'];
 
     /**
-     * Generate Cash Flow Statement (Indirect Method) for a date range.
-     *
-     * The indirect method starts from net income and adjusts for:
-     * 1. Operating Activities (changes in working capital)
-     * 2. Investing Activities
-     * 3. Financing Activities
+     * Generate full Cash Flow Statement with reconciliation.
      */
     public function getCashFlowStatement(?string $startDate = null, ?string $endDate = null): array
     {
         $endDate   ??= now()->toDateString();
         $startDate ??= now()->startOfYear()->toDateString();
 
-        $netIncome = $this->getNetIncome($startDate, $endDate);
+        // ── Core calculations ──────────────────────────────────
+        $netIncome    = $this->getNetIncome($startDate, $endDate);
+        $depreciation = $this->getDepreciationAmortization($startDate, $endDate);
 
-        $operating  = $this->getOperatingActivities($startDate, $endDate);
-        $investing  = $this->getInvestingActivities($startDate, $endDate);
-        $financing  = $this->getFinancingActivities($startDate, $endDate);
+        $operatingItems = $this->getOperatingActivities($startDate, $endDate);
+        $investingItems = $this->getInvestingActivities($startDate, $endDate);
+        $financingItems = $this->getFinancingActivities($startDate, $endDate);
 
-        $totalOperating = $netIncome + array_sum(array_column($operating, 'amount'));
-        $totalInvesting = array_sum(array_column($investing, 'amount'));
-        $totalFinancing = array_sum(array_column($financing, 'amount'));
+        // Prepend depreciation add-back before working-capital items
+        $operating = [];
+        if (abs($depreciation) > 0.01) {
+            $operating[] = [
+                'label'  => 'depreciation_amortization',
+                'amount' => round($depreciation, 2),
+            ];
+        }
+        $operating = array_merge($operating, $operatingItems);
 
-        $netCashChange = $totalOperating + $totalInvesting + $totalFinancing;
+        $totalOperating = round($netIncome + array_sum(array_column($operating, 'amount')), 2);
+        $totalInvesting = round(array_sum(array_column($investingItems, 'amount')), 2);
+        $totalFinancing = round(array_sum(array_column($financingItems, 'amount')), 2);
+        $netCashChange  = round($totalOperating + $totalInvesting + $totalFinancing, 2);
 
-        $beginningCash = $this->getCashBalance($startDate, false);
-        $endingCash    = $beginningCash + $netCashChange;
+        // ── Cash balances ──────────────────────────────────────
+        $beginningCash     = $this->getCashBalance($startDate, false);
+        $computedEndingCash = round($beginningCash + $netCashChange, 2);
+
+        // ── Reconciliation (Golden Rule) ───────────────────────
+        $actualEndingCash  = $this->getCashBalance($endDate, true);
+        $discrepancyAmount = round($actualEndingCash - $computedEndingCash, 2);
+        $hasDiscrepancy    = abs($discrepancyAmount) > 0.01;
 
         return [
-            'start_date'       => $startDate,
-            'end_date'         => $endDate,
-            'net_income'       => round($netIncome, 2),
-            'operating'        => $operating,
-            'total_operating'  => round($totalOperating, 2),
-            'investing'        => $investing,
-            'total_investing'  => round($totalInvesting, 2),
-            'financing'        => $financing,
-            'total_financing'  => round($totalFinancing, 2),
-            'net_cash_change'  => round($netCashChange, 2),
-            'beginning_cash'   => round($beginningCash, 2),
-            'ending_cash'      => round($endingCash, 2),
+            'start_date'          => $startDate,
+            'end_date'            => $endDate,
+            'net_income'          => round($netIncome, 2),
+            'depreciation'        => round($depreciation, 2),
+            'operating'           => $operating,
+            'total_operating'     => $totalOperating,
+            'investing'           => $investingItems,
+            'total_investing'     => $totalInvesting,
+            'financing'           => $financingItems,
+            'total_financing'     => $totalFinancing,
+            'net_cash_change'     => $netCashChange,
+            'beginning_cash'      => round($beginningCash, 2),
+            'ending_cash'         => $computedEndingCash,
+            'actual_ending_cash'  => round($actualEndingCash, 2),
+            'discrepancy_amount'  => $discrepancyAmount,
+            'has_discrepancy'     => $hasDiscrepancy,
         ];
     }
 
-    /**
-     * Net income = Revenue – Expenses for the period.
-     */
+    // ══════════════════════════════════════════════════════════
+    //  Net Income
+    // ══════════════════════════════════════════════════════════
+
     private function getNetIncome(string $start, string $end): float
     {
         $rows = DB::table('journal_items')
@@ -68,7 +97,7 @@ class CashFlowService
             ->whereIn('chart_of_accounts.type', ['revenue', 'expense'])
             ->select(
                 'chart_of_accounts.type',
-                DB::raw('SUM(journal_items.debit) as total_debit'),
+                DB::raw('SUM(journal_items.debit)  as total_debit'),
                 DB::raw('SUM(journal_items.credit) as total_credit')
             )
             ->groupBy('chart_of_accounts.type')
@@ -86,51 +115,93 @@ class CashFlowService
         return round($revenue - $expense, 2);
     }
 
+    // ══════════════════════════════════════════════════════════
+    //  Depreciation / Amortization Add-Back
+    // ══════════════════════════════════════════════════════════
+
     /**
-     * Operating Activities — changes in current assets and current liabilities.
-     * Uses indirect method: adjustments to net income.
+     * Sum depreciation & amortization expense journals for the period.
+     *
+     * Detects depreciation entries two ways:
+     *  1. Journal reference starts with 'DEP-' (FixedAssetService convention)
+     *  2. Credit side hits accumulated depreciation accounts (contra-asset)
+     *
+     * Returns positive value (add-back to net income).
      */
+    private function getDepreciationAmortization(string $start, string $end): float
+    {
+        // Method 1: tagged depreciation journals (DEP- prefix)
+        $depByRef = DB::table('journal_items')
+            ->join('journal_entries', 'journal_entries.id', '=', 'journal_items.journal_entry_id')
+            ->join('chart_of_accounts', 'chart_of_accounts.id', '=', 'journal_items.account_id')
+            ->where('journal_entries.is_posted', true)
+            ->whereBetween('journal_entries.date', [$start, $end])
+            ->where('journal_entries.reference', 'like', 'DEP-%')
+            ->where('chart_of_accounts.type', 'expense')
+            ->select(DB::raw('SUM(journal_items.debit) - SUM(journal_items.credit) as net'))
+            ->value('net');
+
+        // Method 2: credit to accumulated depreciation accounts (asset accounts used as contra)
+        // on fixed_assets table via coa_depreciation_id
+        $depByContra = DB::table('journal_items')
+            ->join('journal_entries', 'journal_entries.id', '=', 'journal_items.journal_entry_id')
+            ->where('journal_entries.is_posted', true)
+            ->whereBetween('journal_entries.date', [$start, $end])
+            ->where('journal_entries.reference', 'not like', 'DEP-%')
+            ->whereIn('journal_items.account_id', function ($q) {
+                $q->select('coa_depreciation_id')
+                  ->from('fixed_assets')
+                  ->whereNotNull('coa_depreciation_id');
+            })
+            ->select(DB::raw('SUM(journal_items.credit) - SUM(journal_items.debit) as net'))
+            ->value('net');
+
+        return round(abs((float) $depByRef) + abs((float) $depByContra), 2);
+    }
+
+    // ══════════════════════════════════════════════════════════
+    //  Operating Activities (Working Capital Changes)
+    // ══════════════════════════════════════════════════════════
+
     private function getOperatingActivities(string $start, string $end): array
     {
         $items = [];
 
-        // Accounts Receivable changes (increase = cash outflow, decrease = cash inflow)
-        $arChange = $this->getAccountBalanceChange('1200', $start, $end);
-        if (abs($arChange) > 0.01) {
-            $items[] = [
-                'label'  => 'accounts_receivable_change',
-                'amount' => round(-$arChange, 2), // Inverse: AR increase is negative cash flow
-            ];
+        // Query all accounts categorised as 'operating' in COA
+        $accounts = DB::table('chart_of_accounts')
+            ->where('cash_flow_category', 'operating')
+            ->where('is_active', true)
+            ->select('id', 'code', 'name', 'type')
+            ->orderBy('code')
+            ->get();
+
+        // Group by type for proper sign treatment
+        $assetAccounts     = $accounts->where('type', 'asset');
+        $liabilityAccounts = $accounts->where('type', 'liability');
+
+        // Current assets (AR, Inventory, Prepaid, etc.)
+        // Asset increase → negative cash flow; decrease → positive cash flow
+        foreach ($this->groupAccountChanges($assetAccounts, $start, $end) as $item) {
+            if (abs($item['change']) > 0.01) {
+                $items[] = [
+                    'label'  => $this->makeLabel($item['code'], $item['name']),
+                    'amount' => round(-$item['change'], 2), // Invert for indirect method
+                ];
+            }
         }
 
-        // Inventory changes
-        $invChange = $this->getAccountBalanceChange('1300', $start, $end);
-        if (abs($invChange) > 0.01) {
-            $items[] = [
-                'label'  => 'inventory_change',
-                'amount' => round(-$invChange, 2),
-            ];
+        // Current liabilities (AP, Tax Payable, Accrued, etc.)
+        // Liability increase → positive cash flow; decrease → negative cash flow
+        foreach ($this->groupAccountChanges($liabilityAccounts, $start, $end) as $item) {
+            if (abs($item['change']) > 0.01) {
+                $items[] = [
+                    'label'  => $this->makeLabel($item['code'], $item['name']),
+                    'amount' => round($item['change'], 2),
+                ];
+            }
         }
 
-        // Accounts Payable changes (increase = cash inflow)
-        $apChange = $this->getAccountBalanceChange('2000', $start, $end);
-        if (abs($apChange) > 0.01) {
-            $items[] = [
-                'label'  => 'accounts_payable_change',
-                'amount' => round($apChange, 2),
-            ];
-        }
-
-        // Tax Payable changes
-        $taxChange = $this->getAccountBalanceChange('2100', $start, $end);
-        if (abs($taxChange) > 0.01) {
-            $items[] = [
-                'label'  => 'tax_payable_change',
-                'amount' => round($taxChange, 2),
-            ];
-        }
-
-        // Manually tagged operating entries
+        // Manually tagged operating entries on journal_entries.cash_flow_category
         $manualOp = $this->getTaggedCashFlowAmount('operating', $start, $end);
         if (abs($manualOp) > 0.01) {
             $items[] = [
@@ -142,20 +213,29 @@ class CashFlowService
         return $items;
     }
 
-    /**
-     * Investing Activities — changes in long-term assets.
-     */
+    // ══════════════════════════════════════════════════════════
+    //  Investing Activities
+    // ══════════════════════════════════════════════════════════
+
     private function getInvestingActivities(string $start, string $end): array
     {
         $items = [];
 
-        // Fixed Asset changes (account codes starting with 15xx)
-        $faChange = $this->getAccountGroupBalanceChange('15', $start, $end);
-        if (abs($faChange) > 0.01) {
-            $items[] = [
-                'label'  => 'fixed_asset_change',
-                'amount' => round(-$faChange, 2),
-            ];
+        $accounts = DB::table('chart_of_accounts')
+            ->where('cash_flow_category', 'investing')
+            ->where('is_active', true)
+            ->select('id', 'code', 'name', 'type')
+            ->orderBy('code')
+            ->get();
+
+        // For investing accounts: net increase in assets = cash outflow (negative)
+        foreach ($this->groupAccountChanges($accounts, $start, $end) as $item) {
+            if (abs($item['change']) > 0.01) {
+                $items[] = [
+                    'label'  => $this->makeLabel($item['code'], $item['name']),
+                    'amount' => round(-$item['change'], 2),
+                ];
+            }
         }
 
         // Manually tagged investing entries
@@ -170,30 +250,33 @@ class CashFlowService
         return $items;
     }
 
-    /**
-     * Financing Activities — changes in equity and long-term liabilities.
-     */
+    // ══════════════════════════════════════════════════════════
+    //  Financing Activities
+    // ══════════════════════════════════════════════════════════
+
     private function getFinancingActivities(string $start, string $end): array
     {
         $items = [];
 
-        // Long-term liabilities (account codes 22xx-29xx)
-        $ltDebt = $this->getAccountGroupBalanceChange('22', $start, $end)
-                + $this->getAccountGroupBalanceChange('23', $start, $end);
-        if (abs($ltDebt) > 0.01) {
-            $items[] = [
-                'label'  => 'long_term_debt_change',
-                'amount' => round($ltDebt, 2),
-            ];
-        }
+        $accounts = DB::table('chart_of_accounts')
+            ->where('cash_flow_category', 'financing')
+            ->where('is_active', true)
+            ->select('id', 'code', 'name', 'type')
+            ->orderBy('code')
+            ->get();
 
-        // Equity changes (3xxx) excluding retained earnings
-        $equityChange = $this->getAccountGroupBalanceChange('31', $start, $end);
-        if (abs($equityChange) > 0.01) {
-            $items[] = [
-                'label'  => 'equity_change',
-                'amount' => round($equityChange, 2),
-            ];
+        // Liability/equity increase = cash inflow; decrease = cash outflow
+        foreach ($this->groupAccountChanges($accounts, $start, $end) as $item) {
+            if (abs($item['change']) > 0.01) {
+                $change = $item['type'] === 'asset'
+                    ? -$item['change']  // Asset-type financing (rare)
+                    : $item['change'];  // Liability & equity: natural sign
+
+                $items[] = [
+                    'label'  => $this->makeLabel($item['code'], $item['name']),
+                    'amount' => round($change, 2),
+                ];
+            }
         }
 
         // Manually tagged financing entries
@@ -208,48 +291,53 @@ class CashFlowService
         return $items;
     }
 
-    /**
-     * Get the net balance change for a specific account code in a period.
-     */
-    private function getAccountBalanceChange(string $code, string $start, string $end): float
-    {
-        $row = DB::table('journal_items')
-            ->join('journal_entries', 'journal_entries.id', '=', 'journal_items.journal_entry_id')
-            ->join('chart_of_accounts', 'chart_of_accounts.id', '=', 'journal_items.account_id')
-            ->where('journal_entries.is_posted', true)
-            ->whereBetween('journal_entries.date', [$start, $end])
-            ->where('chart_of_accounts.code', $code)
-            ->select(
-                DB::raw('SUM(journal_items.debit) as total_debit'),
-                DB::raw('SUM(journal_items.credit) as total_credit')
-            )
-            ->first();
-
-        if (!$row) return 0;
-
-        return round((float) $row->total_debit - (float) $row->total_credit, 2);
-    }
+    // ══════════════════════════════════════════════════════════
+    //  Helper: Account Balance Changes (Period Delta)
+    // ══════════════════════════════════════════════════════════
 
     /**
-     * Get the net balance change for account codes starting with a prefix.
+     * Get net debit−credit change per account for the period.
+     *
+     * @param  \Illuminate\Support\Collection  $accounts
+     * @return array  [{code, name, type, change}]
      */
-    private function getAccountGroupBalanceChange(string $codePrefix, string $start, string $end): float
+    private function groupAccountChanges($accounts, string $start, string $end): array
     {
-        $row = DB::table('journal_items')
+        if ($accounts->isEmpty()) {
+            return [];
+        }
+
+        $accountIds = $accounts->pluck('id')->toArray();
+
+        $rows = DB::table('journal_items')
             ->join('journal_entries', 'journal_entries.id', '=', 'journal_items.journal_entry_id')
-            ->join('chart_of_accounts', 'chart_of_accounts.id', '=', 'journal_items.account_id')
             ->where('journal_entries.is_posted', true)
             ->whereBetween('journal_entries.date', [$start, $end])
-            ->where('chart_of_accounts.code', 'like', $codePrefix . '%')
+            ->whereIn('journal_items.account_id', $accountIds)
             ->select(
-                DB::raw('SUM(journal_items.debit) as total_debit'),
+                'journal_items.account_id',
+                DB::raw('SUM(journal_items.debit)  as total_debit'),
                 DB::raw('SUM(journal_items.credit) as total_credit')
             )
-            ->first();
+            ->groupBy('journal_items.account_id')
+            ->get()
+            ->keyBy('account_id');
 
-        if (!$row) return 0;
+        $results = [];
+        foreach ($accounts as $acct) {
+            $row = $rows->get($acct->id);
+            if (!$row) continue;
 
-        return round((float) $row->total_debit - (float) $row->total_credit, 2);
+            $change = round((float) $row->total_debit - (float) $row->total_credit, 2);
+            $results[] = [
+                'code'   => $acct->code,
+                'name'   => $acct->name,
+                'type'   => $acct->type,
+                'change' => $change,
+            ];
+        }
+
+        return $results;
     }
 
     /**
@@ -263,14 +351,13 @@ class CashFlowService
             ->where('journal_entries.is_posted', true)
             ->where('journal_entries.cash_flow_category', $category)
             ->whereBetween('journal_entries.date', [$start, $end])
-            ->whereIn('chart_of_accounts.type', ['asset'])
             ->where(function ($q) {
                 foreach (self::CASH_CODES as $code) {
                     $q->orWhere('chart_of_accounts.code', $code);
                 }
             })
             ->select(
-                DB::raw('SUM(journal_items.debit) as total_debit'),
+                DB::raw('SUM(journal_items.debit)  as total_debit'),
                 DB::raw('SUM(journal_items.credit) as total_credit')
             )
             ->first();
@@ -280,10 +367,13 @@ class CashFlowService
         return round((float) $row->total_debit - (float) $row->total_credit, 2);
     }
 
+    // ══════════════════════════════════════════════════════════
+    //  Cash Balance
+    // ══════════════════════════════════════════════════════════
+
     /**
      * Get the cash/bank balance as of a date.
-     *
-     * @param bool $inclusive Whether to include the given date
+     * Uses cash_flow_category='cash' with fallback to CASH_CODES.
      */
     private function getCashBalance(string $date, bool $inclusive = true): float
     {
@@ -295,12 +385,15 @@ class CashFlowService
             ->where('journal_entries.is_posted', true)
             ->where('journal_entries.date', $operator, $date)
             ->where(function ($q) {
-                foreach (self::CASH_CODES as $code) {
-                    $q->orWhere('chart_of_accounts.code', $code);
-                }
+                $q->where('chart_of_accounts.cash_flow_category', 'cash')
+                  ->orWhere(function ($q2) {
+                      foreach (self::CASH_CODES as $code) {
+                          $q2->orWhere('chart_of_accounts.code', $code);
+                      }
+                  });
             })
             ->select(
-                DB::raw('SUM(journal_items.debit) as total_debit'),
+                DB::raw('SUM(journal_items.debit)  as total_debit'),
                 DB::raw('SUM(journal_items.credit) as total_credit')
             )
             ->first();
@@ -308,5 +401,28 @@ class CashFlowService
         if (!$row) return 0;
 
         return round((float) $row->total_debit - (float) $row->total_credit, 2);
+    }
+
+    // ══════════════════════════════════════════════════════════
+    //  Label Helper
+    // ══════════════════════════════════════════════════════════
+
+    /**
+     * Generate a display label from account code & name.
+     * Checks for a translation key first, falls back to name.
+     */
+    private function makeLabel(string $code, string $name): string
+    {
+        // Use snake_case of account name as translation key
+        $key = 'cf_' . str_replace([' ', '&', '-'], ['_', '', '_'], strtolower($name)) . '_change';
+        $translated = __('messages.' . $key);
+
+        // If translation exists, use the key for the view; otherwise use raw name
+        if ($translated !== 'messages.' . $key) {
+            return $key;
+        }
+
+        // Fallback: return a descriptive label
+        return "change_in_{$code}_{$name}";
     }
 }

@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ChartOfAccount extends Model
 {
-    protected $fillable = ['code', 'name', 'type', 'parent_id', 'is_active', 'is_tax_account', 'tax_type'];
+    protected $fillable = ['code', 'name', 'type', 'cash_flow_category', 'parent_id', 'is_active', 'is_tax_account', 'tax_type'];
 
     protected function casts(): array
     {
@@ -50,6 +50,11 @@ class ChartOfAccount extends Model
     public static function typeOptions(): array
     {
         return ['asset', 'liability', 'equity', 'revenue', 'expense'];
+    }
+
+    public static function cashFlowCategoryOptions(): array
+    {
+        return ['operating', 'investing', 'financing', 'cash', 'none'];
     }
 
     public static function typeColors(): array

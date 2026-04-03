@@ -14,6 +14,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\StockMovementController;
+use App\Http\Controllers\StockValuationController;
 use App\Http\Controllers\BomController;
 use App\Http\Controllers\ManufacturingOrderController;
 use App\Http\Controllers\SalesOrderController;
@@ -170,6 +171,10 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/transfers/{transfer}', [StockTransferController::class, 'destroy'])->name('transfers.destroy')->middleware('permission:inventory.delete');
         Route::post('transfers/{transfer}/execute', [StockTransferController::class, 'execute'])->name('transfers.execute')->middleware('permission:inventory.edit');
         Route::post('transfers/{transfer}/cancel', [StockTransferController::class, 'cancel'])->name('transfers.cancel')->middleware('permission:inventory.edit');
+
+        // Stock Valuation (WAC Report)
+        Route::get('/valuation', [StockValuationController::class, 'index'])->name('valuation.index')->middleware('permission:inventory.view');
+        Route::get('/valuation/{product}', [StockValuationController::class, 'show'])->name('valuation.show')->middleware('permission:inventory.view');
     });
 
     // Manufacturing
@@ -358,6 +363,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/balance-sheet', [FinancialReportController::class, 'balanceSheet'])->name('balance-sheet')->middleware('permission:accounting.view');
         Route::get('/profit-loss', [FinancialReportController::class, 'profitLoss'])->name('profit-loss')->middleware('permission:accounting.view');
         Route::get('/cash-flow', [FinancialReportController::class, 'cashFlow'])->name('cash-flow')->middleware('permission:accounting.view');
+        Route::get('/cash-flow/pdf', [FinancialReportController::class, 'cashFlowPdf'])->name('cash-flow.pdf')->middleware('permission:accounting.view');
+        Route::get('/cash-flow/excel', [FinancialReportController::class, 'cashFlowExcel'])->name('cash-flow.excel')->middleware('permission:accounting.view');
         Route::get('/ar-aging', [FinancialReportController::class, 'arAging'])->name('ar-aging')->middleware('permission:accounting.view');
         Route::get('/financial-ratios', [FinancialRatioController::class, 'index'])->name('financial-ratios')->middleware('permission:accounting.view');
 

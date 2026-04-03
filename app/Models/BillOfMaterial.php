@@ -83,7 +83,7 @@ class BillOfMaterial extends Model
                     'product_id' => $item->product_id,
                     'product'    => $item->product,
                     'quantity'   => $requiredQty,
-                    'unit_cost'  => $item->unit_cost ?: ($item->product->cost_price ?? 0),
+                    'unit_cost'  => $item->unit_cost ?: ($item->product->avg_cost ?: ($item->product->cost_price ?? 0)),
                     'level'      => $depth,
                 ];
             }

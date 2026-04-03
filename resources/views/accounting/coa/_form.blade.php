@@ -34,6 +34,18 @@
         </div>
 
         <div>
+            <label for="cash_flow_category" class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.cash_flow_category') }}</label>
+            <select name="cash_flow_category" id="cash_flow_category"
+                class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                <option value="">{{ __('messages.auto_detect') }}</option>
+                @foreach(\App\Models\ChartOfAccount::cashFlowCategoryOptions() as $cat)
+                    <option value="{{ $cat }}" @selected(old('cash_flow_category', $account->cash_flow_category ?? '') === $cat)>{{ __('messages.cf_cat_' . $cat) }}</option>
+                @endforeach
+            </select>
+            @error('cash_flow_category') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+        </div>
+
+        <div>
             <label for="parent_id" class="block text-sm font-medium text-gray-700 mb-1">Parent Account</label>
             <select name="parent_id" id="parent_id"
                 class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">

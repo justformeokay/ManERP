@@ -55,6 +55,8 @@ class StockService
                 'type'           => $data['type'],
                 'quantity'       => $data['quantity'],
                 'balance_after'  => $newQuantity,
+                'unit_cost'      => $data['unit_cost'] ?? 0,
+                'total_value'    => bcmul((string) ($data['unit_cost'] ?? 0), (string) $data['quantity'], 4),
                 'reference_type' => $data['reference_type'] ?? null,
                 'reference_id'   => $data['reference_id'] ?? null,
                 'notes'          => $data['notes'] ?? null,
@@ -69,12 +71,16 @@ class StockService
     public function executeTransfer(StockTransfer $transfer): void
     {
         DB::transaction(function () use ($transfer) {
+            $product = Product::find($transfer->product_id);
+            $unitCost = (float) ($product->avg_cost ?? 0);
+
             // OUT from source warehouse
             $this->processMovement([
                 'product_id'     => $transfer->product_id,
                 'warehouse_id'   => $transfer->from_warehouse_id,
                 'type'           => 'out',
                 'quantity'       => $transfer->quantity,
+                'unit_cost'      => $unitCost,
                 'reference_type' => 'stock_transfer',
                 'reference_id'   => $transfer->id,
                 'notes'          => "Transfer out → {$transfer->toWarehouse->name} ({$transfer->number})",
@@ -87,6 +93,7 @@ class StockService
                 'warehouse_id'   => $transfer->to_warehouse_id,
                 'type'           => 'in',
                 'quantity'       => $transfer->quantity,
+                'unit_cost'      => $unitCost,
                 'reference_type' => 'stock_transfer',
                 'reference_id'   => $transfer->id,
                 'notes'          => "Transfer in ← {$transfer->fromWarehouse->name} ({$transfer->number})",
@@ -106,12 +113,16 @@ class StockService
     public function reverseTransfer(StockTransfer $transfer): void
     {
         DB::transaction(function () use ($transfer) {
+            $product = Product::find($transfer->product_id);
+            $unitCost = (float) ($product->avg_cost ?? 0);
+
             // IN back to source
             $this->processMovement([
                 'product_id'     => $transfer->product_id,
                 'warehouse_id'   => $transfer->from_warehouse_id,
                 'type'           => 'in',
                 'quantity'       => $transfer->quantity,
+                'unit_cost'      => $unitCost,
                 'reference_type' => 'stock_transfer_cancel',
                 'reference_id'   => $transfer->id,
                 'notes'          => "Transfer reversed — {$transfer->number}",
@@ -124,6 +135,7 @@ class StockService
                 'warehouse_id'   => $transfer->to_warehouse_id,
                 'type'           => 'out',
                 'quantity'       => $transfer->quantity,
+                'unit_cost'      => $unitCost,
                 'reference_type' => 'stock_transfer_cancel',
                 'reference_id'   => $transfer->id,
                 'notes'          => "Transfer reversed — {$transfer->number}",
