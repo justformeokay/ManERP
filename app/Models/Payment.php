@@ -8,13 +8,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Payment extends Model
 {
     protected $fillable = [
-        'invoice_id', 'amount', 'payment_date', 'payment_method', 'reference_number', 'notes', 'created_by',
+        'invoice_id', 'currency_id', 'exchange_rate',
+        'amount', 'amount_base', 'payment_date', 'payment_method', 'reference_number', 'notes', 'created_by',
     ];
 
     protected function casts(): array
     {
         return [
             'amount' => 'decimal:2',
+            'amount_base' => 'decimal:2',
+            'exchange_rate' => 'decimal:6',
             'payment_date' => 'date',
         ];
     }
@@ -31,6 +34,11 @@ class Payment extends Model
     public function invoice(): BelongsTo
     {
         return $this->belongsTo(Invoice::class);
+    }
+
+    public function currency(): BelongsTo
+    {
+        return $this->belongsTo(Currency::class);
     }
 
     public function creator(): BelongsTo

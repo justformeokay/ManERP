@@ -7,13 +7,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class JournalItem extends Model
 {
-    protected $fillable = ['journal_entry_id', 'account_id', 'debit', 'credit'];
+    protected $fillable = ['journal_entry_id', 'account_id', 'debit', 'debit_base', 'credit', 'credit_base'];
 
     protected function casts(): array
     {
         return [
             'debit' => 'decimal:2',
+            'debit_base' => 'decimal:2',
             'credit' => 'decimal:2',
+            'credit_base' => 'decimal:2',
         ];
     }
 

@@ -15,11 +15,14 @@ class SupplierBill extends Model
         'bill_number',
         'supplier_id',
         'purchase_order_id',
+        'currency_id',
+        'exchange_rate',
         'bill_date',
         'due_date',
         'subtotal',
         'tax_amount',
         'total',
+        'total_base',
         'tax_rate',
         'dpp',
         'faktur_pajak_number',
@@ -40,6 +43,8 @@ class SupplierBill extends Model
             'tax_rate'    => 'decimal:2',
             'dpp'         => 'decimal:2',
             'total'       => 'decimal:2',
+            'total_base'  => 'decimal:2',
+            'exchange_rate'=> 'decimal:6',
             'paid_amount' => 'decimal:2',
         ];
     }
@@ -71,6 +76,11 @@ class SupplierBill extends Model
     public function supplier(): BelongsTo
     {
         return $this->belongsTo(Supplier::class);
+    }
+
+    public function currency(): BelongsTo
+    {
+        return $this->belongsTo(Currency::class);
     }
 
     public function purchaseOrder(): BelongsTo

@@ -14,8 +14,11 @@ class SupplierPayment extends Model
         'payment_number',
         'supplier_id',
         'supplier_bill_id',
+        'currency_id',
+        'exchange_rate',
         'payment_date',
         'amount',
+        'amount_base',
         'payment_method',
         'reference_number',
         'notes',
@@ -26,8 +29,10 @@ class SupplierPayment extends Model
     protected function casts(): array
     {
         return [
-            'payment_date' => 'date',
-            'amount'       => 'decimal:2',
+            'payment_date'  => 'date',
+            'amount'        => 'decimal:2',
+            'amount_base'   => 'decimal:2',
+            'exchange_rate'  => 'decimal:6',
         ];
     }
 
@@ -58,6 +63,11 @@ class SupplierPayment extends Model
     public function supplier(): BelongsTo
     {
         return $this->belongsTo(Supplier::class);
+    }
+
+    public function currency(): BelongsTo
+    {
+        return $this->belongsTo(Currency::class);
     }
 
     public function supplierBill(): BelongsTo

@@ -13,9 +13,11 @@ class Invoice extends Model
     use SoftDeletes, HasStateMachine;
 
     protected $fillable = [
-        'invoice_number', 'sales_order_id', 'client_id', 'invoice_date', 'due_date',
+        'invoice_number', 'sales_order_id', 'client_id',
+        'currency_id', 'exchange_rate',
+        'invoice_date', 'due_date',
         'subtotal', 'tax_amount', 'tax_rate', 'dpp', 'faktur_pajak_number',
-        'discount', 'total_amount', 'paid_amount',
+        'discount', 'total_amount', 'total_amount_base', 'paid_amount',
         'status', 'notes', 'created_by',
     ];
 
@@ -30,7 +32,9 @@ class Invoice extends Model
             'tax_rate' => 'decimal:2',
             'dpp' => 'decimal:2',
             'total_amount' => 'decimal:2',
+            'total_amount_base' => 'decimal:2',
             'paid_amount' => 'decimal:2',
+            'exchange_rate' => 'decimal:6',
         ];
     }
 
@@ -64,6 +68,11 @@ class Invoice extends Model
     public function client(): BelongsTo
     {
         return $this->belongsTo(Client::class);
+    }
+
+    public function currency(): BelongsTo
+    {
+        return $this->belongsTo(Currency::class);
     }
 
     public function creator(): BelongsTo

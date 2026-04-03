@@ -33,6 +33,7 @@ class User extends Authenticatable
         'manufacturing' => 'Manufacturing',
         'finance'       => 'Finance (Invoices & Payments)',
         'accounting'    => 'Accounting',
+        'hr'            => 'HR & Payroll',
         'reports'       => 'Reports',
     ];
 

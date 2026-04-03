@@ -9,7 +9,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class JournalEntry extends Model
 {
     protected $fillable = [
-        'reference', 'date', 'description', 'is_posted',
+        'reference', 'date', 'currency_id', 'exchange_rate',
+        'description', 'is_posted',
         'entry_type', 'cash_flow_category', 'reversed_entry_id',
         'created_by',
     ];
@@ -19,6 +20,7 @@ class JournalEntry extends Model
         return [
             'date' => 'date',
             'is_posted' => 'boolean',
+            'exchange_rate' => 'decimal:6',
         ];
     }
 
@@ -51,6 +53,11 @@ class JournalEntry extends Model
     public function items(): HasMany
     {
         return $this->hasMany(JournalItem::class);
+    }
+
+    public function currency(): BelongsTo
+    {
+        return $this->belongsTo(Currency::class);
     }
 
     public function creator(): BelongsTo

@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use App\Services\AuditLogService;
+use Illuminate\Database\Eloquent\Model;
 
 trait Auditable
 {
@@ -19,7 +20,8 @@ trait Auditable
             'create',
             ucfirst($mod) . " #{$model->id} created",
             null,
-            $model->toArray()
+            $model->toArray(),
+            $model instanceof Model ? $model : null
         );
     }
 
@@ -31,7 +33,8 @@ trait Auditable
             'update',
             ucfirst($mod) . " #{$model->id} updated",
             $oldData,
-            $model->fresh()->toArray()
+            $model->fresh()->toArray(),
+            $model instanceof Model ? $model : null
         );
     }
 
@@ -43,7 +46,8 @@ trait Auditable
             'delete',
             ucfirst($mod) . " #{$model->id} deleted",
             $model->toArray(),
-            null
+            null,
+            $model instanceof Model ? $model : null
         );
     }
 
@@ -56,7 +60,8 @@ trait Auditable
             $action,
             $desc,
             $oldData,
-            $model->fresh()?->toArray()
+            $model->fresh()?->toArray(),
+            $model instanceof Model ? $model : null
         );
     }
 }

@@ -43,6 +43,9 @@ use App\Http\Controllers\FixedAssetController;
 use App\Http\Controllers\CreditNoteController;
 use App\Http\Controllers\DebitNoteController;
 use App\Http\Controllers\FinancialRatioController;
+use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\SalaryStructureController;
+use App\Http\Controllers\PayrollController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -269,12 +272,12 @@ Route::middleware(['auth'])->group(function () {
         Route::prefix('invoices')->name('invoices.')->group(function () {
             Route::get('/', [InvoiceController::class, 'index'])->name('index')->middleware('permission:finance.view');
             Route::get('/create', [InvoiceController::class, 'create'])->name('create')->middleware('permission:finance.create');
-            Route::post('/', [InvoiceController::class, 'store'])->name('store')->middleware('permission:finance.create');
+            Route::post('/', [InvoiceController::class, 'store'])->name('store')->middleware(['permission:finance.create', 'fiscal-lock:invoice_date']);
             Route::get('/{invoice}', [InvoiceController::class, 'show'])->name('show')->middleware('permission:finance.view');
-            Route::post('/{invoice}/cancel', [InvoiceController::class, 'cancel'])->name('cancel')->middleware('permission:finance.delete');
+            Route::post('/{invoice}/cancel', [InvoiceController::class, 'cancel'])->name('cancel')->middleware(['permission:finance.delete', 'fiscal-lock']);
         });
 
-        Route::post('/payments', [PaymentController::class, 'store'])->name('payments.store')->middleware('permission:finance.create');
+        Route::post('/payments', [PaymentController::class, 'store'])->name('payments.store')->middleware(['permission:finance.create', 'fiscal-lock:payment_date']);
     });
 
     // Accounts Payable (AP)
@@ -283,15 +286,15 @@ Route::middleware(['auth'])->group(function () {
         Route::prefix('bills')->name('bills.')->group(function () {
             Route::get('/', [AccountsPayableController::class, 'index'])->name('index');
             Route::get('/create', [AccountsPayableController::class, 'create'])->name('create')->middleware('permission:finance.create');
-            Route::post('/', [AccountsPayableController::class, 'store'])->name('store')->middleware('permission:finance.create');
+            Route::post('/', [AccountsPayableController::class, 'store'])->name('store')->middleware(['permission:finance.create', 'fiscal-lock:bill_date']);
             Route::get('/{bill}', [AccountsPayableController::class, 'show'])->name('show');
             Route::get('/{bill}/edit', [AccountsPayableController::class, 'edit'])->name('edit')->middleware('permission:finance.edit');
-            Route::put('/{bill}', [AccountsPayableController::class, 'update'])->name('update')->middleware('permission:finance.edit');
+            Route::put('/{bill}', [AccountsPayableController::class, 'update'])->name('update')->middleware(['permission:finance.edit', 'fiscal-lock:bill_date']);
             Route::delete('/{bill}', [AccountsPayableController::class, 'destroy'])->name('destroy')->middleware('permission:finance.delete');
-            Route::post('/{bill}/post', [AccountsPayableController::class, 'post'])->name('post')->middleware('permission:finance.edit');
-            Route::post('/{bill}/cancel', [AccountsPayableController::class, 'cancel'])->name('cancel')->middleware('permission:finance.delete');
+            Route::post('/{bill}/post', [AccountsPayableController::class, 'post'])->name('post')->middleware(['permission:finance.edit', 'fiscal-lock']);
+            Route::post('/{bill}/cancel', [AccountsPayableController::class, 'cancel'])->name('cancel')->middleware(['permission:finance.delete', 'fiscal-lock']);
             Route::get('/{bill}/pay', [AccountsPayableController::class, 'paymentCreate'])->name('pay')->middleware('permission:finance.create');
-            Route::post('/{bill}/pay', [AccountsPayableController::class, 'paymentStore'])->name('pay.store')->middleware('permission:finance.create');
+            Route::post('/{bill}/pay', [AccountsPayableController::class, 'paymentStore'])->name('pay.store')->middleware(['permission:finance.create', 'fiscal-lock:payment_date']);
         });
         
         // Payments
@@ -315,15 +318,15 @@ Route::middleware(['auth'])->group(function () {
         Route::prefix('journals')->name('journals.')->group(function () {
             Route::get('/', [JournalEntryController::class, 'index'])->name('index')->middleware('permission:accounting.view');
             Route::get('/create', [JournalEntryController::class, 'create'])->name('create')->middleware('permission:accounting.create');
-            Route::post('/', [JournalEntryController::class, 'store'])->name('store')->middleware('permission:accounting.create');
+            Route::post('/', [JournalEntryController::class, 'store'])->name('store')->middleware(['permission:accounting.create', 'fiscal-lock:date']);
             Route::get('/adjusting', [JournalEntryController::class, 'createAdjusting'])->name('adjusting')->middleware('permission:accounting.create');
-            Route::post('/adjusting', [JournalEntryController::class, 'storeAdjusting'])->name('store-adjusting')->middleware('permission:accounting.create');
+            Route::post('/adjusting', [JournalEntryController::class, 'storeAdjusting'])->name('store-adjusting')->middleware(['permission:accounting.create', 'fiscal-lock:date']);
             Route::get('/templates', [JournalEntryController::class, 'templates'])->name('templates')->middleware('permission:accounting.view');
             Route::get('/templates/create', [JournalEntryController::class, 'createTemplate'])->name('templates.create')->middleware('permission:accounting.create');
             Route::post('/templates', [JournalEntryController::class, 'storeTemplate'])->name('templates.store')->middleware('permission:accounting.create');
             Route::delete('/templates/{template}', [JournalEntryController::class, 'destroyTemplate'])->name('templates.destroy')->middleware('permission:accounting.delete');
             Route::get('/{journal}', [JournalEntryController::class, 'show'])->name('show')->middleware('permission:accounting.view');
-            Route::post('/{journal}/reverse', [JournalEntryController::class, 'reverse'])->name('reverse')->middleware('permission:accounting.create');
+            Route::post('/{journal}/reverse', [JournalEntryController::class, 'reverse'])->name('reverse')->middleware(['permission:accounting.create', 'fiscal-lock:date']);
         });
 
         // Fiscal Periods (Closing)
@@ -359,7 +362,7 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/', [BankAccountController::class, 'store'])->name('store')->middleware('permission:accounting.create');
             Route::get('/{bankAccount}', [BankAccountController::class, 'show'])->name('show');
             Route::get('/{bankAccount}/transactions', [BankAccountController::class, 'transactions'])->name('transactions');
-            Route::post('/{bankAccount}/transactions', [BankAccountController::class, 'storeTransaction'])->name('transactions.store')->middleware('permission:accounting.create');
+            Route::post('/{bankAccount}/transactions', [BankAccountController::class, 'storeTransaction'])->name('transactions.store')->middleware(['permission:accounting.create', 'fiscal-lock:transaction_date']);
 
             Route::prefix('reconciliation')->name('reconciliation.')->group(function () {
                 Route::get('/', [BankReconciliationController::class, 'index'])->name('index');
@@ -416,6 +419,36 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/manufacturing', [ReportController::class, 'manufacturingReport'])->name('manufacturing');
         Route::get('/finance', [ReportController::class, 'financeReport'])->name('finance');
         Route::get('/export', [ReportController::class, 'export'])->name('export');
+    });
+
+    // ─── HR & PAYROLL ───
+    Route::prefix('hr')->name('hr.')->group(function () {
+        // Employees
+        Route::prefix('employees')->name('employees.')->middleware('permission:hr.view')->group(function () {
+            Route::get('/', [EmployeeController::class, 'index'])->name('index');
+            Route::get('/create', [EmployeeController::class, 'create'])->name('create')->middleware('permission:hr.create');
+            Route::post('/', [EmployeeController::class, 'store'])->name('store')->middleware('permission:hr.create');
+            Route::get('/{employee}', [EmployeeController::class, 'show'])->name('show');
+            Route::get('/{employee}/edit', [EmployeeController::class, 'edit'])->name('edit')->middleware('permission:hr.edit');
+            Route::put('/{employee}', [EmployeeController::class, 'update'])->name('update')->middleware('permission:hr.edit');
+            Route::delete('/{employee}', [EmployeeController::class, 'destroy'])->name('destroy')->middleware('permission:hr.delete');
+        });
+
+        // Salary Structures
+        Route::post('/salary-structures', [SalaryStructureController::class, 'store'])
+            ->name('salary-structures.store')->middleware('permission:hr.create');
+
+        // Payroll
+        Route::prefix('payroll')->name('payroll.')->middleware('permission:hr.view')->group(function () {
+            Route::get('/', [PayrollController::class, 'index'])->name('index');
+            Route::get('/dashboard', [PayrollController::class, 'dashboard'])->name('dashboard');
+            Route::get('/create', [PayrollController::class, 'create'])->name('create')->middleware('permission:hr.create');
+            Route::post('/', [PayrollController::class, 'store'])->name('store')->middleware('permission:hr.create');
+            Route::get('/{period}', [PayrollController::class, 'show'])->name('show');
+            Route::get('/payslip/{payslip}', [PayrollController::class, 'payslip'])->name('payslip');
+            Route::post('/{period}/approve', [PayrollController::class, 'approve'])->name('approve')->middleware('permission:hr.edit');
+            Route::post('/{period}/post', [PayrollController::class, 'postToAccounting'])->name('post')->middleware('permission:hr.edit');
+        });
     });
 
     // PDF Generation
