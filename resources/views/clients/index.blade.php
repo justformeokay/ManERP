@@ -65,6 +65,7 @@
                         <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.client_column') }}</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.contact') }}</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.type') }}</th>
+                        <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.credit_limit') }}</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.status') }}</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.created') }}</th>
                         <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.actions') }}</th>
@@ -101,6 +102,15 @@
                                     {{ __('messages.' . $client->type) }}
                                 </span>
                             </td>
+                            <td class="whitespace-nowrap px-6 py-4 text-right">
+                                @if($client->is_credit_blocked)
+                                    <span class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium bg-red-50 text-red-700 ring-1 ring-red-600/20">{{ __('messages.blocked') }}</span>
+                                @elseif((float) $client->credit_limit > 0)
+                                    <span class="text-sm font-medium text-gray-900">{{ number_format((float) $client->credit_limit, 0, ',', '.') }}</span>
+                                @else
+                                    <span class="text-xs text-gray-400">{{ __('messages.unlimited') }}</span>
+                                @endif
+                            </td>
                             <td class="whitespace-nowrap px-6 py-4">
                                 <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ring-1
                                     {{ $client->status === 'active'
@@ -127,7 +137,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-12 text-center">
+                            <td colspan="7" class="px-6 py-12 text-center">
                                 <div class="flex flex-col items-center">
                                     <svg class="h-12 w-12 text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />

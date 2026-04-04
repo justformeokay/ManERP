@@ -28,6 +28,9 @@ class ClientRequest extends FormRequest
             'type'    => ['required', Rule::in(['customer', 'lead', 'prospect'])],
             'status'  => ['required', Rule::in(['active', 'inactive'])],
             'notes'   => ['nullable', 'string', 'max:2000'],
+            'credit_limit' => ['nullable', 'numeric', 'min:0'],
+            'payment_terms' => ['nullable', 'integer', 'min:0', 'max:365'],
+            'is_credit_blocked' => ['nullable', 'boolean'],
         ];
     }
 }

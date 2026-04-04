@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\ChartOfAccount;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\SalesOrder;
@@ -9,6 +10,9 @@ use Illuminate\Support\Facades\DB;
 
 class FinanceService
 {
+    /** PPN Keluaran (Output VAT — liability) */
+    public const PPN_KELUARAN = '2110';
+
     public function __construct(private AccountingService $accountingService) {}
 
     /**
@@ -46,7 +50,7 @@ class FinanceService
             // Mark sales order as completed
             $salesOrder->update(['status' => 'completed']);
 
-            // Auto-create journal entry: Debit AR, Credit Revenue
+            // Auto-create journal entry: Dr AR / Cr Revenue / Cr PPN Keluaran
             $this->createInvoiceJournal($invoice);
 
             return $invoice;
@@ -81,11 +85,14 @@ class FinanceService
     }
 
     /**
-     * Cancel an invoice and void all payments.
+     * Cancel an invoice: void payments AND create reversing journal.
      */
     public function cancelInvoice(Invoice $invoice): void
     {
         DB::transaction(function () use ($invoice) {
+            // Create reversing journal BEFORE deleting data
+            $this->createInvoiceCancelJournal($invoice);
+
             $invoice->payments()->delete();
             $invoice->update([
                 'status' => 'cancelled',
@@ -95,39 +102,88 @@ class FinanceService
     }
 
     /**
-     * Auto-create journal entry for an invoice: Debit AR, Credit Revenue.
+     * Auto-create journal for invoice issuance.
+     *
+     * Dr Piutang (1200) = total_amount
+     * Cr Pendapatan (4000) = total_amount − tax_amount
+     * Cr PPN Keluaran (2110) = tax_amount
+     *
+     * @throws \RuntimeException if required CoA accounts are missing
      */
     private function createInvoiceJournal(Invoice $invoice): void
     {
-        $ar = $this->accountingService->resolveAccount(AccountingService::ACCOUNTS_RECEIVABLE);
-        $revenue = $this->accountingService->resolveAccount(AccountingService::REVENUE);
+        $ar = $this->resolveAccountOrFail(AccountingService::ACCOUNTS_RECEIVABLE);
+        $revenue = $this->resolveAccountOrFail(AccountingService::REVENUE);
 
-        if (!$ar || !$revenue) {
-            return; // COA not seeded yet — skip silently
+        $totalAmount = (float) $invoice->total_amount;
+        $taxAmount = (float) $invoice->tax_amount;
+        $revenueAmount = round((float) bcsub((string) $totalAmount, (string) $taxAmount, 4), 2);
+
+        $entries = [
+            ['account_id' => $ar->id, 'debit' => round($totalAmount, 2), 'credit' => 0],
+            ['account_id' => $revenue->id, 'debit' => 0, 'credit' => $revenueAmount],
+        ];
+
+        // Split PPN to Hutang PPN Keluaran (2110) when tax exists
+        if ($taxAmount > 0) {
+            $ppnAccount = $this->resolveAccountOrFail(self::PPN_KELUARAN);
+            $entries[] = ['account_id' => $ppnAccount->id, 'debit' => 0, 'credit' => round($taxAmount, 2)];
         }
 
         $this->accountingService->createJournalEntry(
             $invoice->invoice_number,
             $invoice->invoice_date,
             "Invoice {$invoice->invoice_number} issued",
-            [
-                ['account_id' => $ar->id, 'debit' => $invoice->total_amount, 'credit' => 0],
-                ['account_id' => $revenue->id, 'debit' => 0, 'credit' => $invoice->total_amount],
-            ]
+            $entries
+        );
+    }
+
+    /**
+     * Create reversing journal when an invoice is cancelled.
+     *
+     * Mirrors the original invoice journal in reverse:
+     * Cr Piutang (1200) = total_amount
+     * Dr Pendapatan (4000) = total_amount − tax_amount
+     * Dr PPN Keluaran (2110) = tax_amount
+     *
+     * @throws \RuntimeException if required CoA accounts are missing
+     */
+    private function createInvoiceCancelJournal(Invoice $invoice): void
+    {
+        $ar = $this->resolveAccountOrFail(AccountingService::ACCOUNTS_RECEIVABLE);
+        $revenue = $this->resolveAccountOrFail(AccountingService::REVENUE);
+
+        $totalAmount = (float) $invoice->total_amount;
+        $taxAmount = (float) $invoice->tax_amount;
+        $revenueAmount = round((float) bcsub((string) $totalAmount, (string) $taxAmount, 4), 2);
+
+        $entries = [
+            ['account_id' => $revenue->id, 'debit' => $revenueAmount, 'credit' => 0],
+            ['account_id' => $ar->id, 'debit' => 0, 'credit' => round($totalAmount, 2)],
+        ];
+
+        if ($taxAmount > 0) {
+            $ppnAccount = $this->resolveAccountOrFail(self::PPN_KELUARAN);
+            $entries[] = ['account_id' => $ppnAccount->id, 'debit' => round($taxAmount, 2), 'credit' => 0];
+        }
+
+        $this->accountingService->createJournalEntry(
+            'REV-' . $invoice->invoice_number,
+            now()->toDateString(),
+            "Reversing journal — invoice {$invoice->invoice_number} cancelled",
+            $entries
         );
     }
 
     /**
      * Auto-create journal entry for a payment: Debit Cash/Bank, Credit AR.
+     *
+     * @throws \RuntimeException if required CoA accounts are missing
      */
     private function createPaymentJournal(Invoice $invoice, Payment $payment): void
     {
-        $cash = $this->accountingService->resolveAccount(AccountingService::CASH_BANK);
-        $ar = $this->accountingService->resolveAccount(AccountingService::ACCOUNTS_RECEIVABLE);
-
-        if (!$cash || !$ar) {
-            return; // COA not seeded yet — skip silently
-        }
+        $cash = $this->resolveAccountOrFail(AccountingService::CASH_BANK);
+        $ar = $this->resolveAccountOrFail(AccountingService::ACCOUNTS_RECEIVABLE);
 
         $this->accountingService->createJournalEntry(
             'PMT-' . $invoice->invoice_number,
@@ -138,5 +194,23 @@ class FinanceService
                 ['account_id' => $ar->id, 'debit' => 0, 'credit' => $payment->amount],
             ]
         );
+    }
+
+    /**
+     * Resolve a CoA account by code, or throw RuntimeException.
+     *
+     * @throws \RuntimeException
+     */
+    private function resolveAccountOrFail(string $code): ChartOfAccount
+    {
+        $account = $this->accountingService->resolveAccount($code);
+
+        if (!$account) {
+            throw new \RuntimeException(
+                "Required Chart of Account '{$code}' not found. Please seed the CoA before processing financial transactions."
+            );
+        }
+
+        return $account;
     }
 }

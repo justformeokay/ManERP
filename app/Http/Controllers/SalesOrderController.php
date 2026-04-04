@@ -12,6 +12,7 @@ use App\Models\StockValuationLayer;
 use App\Models\User;
 use App\Models\Warehouse;
 use App\Notifications\SalesOrderConfirmedNotification;
+use App\Services\ClientService;
 use App\Services\StockService;
 use App\Services\StockValuationService;
 use App\Traits\Auditable;
@@ -27,6 +28,7 @@ class SalesOrderController extends Controller
     public function __construct(
         private StockService $stockService,
         private StockValuationService $valuationService,
+        private ClientService $clientService,
     ) {}
 
     public function index(Request $request)
@@ -105,12 +107,25 @@ class SalesOrderController extends Controller
 
         $order->load('items');
 
+        $clientCreditData = null;
+        if ($order->client_id) {
+            $client = Client::find($order->client_id);
+            if ($client) {
+                $clientCreditData = [
+                    'is_blocked' => $client->is_credit_blocked,
+                    'limit'      => (float) $client->credit_limit,
+                    'exposure'   => (float) $this->clientService->calculateTotalExposure($client->id),
+                ];
+            }
+        }
+
         return view('sales.form', [
             'order'      => $order,
             'clients'    => Client::active()->orderBy('name')->get(),
             'warehouses' => Warehouse::active()->orderBy('name')->get(),
             'projects'   => Project::where('status', 'active')->orderBy('name')->get(),
             'products'   => Product::active()->with('inventoryStocks')->orderBy('name')->get(),
+            'clientCreditData' => $clientCreditData,
         ]);
     }
 
@@ -169,6 +184,28 @@ class SalesOrderController extends Controller
 
         $order->load('items.product');
 
+        // ── Credit limit & risk validation ──────────────────────────
+        $creditCheck = $this->clientService->validateCreditForConfirmation(
+            $order->client_id,
+            (string) $order->total
+        );
+
+        if (!$creditCheck['allowed']) {
+            $msg = match ($creditCheck['reason']) {
+                'credit_blocked' => __('messages.credit_blocked'),
+                'overdue_invoices' => __('messages.credit_overdue_invoices', [
+                    'count' => $creditCheck['overdue_count'] ?? 0,
+                    'days'  => $creditCheck['overdue_days'] ?? 0,
+                ]),
+                'credit_limit_exceeded' => __('messages.credit_limit_exceeded', [
+                    'exposure' => number_format((float) $creditCheck['exposure'], 2),
+                    'limit'    => number_format((float) $creditCheck['limit'], 2),
+                ]),
+                default => 'Credit validation failed.',
+            };
+            return back()->with('error', $msg);
+        }
+
         // Pre-check available stock (respecting existing reservations)
         foreach ($order->items as $item) {
             $stock = $item->product->inventoryStocks()
@@ -204,7 +241,7 @@ class SalesOrderController extends Controller
 
         // Notify admin users
         $order->load('client');
-        $admins = User::where('is_admin', true)->get();
+        $admins = User::where('role', 'admin')->get();
         foreach ($admins as $admin) {
             $admin->notify(new SalesOrderConfirmedNotification($order));
         }
@@ -256,6 +293,10 @@ class SalesOrderController extends Controller
 
                 $totalCogs = bcadd((string) $totalCogs, bcmul((string) $item->quantity, (string) $unitCost, 4), 4);
 
+                // Update delivered_quantity
+                $item->delivered_quantity = bcadd((string) ($item->delivered_quantity ?? 0), (string) $item->quantity, 2);
+                $item->save();
+
                 // Release reservation
                 $stock = InventoryStock::where('product_id', $item->product_id)
                     ->where('warehouse_id', $order->warehouse_id)
@@ -267,17 +308,17 @@ class SalesOrderController extends Controller
                     $stock->decrement('reserved_quantity', $release);
                 }
             }
-        });
 
-        // Auto-journal: Dr COGS / Cr Inventory
-        if ($totalCogs > 0) {
-            $this->valuationService->journalSalesCogs(
-                $order->number . '-COGS',
-                now()->toDateString(),
-                (float) $totalCogs,
-                "COGS — {$order->number}"
-            );
-        }
+            // Auto-journal: Dr COGS / Cr Inventory (inside transaction)
+            if ($totalCogs > 0) {
+                $this->valuationService->journalSalesCogs(
+                    $order->number . '-COGS',
+                    now()->toDateString(),
+                    (float) $totalCogs,
+                    "COGS — {$order->number}"
+                );
+            }
+        });
 
         $oldData = $order->toArray();
         $order->transitionToAndSave('shipped');
@@ -336,59 +377,62 @@ class SalesOrderController extends Controller
         }
 
         if ($wasShipped) {
-            // Stock was deducted on delivery — restore using original unit_cost
-            $totalReverseCogs = 0;
-            foreach ($order->items as $item) {
-                $product = $item->product;
+            // Entire shipped-cancel is atomic: stock restore + WAC layer + COGS reverse
+            DB::transaction(function () use ($order) {
+                $totalReverseCogs = 0;
 
-                // Find original outgoing valuation layer to get the original unit_cost
-                $originalLayer = StockValuationLayer::where('reference_type', 'sales_order')
-                    ->where('reference_id', $order->id)
-                    ->where('product_id', $item->product_id)
-                    ->where('direction', 'out')
-                    ->first();
+                foreach ($order->items as $item) {
+                    $product = $item->product;
 
-                $unitCost = $originalLayer ? (float) $originalLayer->unit_cost : (float) $product->avg_cost;
+                    // Find original outgoing valuation layer to get the original unit_cost
+                    $originalLayer = StockValuationLayer::where('reference_type', 'sales_order')
+                        ->where('reference_id', $order->id)
+                        ->where('product_id', $item->product_id)
+                        ->where('direction', 'out')
+                        ->first();
 
-                $movement = $this->stockService->processMovement([
-                    'product_id'     => $item->product_id,
-                    'warehouse_id'   => $order->warehouse_id,
-                    'type'           => 'in',
-                    'quantity'       => $item->quantity,
-                    'unit_cost'      => $unitCost,
-                    'reference_type' => 'sales_order_cancel',
-                    'reference_id'   => $order->id,
-                    'notes'          => "Stock restored — cancelled {$order->number}",
-                ]);
+                    $unitCost = $originalLayer ? (float) $originalLayer->unit_cost : (float) $product->avg_cost;
 
-                // Record WAC incoming layer at ORIGINAL sale cost (not current avg)
-                $this->valuationService->recordIncoming(
-                    $item->product_id,
-                    $order->warehouse_id,
-                    $item->quantity,
-                    $unitCost,
-                    $movement,
-                    'sales_order_cancel',
-                    $order->id,
-                    'SO cancel ' . $order->number . ' — ' . ($product->name ?? '')
-                );
+                    $movement = $this->stockService->processMovement([
+                        'product_id'     => $item->product_id,
+                        'warehouse_id'   => $order->warehouse_id,
+                        'type'           => 'in',
+                        'quantity'       => $item->quantity,
+                        'unit_cost'      => $unitCost,
+                        'reference_type' => 'sales_order_cancel',
+                        'reference_id'   => $order->id,
+                        'notes'          => "Stock restored — cancelled {$order->number}",
+                    ]);
 
-                $totalReverseCogs = bcadd(
-                    (string) $totalReverseCogs,
-                    bcmul((string) $item->quantity, (string) $unitCost, 4),
-                    4
-                );
-            }
+                    // Record WAC incoming layer at ORIGINAL sale cost (not current avg)
+                    $this->valuationService->recordIncoming(
+                        $item->product_id,
+                        $order->warehouse_id,
+                        $item->quantity,
+                        $unitCost,
+                        $movement,
+                        'sales_order_cancel',
+                        $order->id,
+                        'SO cancel ' . $order->number . ' — ' . ($product->name ?? '')
+                    );
 
-            // Auto-journal: Dr Inventory / Cr COGS (reverse)
-            if ($totalReverseCogs > 0) {
-                $this->valuationService->journalSalesCancel(
-                    $order->number . '-COGS-REV',
-                    now()->toDateString(),
-                    (float) $totalReverseCogs,
-                    "COGS reversal — {$order->number}"
-                );
-            }
+                    $totalReverseCogs = bcadd(
+                        (string) $totalReverseCogs,
+                        bcmul((string) $item->quantity, (string) $unitCost, 4),
+                        4
+                    );
+                }
+
+                // Auto-journal: Dr Inventory / Cr COGS (reverse) — inside transaction
+                if ($totalReverseCogs > 0) {
+                    $this->valuationService->journalSalesCancel(
+                        $order->number . '-COGS-REV',
+                        now()->toDateString(),
+                        (float) $totalReverseCogs,
+                        "COGS reversal — {$order->number}"
+                    );
+                }
+            });
         }
 
         $oldData = $order->toArray();

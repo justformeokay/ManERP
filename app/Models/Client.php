@@ -15,12 +15,16 @@ class Client extends Model
         'code', 'name', 'email', 'phone', 'company', 'tax_id',
         'npwp', 'tax_address', 'is_pkp',
         'address', 'city', 'country', 'type', 'status', 'notes',
+        'credit_limit', 'payment_terms', 'is_credit_blocked',
     ];
 
     protected function casts(): array
     {
         return [
             'is_pkp' => 'boolean',
+            'credit_limit' => 'decimal:2',
+            'payment_terms' => 'integer',
+            'is_credit_blocked' => 'boolean',
         ];
     }
 

@@ -249,7 +249,7 @@ class PurchaseOrderController extends Controller
         // Notify admin users when fully received
         if ($isFullyReceived) {
             $order->load('supplier');
-            $admins = User::where('is_admin', true)->get();
+            $admins = User::where('role', 'admin')->get();
             foreach ($admins as $admin) {
                 $admin->notify(new PurchaseOrderReceivedNotification($order));
             }

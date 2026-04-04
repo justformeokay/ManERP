@@ -119,6 +119,45 @@
 
         {{-- Status & Notes --}}
         <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+            <h3 class="text-base font-semibold text-gray-900 mb-4">{{ __('messages.credit_risk_management') }}</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label for="credit_limit" class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.credit_limit') }}</label>
+                    <input type="number" id="credit_limit" name="credit_limit" step="0.01" min="0"
+                        value="{{ old('credit_limit', $client->credit_limit ?? 0) }}"
+                        class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary-500 transition"
+                        placeholder="0 = {{ __('messages.unlimited') }}">
+                    <p class="mt-1 text-xs text-gray-400">{{ __('messages.credit_limit_hint') }}</p>
+                    @error('credit_limit') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                </div>
+                <div>
+                    <label for="payment_terms" class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.payment_terms') }}</label>
+                    <div class="relative">
+                        <input type="number" id="payment_terms" name="payment_terms" min="0" max="365"
+                            value="{{ old('payment_terms', $client->payment_terms ?? 30) }}"
+                            class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary-500 transition">
+                        <span class="absolute right-4 top-2.5 text-sm text-gray-400">{{ __('messages.days') }}</span>
+                    </div>
+                    @error('payment_terms') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                </div>
+                <div>
+                    <label for="is_credit_blocked" class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.credit_block_status') }}</label>
+                    <div class="flex items-center gap-3 mt-2">
+                        <input type="hidden" name="is_credit_blocked" value="0">
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" name="is_credit_blocked" value="1"
+                                class="sr-only peer"
+                                @checked(old('is_credit_blocked', $client->is_credit_blocked))>
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500"></div>
+                            <span class="ml-3 text-sm text-gray-600">{{ __('messages.block_credit') }}</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Status & Notes --}}
+        <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
             <h3 class="text-base font-semibold text-gray-900 mb-4">{{ __('messages.status_notes') }}</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>

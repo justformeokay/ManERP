@@ -243,7 +243,13 @@ class StockValuationService
         $inventoryAccount = ChartOfAccount::where('code', '1300')->first();
         $cogsAccount = ChartOfAccount::where('code', '5000')->first();
 
-        if (!$inventoryAccount || !$cogsAccount || $totalCogs <= 0) {
+        if (!$inventoryAccount || !$cogsAccount) {
+            throw new \RuntimeException(
+                'Required CoA accounts for Sales COGS not found (1300 Inventory or 5000 COGS). Please seed the Chart of Accounts.'
+            );
+        }
+
+        if ($totalCogs <= 0) {
             return;
         }
 
@@ -266,7 +272,13 @@ class StockValuationService
         $inventoryAccount = ChartOfAccount::where('code', '1300')->first();
         $cogsAccount = ChartOfAccount::where('code', '5000')->first();
 
-        if (!$inventoryAccount || !$cogsAccount || $totalCogs <= 0) {
+        if (!$inventoryAccount || !$cogsAccount) {
+            throw new \RuntimeException(
+                'Required CoA accounts for Sales Cancel not found (1300 Inventory or 5000 COGS). Please seed the Chart of Accounts.'
+            );
+        }
+
+        if ($totalCogs <= 0) {
             return;
         }
 

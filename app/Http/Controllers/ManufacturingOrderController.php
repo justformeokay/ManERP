@@ -293,7 +293,7 @@ class ManufacturingOrderController extends Controller
                     $this->journalVarianceIfNeeded($order);
 
                     $order->load('product');
-                    $admins = User::where('is_admin', true)->get();
+                    $admins = User::where('role', 'admin')->get();
                     foreach ($admins as $admin) {
                         $admin->notify(new ManufacturingOrderCompletedNotification($order));
                     }

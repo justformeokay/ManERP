@@ -110,6 +110,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [ClientController::class, 'index'])->name('index')->middleware('permission:clients.view');
         Route::get('/create', [ClientController::class, 'create'])->name('create')->middleware('permission:clients.create');
         Route::post('/', [ClientController::class, 'store'])->name('store')->middleware('permission:clients.create');
+        Route::get('/{client}', [ClientController::class, 'show'])->name('show')->middleware('permission:clients.view');
         Route::get('/{client}/edit', [ClientController::class, 'edit'])->name('edit')->middleware('permission:clients.edit');
         Route::put('/{client}', [ClientController::class, 'update'])->name('update')->middleware('permission:clients.edit');
         Route::delete('/{client}', [ClientController::class, 'destroy'])->name('destroy')->middleware('permission:clients.delete');

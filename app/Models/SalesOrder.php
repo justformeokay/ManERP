@@ -110,7 +110,7 @@ class SalesOrder extends Model
             'confirmed'  => ['processing', 'shipped', 'cancelled'],
             'processing' => ['shipped', 'cancelled'],
             'partial'    => ['shipped', 'cancelled'],
-            'shipped'    => ['completed'],
+            'shipped'    => ['completed', 'cancelled'],
             'completed'  => [],
             'cancelled'  => [],
         ];
