@@ -258,6 +258,13 @@ class ViewServiceProvider extends ServiceProvider
                 'icon' => $svg('M11.42 15.17l-5.385-5.385a1.061 1.061 0 010-1.5l.707-.707a1.06 1.06 0 011.5 0l3.97 3.97 8.97-8.97a1.06 1.06 0 011.5 0l.707.707a1.06 1.06 0 010 1.5L12.92 15.17a1.06 1.06 0 01-1.5 0zM3.75 21h16.5M3.75 4.5v11.25a2.25 2.25 0 002.25 2.25h12a2.25 2.25 0 002.25-2.25V4.5m-16.5 0h16.5'),
                 'admin_only' => true,
             ],
+            [
+                'label' => __('messages.license_management'),
+                'url' => route('license.index'),
+                'active' => 'license.*',
+                'icon' => $svg('M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z'),
+                'admin_only' => true,
+            ],
 
             // ─── BANTUAN (HELP) ───
             ['heading' => __('messages.help')],

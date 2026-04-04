@@ -3,6 +3,7 @@
 use App\Http\Middleware\ApplyTimezone;
 use App\Http\Middleware\EnsureOpenFiscalPeriod;
 use App\Http\Middleware\EnsureTwoFactorVerified;
+use App\Http\Middleware\EnsureLicenseValid;
 use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\CheckPermission;
@@ -30,6 +31,7 @@ return Application::configure(basePath: dirname(__DIR__))
             AuthenticateSession::class,
             ForcePasswordChange::class,
             EnsureTwoFactorVerified::class,
+            EnsureLicenseValid::class,
         ]);
         
         // Register middleware aliases

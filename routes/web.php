@@ -52,6 +52,7 @@ use App\Http\Controllers\SystemMaintenanceController;
 use App\Http\Controllers\UserGuideController;
 use App\Http\Controllers\SupportTicketController;
 use App\Http\Controllers\AboutController;
+use App\Http\Controllers\LicenseController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -82,6 +83,9 @@ Route::middleware(['auth'])->group(function () {
     
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // License Expired (outside admin group so all users can see it)
+    Route::get('/license/expired', [LicenseController::class, 'expired'])->name('license.expired');
     Route::get('/dashboard/api', [DashboardController::class, 'apiData'])->name('dashboard.api');
 
     // Profile Management
@@ -546,6 +550,13 @@ Route::middleware(['auth'])->group(function () {
 
         // About
         Route::get('/about', [AboutController::class, 'index'])->name('about');
+
+        // License Management
+        Route::prefix('license')->name('license.')->group(function () {
+            Route::get('/', [LicenseController::class, 'index'])->name('index');
+            Route::get('/activate', [LicenseController::class, 'activate'])->name('activate');
+            Route::post('/activate', [LicenseController::class, 'processActivation'])->name('processActivation');
+        });
     });
 });
 
