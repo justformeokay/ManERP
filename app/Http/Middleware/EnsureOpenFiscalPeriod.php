@@ -13,7 +13,8 @@ class EnsureOpenFiscalPeriod
      * Financial date fields to inspect in the request, in priority order.
      */
     private const DATE_FIELDS = [
-        'date',             // journal entries
+        'date',             // journal entries, stock movements
+        'order_date',       // sales/purchase orders
         'invoice_date',     // invoices
         'payment_date',     // payments
         'bill_date',        // supplier bills
@@ -80,7 +81,8 @@ class EnsureOpenFiscalPeriod
             }
         }
 
-        return null;
+        // Default to today — any write in a closed period must be blocked
+        return now()->toDateString();
     }
 
     /**

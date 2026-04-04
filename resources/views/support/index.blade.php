@@ -38,7 +38,7 @@
         @endphp
         @foreach($statusFilters as $key => $label)
             <a href="{{ route('support.index', $key ? ['status' => $key] : []) }}"
-               class="rounded-xl px-4 py-2 text-sm font-medium transition {{ $currentStatus === $key ? 'bg-primary-600 text-white shadow-sm' : 'bg-white text-gray-600 ring-1 ring-gray-200 hover:bg-gray-50' }}">
+               class="rounded-xl px-4 py-2 text-sm font-medium transition {{ $currentStatus === $key ? 'bg-primary-600 text-black shadow-md' : 'bg-white text-gray-600 ring-1 ring-gray-200 hover:bg-gray-50' }}">
                 {{ $label }}
             </a>
         @endforeach

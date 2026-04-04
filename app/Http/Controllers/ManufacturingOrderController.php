@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ManufacturingOrderRequest;
 use App\Models\BillOfMaterial;
+use App\Models\InventoryStock;
 use App\Models\ManufacturingOrder;
 use App\Models\Project;
+use App\Models\QcInspection;
 use App\Models\User;
 use App\Models\Warehouse;
 use App\Notifications\ManufacturingOrderCompletedNotification;
@@ -14,6 +16,7 @@ use App\Services\StockService;
 use App\Services\StockValuationService;
 use App\Traits\Auditable;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ManufacturingOrderController extends Controller
 {
@@ -96,6 +99,7 @@ class ManufacturingOrderController extends Controller
 
     /**
      * Confirm a draft manufacturing order.
+     * Pre-checks material availability for the full planned quantity.
      */
     public function confirm(ManufacturingOrder $order)
     {
@@ -104,15 +108,40 @@ class ManufacturingOrderController extends Controller
             return back()->withErrors(['status' => $check]);
         }
 
+        // TUGAS 4: Pre-check material availability on confirm
+        $order->load('bom.items.product');
+        $ratio = $order->planned_quantity / max(1, $order->bom->output_quantity);
+        $warnings = [];
+
+        foreach ($order->bom->items as $item) {
+            $requiredQty = round($item->quantity * $ratio, 4);
+            $stock = $item->product->inventoryStocks()
+                ->where('warehouse_id', $order->warehouse_id)
+                ->first();
+
+            $available = $stock ? $stock->availableQuantity() : 0;
+
+            if ($available < $requiredQty) {
+                $warnings[] = "{$item->product->name}: available {$available}, required {$requiredQty}";
+            }
+        }
+
+        // Confirm proceeds with warning (non-blocking) — material may arrive before production
         $oldData = $order->toArray();
         $order->transitionToAndSave('confirmed');
         $this->logAction($order, 'confirm', "Manufacturing order {$order->number} confirmed", $oldData);
 
-        return back()->with('success', 'Manufacturing order confirmed successfully.');
+        $message = 'Manufacturing order confirmed successfully.';
+        if (!empty($warnings)) {
+            $message .= ' Warning — insufficient material: ' . implode('; ', $warnings);
+        }
+
+        return back()->with('success', $message);
     }
 
     /**
      * Produce output: consume materials (stock out) and produce finished goods (stock in).
+     * Wrapped in DB::transaction for full atomicity.
      */
     public function produce(Request $request, ManufacturingOrder $order)
     {
@@ -127,19 +156,21 @@ class ManufacturingOrderController extends Controller
             return back()->withErrors(['quantity' => "Cannot produce more than remaining ({$remaining})."]);
         }
 
-        $order->load('bom.items');
+        $order->load('bom.items.product', 'product');
         $ratio = $quantity / max(1, $order->bom->output_quantity);
 
-        // Pre-validate ALL materials before consuming any
+        // Pre-validate ALL materials using availableQuantity (respects reservations)
         foreach ($order->bom->items as $item) {
             $consumeQty = round($item->quantity * $ratio, 4);
-            $available = $item->product->inventoryStocks()
+            $stock = InventoryStock::where('product_id', $item->product_id)
                 ->where('warehouse_id', $order->warehouse_id)
-                ->value('quantity') ?? 0;
+                ->first();
+
+            $available = $stock ? $stock->availableQuantity() : 0;
 
             if ($available < $consumeQty) {
                 return back()->withErrors([
-                    'quantity' => "Insufficient stock for {$item->product->name}. Available: {$available}, Required: {$consumeQty}",
+                    'quantity' => "Insufficient available stock for {$item->product->name}. Available: {$available} (after reservations), Required: {$consumeQty}",
                 ]);
             }
         }
@@ -147,102 +178,185 @@ class ManufacturingOrderController extends Controller
         try {
             $totalMaterialCost = 0;
 
-            // Consume raw materials
-            foreach ($order->bom->items as $item) {
-                $consumeQty = round($item->quantity * $ratio, 4);
-                $product = $item->product;
-                $unitCost = (float) $product->avg_cost;
+            DB::transaction(function () use ($order, $quantity, $ratio, &$totalMaterialCost) {
+                // ── Step 1: Consume raw materials ──
+                foreach ($order->bom->items as $item) {
+                    $consumeQty = round($item->quantity * $ratio, 4);
+                    $product = $item->product;
+                    $unitCost = (float) $product->avg_cost;
 
-                $movement = $this->stockService->processMovement([
-                    'product_id'     => $item->product_id,
+                    $movement = $this->stockService->processMovement([
+                        'product_id'     => $item->product_id,
+                        'warehouse_id'   => $order->warehouse_id,
+                        'type'           => 'out',
+                        'quantity'       => $consumeQty,
+                        'unit_cost'      => $unitCost,
+                        'reference_type' => 'manufacturing_order',
+                        'reference_id'   => $order->id,
+                        'notes'          => "Consumed for {$order->number}",
+                    ]);
+
+                    $this->valuationService->recordOutgoing(
+                        $item->product_id,
+                        $order->warehouse_id,
+                        $consumeQty,
+                        $movement,
+                        'manufacturing_order',
+                        $order->id,
+                        'MO ' . $order->number . ' — consumed ' . ($product->name ?? '')
+                    );
+
+                    $totalMaterialCost = bcadd(
+                        (string) $totalMaterialCost,
+                        bcmul((string) $consumeQty, (string) $unitCost, 4),
+                        4
+                    );
+                }
+
+                // ── Step 1 Journal: Dr WIP (1400) / Cr Raw Materials (1300-RM) ──
+                if ($totalMaterialCost > 0) {
+                    $this->valuationService->journalMaterialToWip(
+                        $order->number . '-WIP-IN',
+                        now()->toDateString(),
+                        (float) $totalMaterialCost,
+                        "Material consumed to WIP — {$order->number}"
+                    );
+                }
+
+                // ── Step 2: Produce finished goods ──
+                $fgUnitCost = $quantity > 0
+                    ? (float) bcdiv((string) $totalMaterialCost, (string) $quantity, 4)
+                    : 0;
+
+                $fgMovement = $this->stockService->processMovement([
+                    'product_id'     => $order->product_id,
                     'warehouse_id'   => $order->warehouse_id,
-                    'type'           => 'out',
-                    'quantity'       => $consumeQty,
-                    'unit_cost'      => $unitCost,
+                    'type'           => 'in',
+                    'quantity'       => $quantity,
+                    'unit_cost'      => $fgUnitCost,
                     'reference_type' => 'manufacturing_order',
                     'reference_id'   => $order->id,
-                    'notes'          => "Consumed for {$order->number}",
+                    'notes'          => "Produced from {$order->number}",
                 ]);
 
-                // Record WAC outgoing for raw material
-                $this->valuationService->recordOutgoing(
-                    $item->product_id,
+                $this->valuationService->recordManufacturingIncoming(
+                    $order->product_id,
                     $order->warehouse_id,
-                    $consumeQty,
-                    $movement,
+                    $quantity,
+                    (float) $totalMaterialCost,
+                    $fgMovement,
                     'manufacturing_order',
                     $order->id,
-                    'MO ' . $order->number . ' — consumed ' . ($product->name ?? '')
+                    'MO ' . $order->number . ' — produced ' . ($order->product->name ?? '')
                 );
 
-                $totalMaterialCost = bcadd(
-                    (string) $totalMaterialCost,
-                    bcmul((string) $consumeQty, (string) $unitCost, 4),
-                    4
-                );
+                // ── Step 2 Journal: Dr Finished Goods (1300-FG) / Cr WIP (1400) ──
+                if ($totalMaterialCost > 0) {
+                    $this->valuationService->journalWipToFinishedGoods(
+                        $order->number . '-WIP-OUT',
+                        now()->toDateString(),
+                        (float) $totalMaterialCost,
+                        "WIP completed to FG — {$order->number}"
+                    );
+                }
+
+                // ── Update order within transaction ──
+                $order->produced_quantity += $quantity;
+
+                if (!$order->actual_start) {
+                    $order->actual_start = now();
+                    if ($order->canTransitionTo('in_progress')) {
+                        $order->transitionTo('in_progress');
+                    }
+                }
+
+                // ── QC gate: block done if any QC inspection failed ──
+                if ($order->produced_quantity >= $order->planned_quantity) {
+                    $hasFailedQc = QcInspection::where('reference_type', ManufacturingOrder::class)
+                        ->where('reference_id', $order->id)
+                        ->where('result', 'failed')
+                        ->exists();
+
+                    if ($hasFailedQc) {
+                        // Do NOT transition to done — keep in_progress until QC resolved
+                        $order->save();
+                        return;
+                    }
+
+                    $order->transitionTo('done');
+                    $order->actual_end = now();
+
+                    // Auto-calculate HPP
+                    $this->costingService->calculateProductionCost($order);
+
+                    // ── Variance journal ──
+                    $this->journalVarianceIfNeeded($order);
+
+                    $order->load('product');
+                    $admins = User::where('is_admin', true)->get();
+                    foreach ($admins as $admin) {
+                        $admin->notify(new ManufacturingOrderCompletedNotification($order));
+                    }
+                }
+
+                $order->save();
+            });
+
+            // ── Auto-create QC draft inspection when first entering in_progress ──
+            $order->refresh();
+            if ($order->status === 'in_progress') {
+                $existingQc = QcInspection::where('reference_type', ManufacturingOrder::class)
+                    ->where('reference_id', $order->id)
+                    ->exists();
+
+                if (!$existingQc) {
+                    QcInspection::create([
+                        'inspection_type'    => 'in_process',
+                        'reference_type'     => ManufacturingOrder::class,
+                        'reference_id'       => $order->id,
+                        'product_id'         => $order->product_id,
+                        'warehouse_id'       => $order->warehouse_id,
+                        'inspected_quantity' => $order->planned_quantity,
+                        'passed_quantity'    => 0,
+                        'failed_quantity'    => 0,
+                        'result'             => 'pending',
+                        'status'             => 'draft',
+                        'inspector_id'       => auth()->id(),
+                    ]);
+                }
             }
-
-            // Produce finished goods with WAC = total material cost / quantity
-            $fgUnitCost = $quantity > 0
-                ? (float) bcdiv((string) $totalMaterialCost, (string) $quantity, 4)
-                : 0;
-
-            $fgMovement = $this->stockService->processMovement([
-                'product_id'     => $order->product_id,
-                'warehouse_id'   => $order->warehouse_id,
-                'type'           => 'in',
-                'quantity'       => $quantity,
-                'unit_cost'      => $fgUnitCost,
-                'reference_type' => 'manufacturing_order',
-                'reference_id'   => $order->id,
-                'notes'          => "Produced from {$order->number}",
-            ]);
-
-            // Record WAC incoming for finished goods
-            $this->valuationService->recordManufacturingIncoming(
-                $order->product_id,
-                $order->warehouse_id,
-                $quantity,
-                (float) $totalMaterialCost,
-                $fgMovement,
-                'manufacturing_order',
-                $order->id,
-                'MO ' . $order->number . ' — produced ' . ($order->product->name ?? '')
-            );
         } catch (\InvalidArgumentException $e) {
             return back()->withErrors(['quantity' => $e->getMessage()]);
         }
 
-        // Update order
-        $order->produced_quantity += $quantity;
+        $this->logAction($order, 'produce', "Manufacturing order {$order->number} produced {$quantity} units", []);
 
-        if (!$order->actual_start) {
-            $order->actual_start = now();
-            if ($order->canTransitionTo('in_progress')) {
-                $order->transitionTo('in_progress');
-            }
+        if ($order->status === 'in_progress' && $order->produced_quantity >= $order->planned_quantity) {
+            return back()->with('warning', "Produced {$quantity} units. Production complete but QC inspection has failures — resolve QC before order can be marked done.");
         }
-
-        if ($order->produced_quantity >= $order->planned_quantity) {
-            $order->transitionTo('done');
-            $order->actual_end = now();
-
-            // Auto-calculate HPP (production cost)
-            $this->costingService->calculateProductionCost($order);
-            
-            // Notify admin users when manufacturing order is completed
-            $order->load('product');
-            $admins = User::where('is_admin', true)->get();
-            foreach ($admins as $admin) {
-                $admin->notify(new ManufacturingOrderCompletedNotification($order));
-            }
-        }
-
-        $oldData = $order->toArray();
-        $order->save();
-        $this->logAction($order, 'produce', "Manufacturing order {$order->number} produced {$quantity} units", $oldData);
 
         return back()->with('success', "Produced {$quantity} units successfully.");
+    }
+
+    /**
+     * Journal manufacturing cost variance when MO completes.
+     * Positive variance (unfavorable): Dr Manufacturing Variance / Cr WIP
+     * Negative variance (favorable):   Dr WIP / Cr Manufacturing Variance
+     */
+    private function journalVarianceIfNeeded(ManufacturingOrder $order): void
+    {
+        $variance = $this->costingService->getCostVariance($order);
+
+        if (abs($variance['variance']) < 0.01) {
+            return;
+        }
+
+        $this->valuationService->journalManufacturingVariance(
+            $order->number . '-VAR',
+            now()->toDateString(),
+            $variance['variance'],
+            "Manufacturing variance — {$order->number} ({$variance['variance_pct']}%)"
+        );
     }
 
     public function destroy(ManufacturingOrder $order)

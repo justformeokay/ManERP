@@ -278,8 +278,9 @@ class StockValuationService
 
     /**
      * Create auto-journal for manufacturing production.
-     * Dr Finished Goods Inventory (1300) / Cr Raw Materials Inventory (1300)
-     * (Same account since we use single Inventory account; cost flows through production_costs)
+     * Dr Finished Goods Inventory (1300-FG) / Cr Raw Materials Inventory (1300-RM)
+     *
+     * @throws \RuntimeException if required CoA accounts are missing
      */
     public function journalManufacturingProduce(
         string $reference,
@@ -287,19 +288,135 @@ class StockValuationService
         float $totalMaterialCost,
         string $description
     ): void {
-        // For single-account setup, manufacturing is a cost reclassification
-        // tracked in production_costs table. Journal only if WIP account exists.
-        $inventoryAccount = ChartOfAccount::where('code', '1300')->first();
-        $cogsAccount = ChartOfAccount::where('code', '5000')->first();
+        $fgAccount = ChartOfAccount::where('code', '1300-FG')->first();
+        $rmAccount = ChartOfAccount::where('code', '1300-RM')->first();
 
-        if (!$inventoryAccount || !$cogsAccount || $totalMaterialCost <= 0) {
+        if (!$fgAccount || !$rmAccount) {
+            throw new \RuntimeException(
+                'Missing required Chart of Account: '
+                . (!$fgAccount ? '1300-FG (Finished Goods) ' : '')
+                . (!$rmAccount ? '1300-RM (Raw Materials)' : '')
+            );
+        }
+
+        if ($totalMaterialCost <= 0) {
             return;
         }
 
-        // Dr COGS (material consumed) / Cr Inventory (raw material out)
-        // The FG incoming is already recorded as Dr Inventory via recordIncoming
-        // Net effect: no change to Inventory for the consumed portion
-        // This creates the COGS recognition for materials consumed
+        $this->accountingService->createJournalEntry($reference, $date, $description, [
+            ['account_id' => $fgAccount->id, 'debit' => round($totalMaterialCost, 2), 'credit' => 0],
+            ['account_id' => $rmAccount->id, 'debit' => 0, 'credit' => round($totalMaterialCost, 2)],
+        ]);
+    }
+
+    /**
+     * WIP Step 1: Material consumed — Dr WIP (1400) / Cr Raw Materials (1300-RM)
+     *
+     * @throws \RuntimeException if required CoA accounts are missing
+     */
+    public function journalMaterialToWip(
+        string $reference,
+        string $date,
+        float $totalMaterialCost,
+        string $description
+    ): void {
+        $wipAccount = ChartOfAccount::where('code', '1400')->first();
+        $rmAccount = ChartOfAccount::where('code', '1300-RM')->first();
+
+        if (!$wipAccount || !$rmAccount) {
+            throw new \RuntimeException(
+                'Missing required Chart of Account: '
+                . (!$wipAccount ? '1400 (WIP) ' : '')
+                . (!$rmAccount ? '1300-RM (Raw Materials)' : '')
+            );
+        }
+
+        if ($totalMaterialCost <= 0) {
+            return;
+        }
+
+        $this->accountingService->createJournalEntry($reference, $date, $description, [
+            ['account_id' => $wipAccount->id, 'debit' => round($totalMaterialCost, 2), 'credit' => 0],
+            ['account_id' => $rmAccount->id, 'debit' => 0, 'credit' => round($totalMaterialCost, 2)],
+        ]);
+    }
+
+    /**
+     * WIP Step 2: Production complete — Dr Finished Goods (1300-FG) / Cr WIP (1400)
+     *
+     * @throws \RuntimeException if required CoA accounts are missing
+     */
+    public function journalWipToFinishedGoods(
+        string $reference,
+        string $date,
+        float $totalCost,
+        string $description
+    ): void {
+        $fgAccount = ChartOfAccount::where('code', '1300-FG')->first();
+        $wipAccount = ChartOfAccount::where('code', '1400')->first();
+
+        if (!$fgAccount || !$wipAccount) {
+            throw new \RuntimeException(
+                'Missing required Chart of Account: '
+                . (!$fgAccount ? '1300-FG (Finished Goods) ' : '')
+                . (!$wipAccount ? '1400 (WIP)' : '')
+            );
+        }
+
+        if ($totalCost <= 0) {
+            return;
+        }
+
+        $this->accountingService->createJournalEntry($reference, $date, $description, [
+            ['account_id' => $fgAccount->id, 'debit' => round($totalCost, 2), 'credit' => 0],
+            ['account_id' => $wipAccount->id, 'debit' => 0, 'credit' => round($totalCost, 2)],
+        ]);
+    }
+
+    /**
+     * Manufacturing variance journal.
+     * Positive variance (unfavorable): Dr Variance Account (6500) / Cr WIP (1400)
+     * Negative variance (favorable):   Dr WIP (1400) / Cr Variance Account (6500)
+     *
+     * @throws \RuntimeException if required CoA accounts are missing
+     */
+    public function journalManufacturingVariance(
+        string $reference,
+        string $date,
+        float $variance,
+        string $description
+    ): void {
+        $wipAccount = ChartOfAccount::where('code', '1400')->first();
+        $varianceAccount = ChartOfAccount::where('code', '6500')->first();
+
+        if (!$wipAccount || !$varianceAccount) {
+            throw new \RuntimeException(
+                'Missing required Chart of Account: '
+                . (!$wipAccount ? '1400 (WIP) ' : '')
+                . (!$varianceAccount ? '6500 (Manufacturing Variance)' : '')
+            );
+        }
+
+        $absVariance = round(abs($variance), 2);
+        if ($absVariance < 0.01) {
+            return;
+        }
+
+        if ($variance > 0) {
+            // Unfavorable: actual > standard → Dr Variance / Cr WIP
+            $entries = [
+                ['account_id' => $varianceAccount->id, 'debit' => $absVariance, 'credit' => 0],
+                ['account_id' => $wipAccount->id, 'debit' => 0, 'credit' => $absVariance],
+            ];
+        } else {
+            // Favorable: actual < standard → Dr WIP / Cr Variance
+            $entries = [
+                ['account_id' => $wipAccount->id, 'debit' => $absVariance, 'credit' => 0],
+                ['account_id' => $varianceAccount->id, 'debit' => 0, 'credit' => $absVariance],
+            ];
+        }
+
+        $this->accountingService->createJournalEntry($reference, $date, $description, $entries);
     }
 
     /**

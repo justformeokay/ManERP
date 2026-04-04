@@ -171,15 +171,15 @@ Route::middleware(['auth'])->group(function () {
         // Stock Movements
         Route::get('/movements', [StockMovementController::class, 'index'])->name('movements.index')->middleware('permission:inventory.view');
         Route::get('/movements/create', [StockMovementController::class, 'create'])->name('movements.create')->middleware('permission:inventory.create');
-        Route::post('/movements', [StockMovementController::class, 'store'])->name('movements.store')->middleware('permission:inventory.create');
+        Route::post('/movements', [StockMovementController::class, 'store'])->name('movements.store')->middleware(['permission:inventory.create', 'fiscal-lock']);
         
         // Stock Transfers
         Route::get('/transfers', [StockTransferController::class, 'index'])->name('transfers.index')->middleware('permission:inventory.view');
         Route::get('/transfers/create', [StockTransferController::class, 'create'])->name('transfers.create')->middleware('permission:inventory.create');
         Route::post('/transfers', [StockTransferController::class, 'store'])->name('transfers.store')->middleware('permission:inventory.create');
         Route::delete('/transfers/{transfer}', [StockTransferController::class, 'destroy'])->name('transfers.destroy')->middleware('permission:inventory.delete');
-        Route::post('transfers/{transfer}/execute', [StockTransferController::class, 'execute'])->name('transfers.execute')->middleware('permission:inventory.edit');
-        Route::post('transfers/{transfer}/cancel', [StockTransferController::class, 'cancel'])->name('transfers.cancel')->middleware('permission:inventory.edit');
+        Route::post('transfers/{transfer}/execute', [StockTransferController::class, 'execute'])->name('transfers.execute')->middleware(['permission:inventory.edit', 'fiscal-lock']);
+        Route::post('transfers/{transfer}/cancel', [StockTransferController::class, 'cancel'])->name('transfers.cancel')->middleware(['permission:inventory.edit', 'fiscal-lock']);
 
         // Stock Valuation (WAC Report)
         Route::get('/valuation', [StockValuationController::class, 'index'])->name('valuation.index')->middleware('permission:inventory.view');
@@ -206,7 +206,7 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/orders/{order}', [ManufacturingOrderController::class, 'update'])->name('orders.update')->middleware('permission:manufacturing.edit');
         Route::delete('/orders/{order}', [ManufacturingOrderController::class, 'destroy'])->name('orders.destroy')->middleware('permission:manufacturing.delete');
         Route::post('orders/{order}/confirm', [ManufacturingOrderController::class, 'confirm'])->name('orders.confirm')->middleware('permission:manufacturing.edit');
-        Route::post('orders/{order}/produce', [ManufacturingOrderController::class, 'produce'])->name('orders.produce')->middleware('permission:manufacturing.edit');
+        Route::post('orders/{order}/produce', [ManufacturingOrderController::class, 'produce'])->name('orders.produce')->middleware(['permission:manufacturing.edit', 'fiscal-lock']);
 
         // Costing / HPP
         Route::get('/costing', [CostingController::class, 'index'])->name('costing.index')->middleware('permission:manufacturing.view');
@@ -263,14 +263,14 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [SalesOrderController::class, 'index'])->name('index')->middleware('permission:sales.view');
         Route::get('/create', [SalesOrderController::class, 'create'])->name('create')->middleware('permission:sales.create');
         Route::post('/', [SalesOrderController::class, 'store'])->name('store')->middleware('permission:sales.create');
-        Route::get('/{salesOrder}', [SalesOrderController::class, 'show'])->name('show')->middleware('permission:sales.view');
-        Route::get('/{salesOrder}/edit', [SalesOrderController::class, 'edit'])->name('edit')->middleware('permission:sales.edit');
-        Route::put('/{salesOrder}', [SalesOrderController::class, 'update'])->name('update')->middleware('permission:sales.edit');
-        Route::delete('/{salesOrder}', [SalesOrderController::class, 'destroy'])->name('destroy')->middleware('permission:sales.delete');
-        Route::post('/{salesOrder}/confirm', [SalesOrderController::class, 'confirm'])->name('confirm')->middleware('permission:sales.edit');
-        Route::post('/{salesOrder}/deliver', [SalesOrderController::class, 'deliver'])->name('deliver')->middleware('permission:sales.edit');
-        Route::post('/{salesOrder}/invoice', [SalesOrderController::class, 'invoice'])->name('invoice')->middleware('permission:sales.edit');
-        Route::post('/{salesOrder}/cancel', [SalesOrderController::class, 'cancel'])->name('cancel')->middleware('permission:sales.delete');
+        Route::get('/{order}', [SalesOrderController::class, 'show'])->name('show')->middleware('permission:sales.view');
+        Route::get('/{order}/edit', [SalesOrderController::class, 'edit'])->name('edit')->middleware('permission:sales.edit');
+        Route::put('/{order}', [SalesOrderController::class, 'update'])->name('update')->middleware('permission:sales.edit');
+        Route::delete('/{order}', [SalesOrderController::class, 'destroy'])->name('destroy')->middleware('permission:sales.delete');
+        Route::post('/{order}/confirm', [SalesOrderController::class, 'confirm'])->name('confirm')->middleware(['permission:sales.edit', 'fiscal-lock']);
+        Route::post('/{order}/deliver', [SalesOrderController::class, 'deliver'])->name('deliver')->middleware(['permission:sales.edit', 'fiscal-lock']);
+        Route::post('/{order}/invoice', [SalesOrderController::class, 'invoice'])->name('invoice')->middleware('permission:sales.edit');
+        Route::post('/{order}/cancel', [SalesOrderController::class, 'cancel'])->name('cancel')->middleware(['permission:sales.delete', 'fiscal-lock']);
     });
 
     // Purchasing
@@ -283,8 +283,8 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/{purchaseOrder}', [PurchaseOrderController::class, 'update'])->name('update')->middleware('permission:purchasing.edit');
         Route::delete('/{purchaseOrder}', [PurchaseOrderController::class, 'destroy'])->name('destroy')->middleware('permission:purchasing.delete');
         Route::post('/{purchaseOrder}/confirm', [PurchaseOrderController::class, 'confirm'])->name('confirm')->middleware('permission:purchasing.edit');
-        Route::post('/{purchaseOrder}/receive', [PurchaseOrderController::class, 'receive'])->name('receive')->middleware('permission:purchasing.edit');
-        Route::post('/{purchaseOrder}/cancel', [PurchaseOrderController::class, 'cancel'])->name('cancel')->middleware('permission:purchasing.delete');
+        Route::post('/{purchaseOrder}/receive', [PurchaseOrderController::class, 'receive'])->name('receive')->middleware(['permission:purchasing.edit', 'fiscal-lock']);
+        Route::post('/{purchaseOrder}/cancel', [PurchaseOrderController::class, 'cancel'])->name('cancel')->middleware(['permission:purchasing.delete', 'fiscal-lock']);
     });
 
     // Finance - Invoices & Payments
