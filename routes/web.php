@@ -48,6 +48,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\SalaryStructureController;
 use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\TwoFactorController;
+use App\Http\Controllers\SystemMaintenanceController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -513,6 +514,14 @@ Route::middleware(['auth'])->group(function () {
             
             // User Management
             Route::resource('users', UserController::class)->except(['show']);
+        });
+
+        // System Maintenance
+        Route::prefix('maintenance')->name('maintenance.')->group(function () {
+            Route::get('/', [SystemMaintenanceController::class, 'index'])->name('index');
+            Route::get('/download', [SystemMaintenanceController::class, 'downloadBackup'])->name('download');
+            Route::post('/backup', [SystemMaintenanceController::class, 'runBackup'])->name('backup');
+            Route::post('/archive', [SystemMaintenanceController::class, 'runArchive'])->name('archive');
         });
     });
 });
