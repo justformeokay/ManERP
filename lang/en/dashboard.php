@@ -42,4 +42,30 @@ return [
 
     // Stock
     'stock_levels_healthy' => 'Stock levels are healthy',
+
+    // BI Dashboard — Cash Monitoring
+    'cash_on_hand' => 'Cash & Bank Balance',
+    'auto_refresh' => 'Auto-refresh 15 min',
+
+    // BI Dashboard — P&L Chart
+    'profit_loss_chart' => 'Profit & Loss',
+    'cogs' => 'COGS',
+    'net_income' => 'Net Income',
+    'this_month' => 'This Month',
+    'this_quarter' => 'This Quarter',
+    'this_year' => 'This Year',
+
+    // BI Dashboard — Inventory Valuation
+    'inventory_valuation' => 'Inventory Valuation',
+    'raw_material' => 'Raw Material',
+    'finished_good' => 'Finished Good',
+    'consumable_other' => 'Consumable & Other',
+    'total_valuation' => 'Total Valuation',
+
+    // BI Dashboard — QC
+    'qc_rejection_rate' => 'QC Rejection Rate',
+    'rejection' => 'Rejection',
+    'total_inspections' => 'Total Inspections',
+    'inspected_qty' => 'Inspected Qty',
+    'failed_qty' => 'Failed Qty',
 ];

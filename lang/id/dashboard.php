@@ -42,4 +42,30 @@ return [
 
     // Stok
     'stock_levels_healthy' => 'Stok dalam kondisi sehat',
+
+    // BI Dashboard — Monitoring Kas
+    'cash_on_hand' => 'Saldo Kas & Bank',
+    'auto_refresh' => 'Pembaruan otomatis 15 mnt',
+
+    // BI Dashboard — Grafik Laba Rugi
+    'profit_loss_chart' => 'Laba Rugi',
+    'cogs' => 'HPP',
+    'net_income' => 'Laba Bersih',
+    'this_month' => 'Bulan Ini',
+    'this_quarter' => 'Kuartal Ini',
+    'this_year' => 'Tahun Ini',
+
+    // BI Dashboard — Valuasi Inventaris
+    'inventory_valuation' => 'Valuasi Inventaris',
+    'raw_material' => 'Bahan Baku',
+    'finished_good' => 'Barang Jadi',
+    'consumable_other' => 'Consumable & Lainnya',
+    'total_valuation' => 'Total Valuasi',
+
+    // BI Dashboard — QC
+    'qc_rejection_rate' => 'Tingkat Penolakan QC',
+    'rejection' => 'Penolakan',
+    'total_inspections' => 'Total Inspeksi',
+    'inspected_qty' => 'Qty Diinspeksi',
+    'failed_qty' => 'Qty Gagal',
 ];
