@@ -70,6 +70,14 @@ return [
     'users' => 'Pengguna',
     'audit_logs' => 'Log Audit',
 
+    // Bantuan
+    'help' => 'Bantuan & Panduan',
+    'user_guide' => 'Panduan Pengguna',
+    'user_guide_desc' => 'Dokumentasi manual pengguna dan SOP lengkap',
+    'table_of_contents' => 'Daftar Isi',
+    'chapter' => 'Bab',
+    'back_to_toc' => 'Kembali ke Daftar Isi',
+
     /*
     |--------------------------------------------------------------------------
     | Navbar
@@ -1421,4 +1429,62 @@ return [
     'employee_updated' => 'Karyawan berhasil diperbarui.',
     'employee_deleted' => 'Karyawan berhasil dihapus.',
     'salary_structure_created' => 'Struktur gaji berhasil ditambahkan.',
+
+    // ─── NOTIFIKASI ───
+    'notifications' => 'Notifikasi',
+    'notifications_subtitle' => 'Pantau aktivitas terbaru',
+    'unread' => 'Belum Dibaca',
+    'read_status' => 'Sudah Dibaca',
+    'mark_read' => 'Tandai Dibaca',
+    'mark_all_read' => 'Tandai Semua Dibaca',
+    'all_caught_up' => 'Semua sudah terbaca!',
+    'no_notifications' => 'Belum ada notifikasi.',
+    'notification_marked_read' => 'Notifikasi ditandai sudah dibaca.',
+    'all_notifications_read' => 'Semua notifikasi ditandai sudah dibaca.',
+    'inventory_category' => 'Inventaris',
+    'sales_category' => 'Penjualan',
+    'support_category' => 'Dukungan',
+
+    // ─── TIKET DUKUNGAN ───
+    'support_tickets' => 'Tiket Dukungan',
+    'support_tickets_subtitle' => 'Ajukan dan lacak permintaan dukungan Anda',
+    'new_ticket' => 'Tiket Baru',
+    'new_ticket_subtitle' => 'Jelaskan masalah atau permintaan Anda',
+    'submit_ticket' => 'Kirim Tiket',
+    'ticket_number' => 'No. Tiket',
+    'ticket_title' => 'Judul',
+    'ticket_title_placeholder' => 'Ringkasan singkat masalah Anda',
+    'ticket_category' => 'Kategori',
+    'ticket_priority' => 'Prioritas',
+    'ticket_description' => 'Deskripsi',
+    'ticket_description_placeholder' => 'Berikan informasi detail tentang masalah Anda...',
+    'submitted_by' => 'Diajukan oleh',
+    'no_tickets' => 'Tidak ada tiket ditemukan.',
+    'ticket_created' => 'Tiket berhasil dikirim.',
+    'reply_sent' => 'Balasan berhasil dikirim.',
+    'ticket_status_updated' => 'Status tiket diperbarui.',
+    'type_reply' => 'Ketik balasan Anda...',
+    'send_reply' => 'Kirim',
+    'ticket_closed_no_reply' => 'Tiket ini sudah ditutup dan tidak dapat menerima balasan baru.',
+    'status_open' => 'Terbuka',
+    'status_in_progress' => 'Dalam Proses',
+    'status_resolved' => 'Terselesaikan',
+    'status_closed' => 'Ditutup',
+    'priority_low' => 'Rendah',
+    'priority_medium' => 'Sedang',
+    'priority_high' => 'Tinggi',
+    'priority_critical' => 'Kritis',
+    'cat_general' => 'Umum',
+    'cat_bug' => 'Laporan Bug',
+    'cat_feature' => 'Permintaan Fitur',
+    'cat_billing' => 'Penagihan',
+    'cat_other' => 'Lainnya',
+
+    // ─── TENTANG ───
+    'about_application' => 'Tentang Aplikasi',
+    'about_subtitle' => 'Sistem Perencanaan Sumber Daya Perusahaan',
+    'developer_info' => 'Informasi Pengembang',
+    'social_media' => 'Media Sosial',
+    'legal_disclaimer' => 'Penyangkalan Hukum',
+    'legal_disclaimer_text' => 'Perangkat lunak ini bersifat rahasia dan hak milik. Penyalinan, distribusi, atau modifikasi tanpa izin dilarang keras. Semua hak dilindungi oleh PT Karya Developer Indonesia.',
 ];

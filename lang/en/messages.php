@@ -70,6 +70,14 @@ return [
     'users' => 'Users',
     'audit_logs' => 'Audit Logs',
 
+    // Help
+    'help' => 'Help & Guides',
+    'user_guide' => 'User Guide',
+    'user_guide_desc' => 'Comprehensive user manual and SOP documentation',
+    'table_of_contents' => 'Table of Contents',
+    'chapter' => 'Chapter',
+    'back_to_toc' => 'Back to Table of Contents',
+
     /*
     |--------------------------------------------------------------------------
     | Navbar
@@ -1430,4 +1438,62 @@ return [
     'employee_updated' => 'Employee updated successfully.',
     'employee_deleted' => 'Employee deleted successfully.',
     'salary_structure_created' => 'Salary structure created successfully.',
+
+    // ─── NOTIFICATIONS ───
+    'notifications' => 'Notifications',
+    'notifications_subtitle' => 'Stay updated with the latest activities',
+    'unread' => 'Unread',
+    'read_status' => 'Read',
+    'mark_read' => 'Mark as Read',
+    'mark_all_read' => 'Mark All as Read',
+    'all_caught_up' => 'You\'re all caught up!',
+    'no_notifications' => 'No notifications yet.',
+    'notification_marked_read' => 'Notification marked as read.',
+    'all_notifications_read' => 'All notifications marked as read.',
+    'inventory_category' => 'Inventory',
+    'sales_category' => 'Sales',
+    'support_category' => 'Support',
+
+    // ─── SUPPORT TICKETS ───
+    'support_tickets' => 'Support Tickets',
+    'support_tickets_subtitle' => 'Submit and track your support requests',
+    'new_ticket' => 'New Ticket',
+    'new_ticket_subtitle' => 'Describe your issue or request',
+    'submit_ticket' => 'Submit Ticket',
+    'ticket_number' => 'Ticket #',
+    'ticket_title' => 'Title',
+    'ticket_title_placeholder' => 'Brief summary of your issue',
+    'ticket_category' => 'Category',
+    'ticket_priority' => 'Priority',
+    'ticket_description' => 'Description',
+    'ticket_description_placeholder' => 'Provide detailed information about your issue...',
+    'submitted_by' => 'Submitted by',
+    'no_tickets' => 'No tickets found.',
+    'ticket_created' => 'Ticket submitted successfully.',
+    'reply_sent' => 'Reply sent successfully.',
+    'ticket_status_updated' => 'Ticket status updated.',
+    'type_reply' => 'Type your reply...',
+    'send_reply' => 'Send',
+    'ticket_closed_no_reply' => 'This ticket is closed and cannot receive new replies.',
+    'status_open' => 'Open',
+    'status_in_progress' => 'In Progress',
+    'status_resolved' => 'Resolved',
+    'status_closed' => 'Closed',
+    'priority_low' => 'Low',
+    'priority_medium' => 'Medium',
+    'priority_high' => 'High',
+    'priority_critical' => 'Critical',
+    'cat_general' => 'General',
+    'cat_bug' => 'Bug Report',
+    'cat_feature' => 'Feature Request',
+    'cat_billing' => 'Billing',
+    'cat_other' => 'Other',
+
+    // ─── ABOUT ───
+    'about_application' => 'About Application',
+    'about_subtitle' => 'Enterprise Resource Planning System',
+    'developer_info' => 'Developer Information',
+    'social_media' => 'Social Media',
+    'legal_disclaimer' => 'Legal Disclaimer',
+    'legal_disclaimer_text' => 'This software is proprietary and confidential. Unauthorized copying, distribution, or modification is strictly prohibited. All rights reserved by PT Karya Developer Indonesia.',
 ];

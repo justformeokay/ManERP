@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\BankAccount;
 use App\Models\BankReconciliation;
 use App\Models\BankTransaction;
+use App\Services\AuditLogService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -58,13 +59,26 @@ class BankReconciliationService
      */
     public function toggleReconcile(BankTransaction $transaction, BankReconciliation $reconciliation): void
     {
-        if ($transaction->is_reconciled && $transaction->reconciliation_id === $reconciliation->id) {
-            $transaction->update(['is_reconciled' => false, 'reconciliation_id' => null]);
-        } else {
-            $transaction->update(['is_reconciled' => true, 'reconciliation_id' => $reconciliation->id]);
-        }
+        DB::transaction(function () use ($transaction, $reconciliation) {
+            $oldState = $transaction->is_reconciled;
 
-        $this->recalculateDifference($reconciliation);
+            if ($oldState && $transaction->reconciliation_id === $reconciliation->id) {
+                $transaction->update(['is_reconciled' => false, 'reconciliation_id' => null]);
+            } else {
+                $transaction->update(['is_reconciled' => true, 'reconciliation_id' => $reconciliation->id]);
+            }
+
+            $this->recalculateDifference($reconciliation);
+
+            AuditLogService::log(
+                'bank_reconciliation',
+                $oldState ? 'unmatch' : 'match',
+                ($oldState ? 'Unmatched' : 'Matched') . " transaction #{$transaction->id} ({$transaction->description}) on reconciliation #{$reconciliation->id}",
+                ['is_reconciled' => $oldState, 'reconciliation_id' => $oldState ? $reconciliation->id : null],
+                ['is_reconciled' => !$oldState, 'reconciliation_id' => !$oldState ? $reconciliation->id : null],
+                $transaction
+            );
+        });
     }
 
     /**
@@ -72,20 +86,35 @@ class BankReconciliationService
      */
     public function completeReconciliation(BankReconciliation $reconciliation): BankReconciliation
     {
-        $this->recalculateDifference($reconciliation);
+        return DB::transaction(function () use ($reconciliation) {
+            $oldData = $reconciliation->toArray();
 
-        $reconciliation->update([
-            'status'        => 'completed',
-            'reconciled_by' => Auth::id(),
-            'reconciled_at' => now(),
-        ]);
+            $this->recalculateDifference($reconciliation);
 
-        // Update bank account balance
-        $reconciliation->bankAccount->update([
-            'current_balance' => $reconciliation->statement_balance,
-        ]);
+            $reconciliation->update([
+                'status'        => 'completed',
+                'reconciled_by' => Auth::id(),
+                'reconciled_at' => now(),
+            ]);
 
-        return $reconciliation->fresh();
+            // Update bank account balance
+            $reconciliation->bankAccount->update([
+                'current_balance' => $reconciliation->statement_balance,
+            ]);
+
+            $reconciliation->refresh();
+
+            AuditLogService::log(
+                'bank_reconciliation',
+                'complete',
+                "Completed bank reconciliation #{$reconciliation->id} for {$reconciliation->bankAccount->name} (statement date: {$reconciliation->statement_date->format('Y-m-d')})",
+                $oldData,
+                $reconciliation->toArray(),
+                $reconciliation
+            );
+
+            return $reconciliation;
+        });
     }
 
     /**

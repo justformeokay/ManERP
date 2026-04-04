@@ -70,6 +70,14 @@ return [
     'users' => '사용자',
     'audit_logs' => '감사 로그',
 
+    // 도움말
+    'help' => '도움말 및 가이드',
+    'user_guide' => '사용자 가이드',
+    'user_guide_desc' => '종합 사용자 매뉴얼 및 SOP 문서',
+    'table_of_contents' => '목차',
+    'chapter' => '장',
+    'back_to_toc' => '목차로 돌아가기',
+
     /*
     |--------------------------------------------------------------------------
     | Navbar
@@ -1397,4 +1405,62 @@ return [
     'employee_updated' => '직원이 성공적으로 수정되었습니다.',
     'employee_deleted' => '직원이 성공적으로 삭제되었습니다.',
     'salary_structure_created' => '급여 구조가 성공적으로 생성되었습니다.',
+
+    // ─── 알림 ───
+    'notifications' => '알림',
+    'notifications_subtitle' => '최신 활동을 확인하세요',
+    'unread' => '읽지 않음',
+    'read_status' => '읽음',
+    'mark_read' => '읽음으로 표시',
+    'mark_all_read' => '모두 읽음으로 표시',
+    'all_caught_up' => '모두 확인했습니다!',
+    'no_notifications' => '알림이 없습니다.',
+    'notification_marked_read' => '알림이 읽음으로 표시되었습니다.',
+    'all_notifications_read' => '모든 알림이 읽음으로 표시되었습니다.',
+    'inventory_category' => '재고',
+    'sales_category' => '판매',
+    'support_category' => '지원',
+
+    // ─── 지원 티켓 ───
+    'support_tickets' => '지원 티켓',
+    'support_tickets_subtitle' => '지원 요청을 제출하고 추적하세요',
+    'new_ticket' => '새 티켓',
+    'new_ticket_subtitle' => '문제 또는 요청을 설명하세요',
+    'submit_ticket' => '티켓 제출',
+    'ticket_number' => '티켓 번호',
+    'ticket_title' => '제목',
+    'ticket_title_placeholder' => '문제에 대한 간략한 요약',
+    'ticket_category' => '카테고리',
+    'ticket_priority' => '우선순위',
+    'ticket_description' => '설명',
+    'ticket_description_placeholder' => '문제에 대한 자세한 정보를 제공하세요...',
+    'submitted_by' => '제출자',
+    'no_tickets' => '티켓이 없습니다.',
+    'ticket_created' => '티켓이 성공적으로 제출되었습니다.',
+    'reply_sent' => '답변이 성공적으로 전송되었습니다.',
+    'ticket_status_updated' => '티켓 상태가 업데이트되었습니다.',
+    'type_reply' => '답변을 입력하세요...',
+    'send_reply' => '전송',
+    'ticket_closed_no_reply' => '이 티켓은 종료되어 새 답변을 받을 수 없습니다.',
+    'status_open' => '열림',
+    'status_in_progress' => '진행 중',
+    'status_resolved' => '해결됨',
+    'status_closed' => '종료됨',
+    'priority_low' => '낮음',
+    'priority_medium' => '보통',
+    'priority_high' => '높음',
+    'priority_critical' => '긴급',
+    'cat_general' => '일반',
+    'cat_bug' => '버그 보고',
+    'cat_feature' => '기능 요청',
+    'cat_billing' => '청구',
+    'cat_other' => '기타',
+
+    // ─── 정보 ───
+    'about_application' => '애플리케이션 정보',
+    'about_subtitle' => '전사적 자원 관리 시스템',
+    'developer_info' => '개발자 정보',
+    'social_media' => '소셜 미디어',
+    'legal_disclaimer' => '법적 고지',
+    'legal_disclaimer_text' => '이 소프트웨어는 독점 및 기밀 정보입니다. 무단 복사, 배포 또는 수정은 엄격히 금지됩니다. 모든 권리는 PT Karya Developer Indonesia에 있습니다.',
 ];

@@ -32,31 +32,34 @@ class DashboardService
      */
     public function getData(User $user): array
     {
+        // Cache only scalar/aggregate data (safe for database serialization)
         $shared = Cache::remember('dashboard:shared', self::CACHE_TTL, function () {
             return [
-                'stats'               => $this->getStats(),
-                'salesStats'          => $this->getSalesStats(),
-                'arStats'             => $this->getARStats(),
-                'apStats'             => $this->getAPStats(),
-                'cashOnHand'          => $this->getCashOnHand(),
-                'arTrend'             => $this->getARTrend(),
-                'apTrend'             => $this->getAPTrend(),
-                'profitLossChart'     => $this->getProfitLossChart('year'),
-                'inventoryValuation'  => $this->getInventoryValuation(),
-                'qcRejectionRate'     => $this->getQcRejectionRate(),
-                'activeManufacturing' => $this->getActiveManufacturing(),
-                'recentSales'         => $this->getRecentSales(),
-                'recentPurchases'     => $this->getRecentPurchases(),
-                'lowStockItems'       => $this->getLowStockItems(),
-                'recentActivity'      => $this->getRecentActivity(),
-                'projectStats'        => $this->getProjectStats(),
-                'activeProjects'      => $this->getActiveProjects(),
-                'pendingBadges'       => $this->getPendingBadges(),
+                'stats'              => $this->getStats(),
+                'salesStats'         => $this->getSalesStats(),
+                'arStats'            => $this->getARStats(),
+                'apStats'            => $this->getAPStats(),
+                'cashOnHand'         => $this->getCashOnHand(),
+                'arTrend'            => $this->getARTrend(),
+                'apTrend'            => $this->getAPTrend(),
+                'profitLossChart'    => $this->getProfitLossChart('year'),
+                'inventoryValuation' => $this->getInventoryValuation(),
+                'qcRejectionRate'    => $this->getQcRejectionRate(),
+                'projectStats'       => $this->getProjectStats(),
+                'pendingBadges'      => $this->getPendingBadges(),
             ];
         });
 
-        // User-specific data (not cached globally)
-        $shared['pendingApprovals'] = $this->getPendingApprovals($user);
+        // Eloquent collections — fetched fresh to avoid database-cache
+        // serialization corruption (models with relationships don't
+        // survive serialize/unserialize in the database cache driver).
+        $shared['activeProjects']      = $this->getActiveProjects();
+        $shared['activeManufacturing'] = $this->getActiveManufacturing();
+        $shared['recentSales']         = $this->getRecentSales();
+        $shared['recentPurchases']     = $this->getRecentPurchases();
+        $shared['lowStockItems']       = $this->getLowStockItems();
+        $shared['recentActivity']      = $this->getRecentActivity();
+        $shared['pendingApprovals']    = $this->getPendingApprovals($user);
 
         return $shared;
     }

@@ -70,6 +70,14 @@ return [
     'users' => '用户',
     'audit_logs' => '审计日志',
 
+    // 帮助
+    'help' => '帮助与指南',
+    'user_guide' => '用户指南',
+    'user_guide_desc' => '综合用户手册和SOP文档',
+    'table_of_contents' => '目录',
+    'chapter' => '章',
+    'back_to_toc' => '返回目录',
+
     /*
     |--------------------------------------------------------------------------
     | 导航栏
@@ -1400,4 +1408,62 @@ return [
     'employee_updated' => '员工更新成功。',
     'employee_deleted' => '员工删除成功。',
     'salary_structure_created' => '薪资结构创建成功。',
+
+    // ─── 通知 ───
+    'notifications' => '通知',
+    'notifications_subtitle' => '了解最新活动动态',
+    'unread' => '未读',
+    'read_status' => '已读',
+    'mark_read' => '标为已读',
+    'mark_all_read' => '全部标为已读',
+    'all_caught_up' => '所有通知已查看！',
+    'no_notifications' => '暂无通知。',
+    'notification_marked_read' => '通知已标为已读。',
+    'all_notifications_read' => '所有通知已标为已读。',
+    'inventory_category' => '库存',
+    'sales_category' => '销售',
+    'support_category' => '支持',
+
+    // ─── 支持工单 ───
+    'support_tickets' => '支持工单',
+    'support_tickets_subtitle' => '提交并跟踪您的支持请求',
+    'new_ticket' => '新建工单',
+    'new_ticket_subtitle' => '描述您的问题或请求',
+    'submit_ticket' => '提交工单',
+    'ticket_number' => '工单编号',
+    'ticket_title' => '标题',
+    'ticket_title_placeholder' => '简要概述您的问题',
+    'ticket_category' => '分类',
+    'ticket_priority' => '优先级',
+    'ticket_description' => '描述',
+    'ticket_description_placeholder' => '请提供关于您问题的详细信息...',
+    'submitted_by' => '提交者',
+    'no_tickets' => '未找到工单。',
+    'ticket_created' => '工单提交成功。',
+    'reply_sent' => '回复发送成功。',
+    'ticket_status_updated' => '工单状态已更新。',
+    'type_reply' => '输入您的回复...',
+    'send_reply' => '发送',
+    'ticket_closed_no_reply' => '此工单已关闭，无法接收新回复。',
+    'status_open' => '待处理',
+    'status_in_progress' => '处理中',
+    'status_resolved' => '已解决',
+    'status_closed' => '已关闭',
+    'priority_low' => '低',
+    'priority_medium' => '中',
+    'priority_high' => '高',
+    'priority_critical' => '紧急',
+    'cat_general' => '常规',
+    'cat_bug' => '错误报告',
+    'cat_feature' => '功能需求',
+    'cat_billing' => '账单',
+    'cat_other' => '其他',
+
+    // ─── 关于 ───
+    'about_application' => '关于应用',
+    'about_subtitle' => '企业资源计划系统',
+    'developer_info' => '开发者信息',
+    'social_media' => '社交媒体',
+    'legal_disclaimer' => '法律声明',
+    'legal_disclaimer_text' => '本软件为专有及机密软件。未经授权的复制、分发或修改均被严格禁止。所有权利归 PT Karya Developer Indonesia 所有。',
 ];

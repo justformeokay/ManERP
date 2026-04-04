@@ -49,6 +49,9 @@ use App\Http\Controllers\SalaryStructureController;
 use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\SystemMaintenanceController;
+use App\Http\Controllers\UserGuideController;
+use App\Http\Controllers\SupportTicketController;
+use App\Http\Controllers\AboutController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -375,9 +378,6 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/', [BankAccountController::class, 'index'])->name('index');
             Route::get('/create', [BankAccountController::class, 'create'])->name('create')->middleware('permission:accounting.create');
             Route::post('/', [BankAccountController::class, 'store'])->name('store')->middleware('permission:accounting.create');
-            Route::get('/{bankAccount}', [BankAccountController::class, 'show'])->name('show');
-            Route::get('/{bankAccount}/transactions', [BankAccountController::class, 'transactions'])->name('transactions');
-            Route::post('/{bankAccount}/transactions', [BankAccountController::class, 'storeTransaction'])->name('transactions.store')->middleware(['permission:accounting.create', 'fiscal-lock:transaction_date']);
 
             Route::prefix('reconciliation')->name('reconciliation.')->group(function () {
                 Route::get('/', [BankReconciliationController::class, 'index'])->name('index');
@@ -386,6 +386,10 @@ Route::middleware(['auth'])->group(function () {
                 Route::post('/{reconciliation}/toggle/{transaction}', [BankReconciliationController::class, 'toggleTransaction'])->name('toggle')->middleware('permission:accounting.edit');
                 Route::post('/{reconciliation}/complete', [BankReconciliationController::class, 'complete'])->name('complete')->middleware('permission:accounting.edit');
             });
+
+            Route::get('/{bankAccount}', [BankAccountController::class, 'show'])->name('show');
+            Route::get('/{bankAccount}/transactions', [BankAccountController::class, 'transactions'])->name('transactions');
+            Route::post('/{bankAccount}/transactions', [BankAccountController::class, 'storeTransaction'])->name('transactions.store')->middleware(['permission:accounting.create', 'fiscal-lock:transaction_date']);
         });
 
         // Budgets
@@ -523,6 +527,25 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/backup', [SystemMaintenanceController::class, 'runBackup'])->name('backup');
             Route::post('/archive', [SystemMaintenanceController::class, 'runArchive'])->name('archive');
         });
+
+        // User Guide
+        Route::prefix('user-guide')->name('user-guide.')->group(function () {
+            Route::get('/', [UserGuideController::class, 'index'])->name('index');
+            Route::get('/{chapter}', [UserGuideController::class, 'show'])->name('show');
+        });
+
+        // Support Tickets
+        Route::prefix('support')->name('support.')->group(function () {
+            Route::get('/', [SupportTicketController::class, 'index'])->name('index');
+            Route::get('/create', [SupportTicketController::class, 'create'])->name('create');
+            Route::post('/', [SupportTicketController::class, 'store'])->name('store');
+            Route::get('/{ticket}', [SupportTicketController::class, 'show'])->name('show');
+            Route::post('/{ticket}/reply', [SupportTicketController::class, 'reply'])->name('reply');
+            Route::post('/{ticket}/status', [SupportTicketController::class, 'updateStatus'])->name('updateStatus');
+        });
+
+        // About
+        Route::get('/about', [AboutController::class, 'index'])->name('about');
     });
 });
 
