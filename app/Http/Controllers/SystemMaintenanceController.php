@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class SystemMaintenanceController extends Controller
 {
@@ -69,7 +70,23 @@ class SystemMaintenanceController extends Controller
         $filename = $request->query('file');
         $disk = Storage::disk('backups');
 
-        if (!$filename || !$disk->exists($filename)) {
+        // Path traversal protection: reject null, ../, absolute paths
+        if (
+            !$filename
+            || Str::contains($filename, '..')
+            || Str::startsWith($filename, '/')
+            || !str_ends_with($filename, '.zip')
+        ) {
+            return back()->with('error', __('maintenance.backup_not_found'));
+        }
+
+        // Normalize and verify within allowed backup directory
+        $backupDir = config('app.name', 'ManERP');
+        if (!Str::startsWith($filename, $backupDir . '/')) {
+            return back()->with('error', __('maintenance.backup_not_found'));
+        }
+
+        if (!$disk->exists($filename)) {
             return back()->with('error', __('maintenance.backup_not_found'));
         }
 
@@ -94,7 +111,8 @@ class SystemMaintenanceController extends Controller
 
             return back()->with('success', __('maintenance.backup_started', ['type' => $type]));
         } catch (\Throwable $e) {
-            return back()->with('error', __('maintenance.backup_failed', ['error' => $e->getMessage()]));
+            $errorDetail = app()->hasDebugModeEnabled() ? $e->getMessage() : __('maintenance.generic_error');
+            return back()->with('error', __('maintenance.backup_failed', ['error' => $errorDetail]));
         }
     }
 
@@ -113,7 +131,8 @@ class SystemMaintenanceController extends Controller
 
             return back()->with('success', __('maintenance.archive_complete') . ' ' . $output);
         } catch (\Throwable $e) {
-            return back()->with('error', __('maintenance.archive_failed', ['error' => $e->getMessage()]));
+            $errorDetail = app()->hasDebugModeEnabled() ? $e->getMessage() : __('maintenance.generic_error');
+            return back()->with('error', __('maintenance.archive_failed', ['error' => $errorDetail]));
         }
     }
 }

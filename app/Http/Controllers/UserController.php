@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Services\AuditLogService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
@@ -47,7 +48,16 @@ class UserController extends Controller
             ? null
             : ($validated['permissions'] ?? []);
 
-        User::create($validated);
+        $user = User::create($validated);
+
+        AuditLogService::log(
+            'users',
+            'create',
+            "Created user: {$user->name} ({$user->email}) with role {$user->role}",
+            null,
+            $user->only(['name', 'email', 'role', 'phone', 'status', 'permissions']),
+            $user,
+        );
 
         return redirect()->route('settings.users.index')->with('success', 'User created successfully.');
     }
@@ -59,6 +69,8 @@ class UserController extends Controller
 
     public function update(Request $request, User $user)
     {
+        $oldData = $user->only(['name', 'email', 'role', 'phone', 'status', 'permissions']);
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
@@ -86,18 +98,41 @@ class UserController extends Controller
 
         $user->update($validated);
 
+        $newData = $user->fresh()->only(['name', 'email', 'role', 'phone', 'status', 'permissions']);
+
+        AuditLogService::log(
+            'users',
+            'update',
+            "Updated user: {$user->name} ({$user->email})",
+            $oldData,
+            $newData,
+            $user,
+        );
+
         return redirect()->route('settings.users.index')->with('success', 'User updated successfully.');
     }
 
     public function destroy(User $user)
     {
-        if ($user->id === 1) {
-            return back()->with('error', 'Cannot delete the primary admin user.');
+        // Prevent deletion of the sole remaining admin (permission-based, not hardcoded ID)
+        if ($user->isAdmin() && User::where('role', User::ROLE_ADMIN)->count() <= 1) {
+            return back()->with('error', 'Cannot delete the last remaining admin user.');
         }
-        
+
         if ($user->id === auth()->id()) {
             return back()->with('error', 'You cannot delete your own account.');
         }
+
+        $deletedData = $user->only(['name', 'email', 'role', 'phone', 'status', 'permissions']);
+
+        AuditLogService::log(
+            'users',
+            'delete',
+            "Deleted user: {$user->name} ({$user->email})",
+            $deletedData,
+            null,
+            $user,
+        );
 
         $user->delete();
 

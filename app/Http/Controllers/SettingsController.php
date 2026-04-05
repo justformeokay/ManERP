@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Setting;
+use App\Services\AuditLogService;
 use Illuminate\Http\Request;
 
 class SettingsController extends Controller
@@ -56,7 +57,24 @@ class SettingsController extends Controller
             'items_per_page' => 'required|integer|min:5|max:100',
         ]);
 
+        // Capture old values before update
+        $oldData = [];
+        foreach (array_keys($validated) as $key) {
+            $oldData[$key] = Setting::get($key);
+        }
+
         Setting::setMany($validated);
+
+        // Cast validated to string values for comparison (settings store strings)
+        $newData = array_map(fn($v) => (string) $v, $validated);
+
+        AuditLogService::log(
+            'settings',
+            'update',
+            'Updated system settings',
+            $oldData,
+            $newData,
+        );
 
         return back()->with('success', __('messages.settings_saved'));
     }

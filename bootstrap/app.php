@@ -44,5 +44,22 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // In production, suppress detailed error info to prevent leaking SQL, paths, etc.
+        $exceptions->render(function (\Throwable $e, \Illuminate\Http\Request $request) {
+            if (app()->hasDebugModeEnabled()) {
+                return null; // Let Laravel handle it with full debug info
+            }
+
+            $status = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => $status === 500
+                        ? 'An internal error occurred. Please try again later.'
+                        : $e->getMessage(),
+                ], $status);
+            }
+
+            return null; // Let Laravel render its standard error view
+        });
     })->create();

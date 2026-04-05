@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Services\AuditLogService;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -62,7 +63,9 @@ class ArchiveActivityLogs extends Command
                             $row->action,
                             $row->description,
                             $row->ip_address,
-                            $row->created_at, // Already a string from DB
+                            Carbon::parse($row->created_at)->toIso8601String(),
+                            json_decode($row->old_data, true),
+                            json_decode($row->new_data, true),
                         ]);
                         $valid = hash_equals(
                             $row->checksum,
