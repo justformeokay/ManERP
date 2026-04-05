@@ -12,8 +12,8 @@
     <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1">
         @foreach($sidebarMenu ?? [] as $item)
             @if(isset($item['heading']))
-                {{-- Check admin-only heading --}}
-                @if(isset($item['admin_only']) && $item['admin_only'] && (!auth()->check() || !auth()->user()->isAdmin()))
+                {{-- Check special permission on heading --}}
+                @if(isset($item['special_permission']) && auth()->check() && !auth()->user()->hasPermission($item['special_permission']))
                     @continue
                 @endif
                 {{-- Check permission-gated heading --}}
@@ -24,11 +24,11 @@
                     {{ $item['heading'] }}
                 </p>
             @else
-                {{-- Check admin-only item --}}
-                @if(isset($item['admin_only']) && $item['admin_only'] && (!auth()->check() || !auth()->user()->isAdmin()))
+                {{-- Check special permission on item (fine-grained) --}}
+                @if(isset($item['special_permission']) && auth()->check() && !auth()->user()->hasPermission($item['special_permission']))
                     @continue
                 @endif
-                {{-- Check permission-gated item --}}
+                {{-- Check permission-gated item (module-level) --}}
                 @if(isset($item['permission']) && auth()->check() && !auth()->user()->hasModuleAccess($item['permission']))
                     @continue
                 @endif

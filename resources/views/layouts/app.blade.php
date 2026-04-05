@@ -40,6 +40,23 @@
             {{-- Navbar --}}
             @include('partials.navbar')
 
+            {{-- Impersonation Banner (Phase 7) --}}
+            @if(session('impersonator_id'))
+            <div class="bg-amber-500 text-white px-4 py-2 text-center text-sm font-medium flex items-center justify-center gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+                <span>{{ __('messages.rbac_impersonating', ['name' => auth()->user()->name, 'email' => auth()->user()->email]) }}</span>
+                <form method="POST" action="{{ route('impersonate.stop') }}" class="inline">
+                    @csrf
+                    <button type="submit" class="ml-2 rounded bg-white/20 px-3 py-1 text-xs font-bold hover:bg-white/30 transition">
+                        {{ __('messages.rbac_stop_impersonation') }}
+                    </button>
+                </form>
+            </div>
+            @endif
+
             {{-- Page content --}}
             <main class="flex-1 overflow-y-auto">
                 {{-- Breadcrumbs & Page Header --}}

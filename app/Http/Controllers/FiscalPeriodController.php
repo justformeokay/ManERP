@@ -59,13 +59,17 @@ class FiscalPeriodController extends Controller
 
     public function close(Request $request, FiscalPeriod $period)
     {
+        $this->authorize('close', $period);
+
         try {
+            $oldData = $period->toArray();
+
             $this->accountingService->closePeriod(
                 $period,
                 $request->input('closing_notes')
             );
 
-            $this->logUpdate($period);
+            $this->logUpdate($period, $oldData);
 
             return back()->with('success', __('messages.fiscal_period_closed'));
         } catch (\InvalidArgumentException $e) {
@@ -75,9 +79,13 @@ class FiscalPeriodController extends Controller
 
     public function reopen(FiscalPeriod $period)
     {
+        $this->authorize('reopen', $period);
+
         try {
+            $oldData = $period->toArray();
+
             $this->accountingService->reopenPeriod($period);
-            $this->logUpdate($period);
+            $this->logUpdate($period, $oldData);
 
             return back()->with('success', __('messages.fiscal_period_reopened'));
         } catch (\InvalidArgumentException $e) {

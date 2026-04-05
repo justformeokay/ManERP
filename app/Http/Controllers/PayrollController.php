@@ -111,6 +111,8 @@ class PayrollController extends Controller
      */
     public function approve(PayrollPeriod $period)
     {
+        $this->authorize('approve', $period);
+
         $check = $period->requireTransition('approved');
         if ($check !== true) {
             return back()->with('error', $check);
@@ -132,6 +134,8 @@ class PayrollController extends Controller
      */
     public function postToAccounting(PayrollPeriod $period)
     {
+        $this->authorize('post', $period);
+
         $check = $period->requireTransition('posted');
         if ($check !== true) {
             return back()->with('error', $check);

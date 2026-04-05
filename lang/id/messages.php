@@ -1621,4 +1621,23 @@ return [
     'non_current_liabilities_label' => 'Liabilitas Jangka Panjang',
     'system_account_label' => 'Akun Sistem',
     'liquidity_classification_label' => 'Klasifikasi Likuiditas',
+
+    // ── Phase 7: Matriks RBAC Industri ──
+    'rbac_no_permission' => 'Anda tidak memiliki izin untuk melakukan tindakan ini.',
+    'rbac_access_denied' => 'Akses ditolak. Izin tidak mencukupi.',
+    'rbac_close_period_denied' => 'Hanya pengguna dengan izin Tutup Periode yang dapat menutup atau membuka kembali periode fiskal.',
+    'rbac_post_gl_denied' => 'Hanya pengguna dengan izin Posting GL yang dapat memposting transaksi ke Buku Besar.',
+    'rbac_approve_payroll_denied' => 'Hanya pengguna dengan izin Setujui Payroll yang dapat menyetujui periode penggajian.',
+    'rbac_post_payroll_denied' => 'Hanya pengguna dengan izin Posting Payroll yang dapat memposting penggajian ke akuntansi.',
+    'rbac_cost_masked' => 'Informasi biaya dibatasi. Hubungi Manajer Keuangan untuk akses.',
+    'rbac_document_locked' => 'Dokumen ini berstatus :status dan tidak dapat diubah.',
+    'rbac_cannot_impersonate_self' => 'Anda tidak dapat menyamar sebagai diri sendiri.',
+    'rbac_cannot_impersonate_admin' => 'Anda tidak dapat menyamar sebagai administrator lain.',
+    'rbac_impersonation_started' => 'Anda sekarang melihat sistem sebagai :name.',
+    'rbac_impersonation_stopped' => 'Penyamaran berakhir. Selamat datang kembali, Administrator.',
+    'rbac_impersonating' => 'Menyamar sebagai: :name (:email)',
+    'rbac_stop_impersonation' => 'Kembali ke Admin',
+    'rbac_impersonator_not_found' => 'Akun administrator asli tidak ditemukan. Silakan masuk kembali.',
+    'rbac_role_changed' => 'Izin peran untuk :name telah diperbarui.',
+    'rbac_permission_audit' => 'Perubahan izin tercatat untuk pengguna :name.',
 ];

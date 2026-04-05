@@ -1597,4 +1597,23 @@ return [
     'non_current_liabilities_label' => '비유동부채',
     'system_account_label' => '시스템 계정',
     'liquidity_classification_label' => '유동성 분류',
+
+    // ── Phase 7: 산업용 RBAC 매트릭스 ──
+    'rbac_no_permission' => '이 작업을 수행할 권한이 없습니다.',
+    'rbac_access_denied' => '접근이 거부되었습니다. 권한이 부족합니다.',
+    'rbac_close_period_denied' => '기간 마감 권한이 있는 사용자만 회계 기간을 마감하거나 다시 열 수 있습니다.',
+    'rbac_post_gl_denied' => 'GL 전기 권한이 있는 사용자만 총계정원장에 거래를 전기할 수 있습니다.',
+    'rbac_approve_payroll_denied' => '급여 승인 권한이 있는 사용자만 급여 기간을 승인할 수 있습니다.',
+    'rbac_post_payroll_denied' => '급여 전기 권한이 있는 사용자만 급여를 회계에 전기할 수 있습니다.',
+    'rbac_cost_masked' => '비용 정보가 제한되어 있습니다. 접근 권한은 재무 관리자에게 문의하세요.',
+    'rbac_document_locked' => '이 문서는 :status 상태이며 수정할 수 없습니다.',
+    'rbac_cannot_impersonate_self' => '자기 자신을 가장할 수 없습니다.',
+    'rbac_cannot_impersonate_admin' => '다른 관리자를 가장할 수 없습니다.',
+    'rbac_impersonation_started' => '현재 :name으로 시스템을 보고 있습니다.',
+    'rbac_impersonation_stopped' => '가장이 종료되었습니다. 관리자님, 돌아오셨습니다.',
+    'rbac_impersonating' => '가장 중: :name (:email)',
+    'rbac_stop_impersonation' => '관리자로 돌아가기',
+    'rbac_impersonator_not_found' => '원래 관리자 계정을 찾을 수 없습니다. 다시 로그인하세요.',
+    'rbac_role_changed' => ':name의 역할 권한이 업데이트되었습니다.',
+    'rbac_permission_audit' => '사용자 :name의 권한 변경이 감사되었습니다.',
 ];

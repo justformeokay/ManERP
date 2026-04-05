@@ -1600,4 +1600,23 @@ return [
     'non_current_liabilities_label' => '非流动负债',
     'system_account_label' => '系统账户',
     'liquidity_classification_label' => '流动性分类',
+
+    // ── Phase 7: 工业RBAC矩阵 ──
+    'rbac_no_permission' => '您没有执行此操作的权限。',
+    'rbac_access_denied' => '访问被拒绝。权限不足。',
+    'rbac_close_period_denied' => '只有拥有关闭期间权限的用户才能关闭或重新打开会计期间。',
+    'rbac_post_gl_denied' => '只有拥有过账GL权限的用户才能将交易过账到总账。',
+    'rbac_approve_payroll_denied' => '只有拥有审批工资权限的用户才能审批工资期间。',
+    'rbac_post_payroll_denied' => '只有拥有过账工资权限的用户才能将工资过账到会计。',
+    'rbac_cost_masked' => '成本信息受限。请联系财务经理获取访问权限。',
+    'rbac_document_locked' => '此文档状态为 :status，无法修改。',
+    'rbac_cannot_impersonate_self' => '您不能模拟自己。',
+    'rbac_cannot_impersonate_admin' => '您不能模拟其他管理员。',
+    'rbac_impersonation_started' => '您现在正以 :name 的身份查看系统。',
+    'rbac_impersonation_stopped' => '模拟已结束。欢迎回来，管理员。',
+    'rbac_impersonating' => '正在模拟: :name (:email)',
+    'rbac_stop_impersonation' => '返回管理员',
+    'rbac_impersonator_not_found' => '未找到原始管理员账户。请重新登录。',
+    'rbac_role_changed' => ':name 的角色权限已更新。',
+    'rbac_permission_audit' => '用户 :name 的权限更改已审计。',
 ];

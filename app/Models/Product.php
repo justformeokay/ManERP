@@ -12,6 +12,11 @@ class Product extends Model
 {
     use HasFactory, SoftDeletes;
 
+    /**
+     * Cost-related fields that are masked for users without 'inventory.view_cost'.
+     */
+    public const COST_FIELDS = ['cost_price', 'overhead_cost', 'labor_cost', 'standard_cost', 'avg_cost'];
+
     protected $fillable = [
         'sku', 'name', 'description', 'category_id', 'type',
         'unit', 'cost_price', 'overhead_cost', 'labor_cost', 'standard_cost',
@@ -94,5 +99,35 @@ class Product extends Model
     public static function unitOptions(): array
     {
         return ['pcs', 'kg', 'ltr', 'mtr', 'box', 'set', 'roll', 'unit'];
+    }
+
+    /**
+     * Mask cost fields if the given user lacks 'inventory.view_cost'.
+     * Returns a new array with cost fields set to null.
+     */
+    public function toMaskedArray(?User $user = null): array
+    {
+        $data = $this->toArray();
+        $user = $user ?? auth()->user();
+
+        if ($user && !$user->hasPermission('inventory.view_cost')) {
+            foreach (self::COST_FIELDS as $field) {
+                $data[$field] = null;
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * Get a cost field value, returning null if current user cannot view costs.
+     */
+    public function getMaskedCost(string $field): ?string
+    {
+        $user = auth()->user();
+        if ($user && !$user->hasPermission('inventory.view_cost')) {
+            return null;
+        }
+        return $this->getAttribute($field);
     }
 }

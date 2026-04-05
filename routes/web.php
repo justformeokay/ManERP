@@ -52,6 +52,7 @@ use App\Http\Controllers\SystemMaintenanceController;
 use App\Http\Controllers\UserGuideController;
 use App\Http\Controllers\SupportTicketController;
 use App\Http\Controllers\AboutController;
+use App\Http\Controllers\ImpersonationController;
 use App\Http\Controllers\LicenseController;
 use Illuminate\Support\Facades\Route;
 
@@ -92,6 +93,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Impersonation (Role Simulation — Phase 7)
+    Route::post('/impersonate/{user}/start', [ImpersonationController::class, 'start'])->name('impersonate.start')->middleware('permission:admin.impersonate');
+    Route::post('/impersonate/stop', [ImpersonationController::class, 'stop'])->name('impersonate.stop');
 
     // Two-Factor Authentication Management
     Route::get('/two-factor/setup', [TwoFactorController::class, 'setup'])->name('two-factor.setup');
@@ -356,8 +361,8 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/create', [FiscalPeriodController::class, 'create'])->name('create')->middleware('permission:accounting.create');
             Route::post('/', [FiscalPeriodController::class, 'store'])->name('store')->middleware('permission:accounting.create');
             Route::post('/generate-year', [FiscalPeriodController::class, 'generateYear'])->name('generate-year')->middleware('permission:accounting.create');
-            Route::post('/{period}/close', [FiscalPeriodController::class, 'close'])->name('close')->middleware('permission:accounting.edit');
-            Route::post('/{period}/reopen', [FiscalPeriodController::class, 'reopen'])->name('reopen')->middleware('permission:accounting.edit');
+            Route::post('/{period}/close', [FiscalPeriodController::class, 'close'])->name('close')->middleware('permission:accounting.close_period');
+            Route::post('/{period}/reopen', [FiscalPeriodController::class, 'reopen'])->name('reopen')->middleware('permission:accounting.close_period');
         });
 
         // Tax Management
@@ -470,8 +475,8 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/', [PayrollController::class, 'store'])->name('store')->middleware('permission:hr.create');
             Route::get('/payslip/{payslip}', [PayrollController::class, 'payslip'])->name('payslip');
             Route::get('/{period}', [PayrollController::class, 'show'])->name('show');
-            Route::post('/{period}/approve', [PayrollController::class, 'approve'])->name('approve')->middleware('permission:hr.edit');
-            Route::post('/{period}/post', [PayrollController::class, 'postToAccounting'])->name('post')->middleware('permission:hr.edit');
+            Route::post('/{period}/approve', [PayrollController::class, 'approve'])->name('approve')->middleware('permission:hr.approve_payroll');
+            Route::post('/{period}/post', [PayrollController::class, 'postToAccounting'])->name('post')->middleware('permission:hr.post_payroll');
         });
     });
 
@@ -492,41 +497,40 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/{approval}/resubmit', [ApprovalController::class, 'resubmit'])->name('resubmit');
         
         // Admin: Flow Configuration
-        Route::get('/admin/flows', [ApprovalController::class, 'flows'])->name('flows')->middleware('admin');
-        Route::get('/admin/flows/{flow}/edit', [ApprovalController::class, 'editFlow'])->name('flows.edit')->middleware('admin');
-        Route::put('/admin/flows/{flow}', [ApprovalController::class, 'updateFlow'])->name('flows.update')->middleware('admin');
+        Route::get('/admin/flows', [ApprovalController::class, 'flows'])->name('flows')->middleware('permission:admin.manage_settings');
+        Route::get('/admin/flows/{flow}/edit', [ApprovalController::class, 'editFlow'])->name('flows.edit')->middleware('permission:admin.manage_settings');
+        Route::put('/admin/flows/{flow}', [ApprovalController::class, 'updateFlow'])->name('flows.update')->middleware('permission:admin.manage_settings');
         
         // Admin: Role Management
-        Route::get('/admin/roles', [ApprovalController::class, 'roles'])->name('roles')->middleware('admin');
-        Route::get('/admin/roles/{role}/edit', [ApprovalController::class, 'editRole'])->name('roles.edit')->middleware('admin');
-        Route::put('/admin/roles/{role}', [ApprovalController::class, 'updateRole'])->name('roles.update')->middleware('admin');
+        Route::get('/admin/roles', [ApprovalController::class, 'roles'])->name('roles')->middleware('permission:admin.manage_settings');
+        Route::get('/admin/roles/{role}/edit', [ApprovalController::class, 'editRole'])->name('roles.edit')->middleware('permission:admin.manage_settings');
+        Route::put('/admin/roles/{role}', [ApprovalController::class, 'updateRole'])->name('roles.update')->middleware('permission:admin.manage_settings');
     });
 
     /*
     |--------------------------------------------------------------------------
-    | Admin Only Routes
+    | Administration Routes (Permission-gated, Phase 7)
     |--------------------------------------------------------------------------
     */
-    Route::middleware(['admin'])->group(function () {
-        
+    
         // Audit Logs
-        Route::prefix('audit-logs')->name('audit-logs.')->group(function () {
+        Route::prefix('audit-logs')->name('audit-logs.')->middleware('permission:admin.view_audit_logs')->group(function () {
             Route::get('/', [AuditLogController::class, 'index'])->name('index');
             Route::get('/verify-integrity', [AuditLogController::class, 'verifyIntegrity'])->name('verify-integrity');
             Route::get('/{activityLog}', [AuditLogController::class, 'show'])->name('show');
         });
 
         // Settings
-        Route::prefix('settings')->name('settings.')->group(function () {
+        Route::prefix('settings')->name('settings.')->middleware('permission:admin.manage_settings')->group(function () {
             Route::get('/', [SettingsController::class, 'index'])->name('index');
             Route::post('/', [SettingsController::class, 'update'])->name('update');
             
             // User Management
-            Route::resource('users', UserController::class)->except(['show']);
+            Route::resource('users', UserController::class)->except(['show'])->middleware('permission:admin.manage_users');
         });
 
         // System Maintenance
-        Route::prefix('maintenance')->name('maintenance.')->group(function () {
+        Route::prefix('maintenance')->name('maintenance.')->middleware('permission:admin.maintenance')->group(function () {
             Route::get('/', [SystemMaintenanceController::class, 'index'])->name('index');
             Route::get('/download', [SystemMaintenanceController::class, 'downloadBackup'])->name('download');
             Route::post('/backup', [SystemMaintenanceController::class, 'runBackup'])->name('backup');
@@ -553,12 +557,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/about', [AboutController::class, 'index'])->name('about');
 
         // License Management
-        Route::prefix('license')->name('license.')->group(function () {
+        Route::prefix('license')->name('license.')->middleware('permission:admin.manage_license')->group(function () {
             Route::get('/', [LicenseController::class, 'index'])->name('index');
             Route::get('/activate', [LicenseController::class, 'activate'])->name('activate');
             Route::post('/activate', [LicenseController::class, 'processActivation'])->name('processActivation');
         });
-    });
 });
 
 require __DIR__.'/auth.php';

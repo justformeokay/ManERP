@@ -35,9 +35,42 @@ class User extends Authenticatable
         'accounting'    => 'Accounting',
         'hr'            => 'HR & Payroll',
         'reports'       => 'Reports',
+        'admin'         => 'Administration',
     ];
 
     public const PERMISSION_ACTIONS = ['view', 'create', 'edit', 'delete'];
+
+    /**
+     * Special granular permissions beyond standard CRUD.
+     * These enable Segregation of Duties (SoD) for sensitive operations.
+     */
+    public const SPECIAL_PERMISSIONS = [
+        'accounting.close_period'  => 'Close / Reopen Fiscal Periods',
+        'accounting.post_gl'       => 'Post Transactions to General Ledger',
+        'hr.approve_payroll'       => 'Approve Payroll Periods',
+        'hr.post_payroll'          => 'Post Payroll to Accounting',
+        'inventory.view_cost'      => 'View Cost Prices & Valuations',
+        'admin.manage_users'       => 'Manage Users',
+        'admin.manage_settings'    => 'Manage System Settings',
+        'admin.view_audit_logs'    => 'View Audit Logs',
+        'admin.maintenance'        => 'System Maintenance & Backups',
+        'admin.manage_license'     => 'License Management',
+        'admin.impersonate'        => 'Impersonate Other Users',
+    ];
+
+    /**
+     * Industrial role templates — preset permission sets for common ERP roles.
+     */
+    public const ROLE_TEMPLATES = [
+        'super_admin',
+        'finance_manager',
+        'accounting_staff',
+        'production_manager',
+        'warehouse_staff',
+        'purchasing',
+        'sales',
+        'hr_payroll',
+    ];
 
     protected $fillable = ['name', 'email', 'password', 'password_changed_at', 'role', 'permissions', 'phone', 'status', 'locale'];
 
@@ -101,7 +134,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Get all available permissions as flat array.
+     * Get all available permissions as flat array (standard CRUD + special).
      */
     public static function allPermissions(): array
     {
@@ -110,6 +143,9 @@ class User extends Authenticatable
             foreach (self::PERMISSION_ACTIONS as $action) {
                 $perms[] = "{$module}.{$action}";
             }
+        }
+        foreach (self::SPECIAL_PERMISSIONS as $perm => $label) {
+            $perms[] = $perm;
         }
         return $perms;
     }

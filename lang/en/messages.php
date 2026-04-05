@@ -1630,4 +1630,23 @@ return [
     'non_current_liabilities_label' => 'Non-Current Liabilities',
     'system_account_label' => 'System Account',
     'liquidity_classification_label' => 'Liquidity Classification',
+
+    // ── Phase 7: Industrial RBAC Matrix ──
+    'rbac_no_permission' => 'You do not have permission to perform this action.',
+    'rbac_access_denied' => 'Access denied. Insufficient permissions.',
+    'rbac_close_period_denied' => 'Only authorized users with Close Period permission can close or reopen fiscal periods.',
+    'rbac_post_gl_denied' => 'Only authorized users with Post GL permission can post transactions to the General Ledger.',
+    'rbac_approve_payroll_denied' => 'Only authorized users with Approve Payroll permission can approve payroll periods.',
+    'rbac_post_payroll_denied' => 'Only authorized users with Post Payroll permission can post payroll to accounting.',
+    'rbac_cost_masked' => 'Cost information is restricted. Contact your Finance Manager for access.',
+    'rbac_document_locked' => 'This document is :status and cannot be modified.',
+    'rbac_cannot_impersonate_self' => 'You cannot impersonate yourself.',
+    'rbac_cannot_impersonate_admin' => 'You cannot impersonate another administrator.',
+    'rbac_impersonation_started' => 'You are now viewing the system as :name.',
+    'rbac_impersonation_stopped' => 'Impersonation ended. Welcome back, Administrator.',
+    'rbac_impersonating' => 'Impersonating: :name (:email)',
+    'rbac_stop_impersonation' => 'Return to Admin',
+    'rbac_impersonator_not_found' => 'Original administrator account not found. Please log in again.',
+    'rbac_role_changed' => 'Role permissions for :name have been updated.',
+    'rbac_permission_audit' => 'Permission change audited for user :name.',
 ];
