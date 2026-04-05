@@ -175,6 +175,13 @@ class User extends Authenticatable
         return $query->where('status', self::STATUS_ACTIVE);
     }
 
+    // ── HR Relationship ─────────────────────────────────────────────
+
+    public function employee(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Employee::class);
+    }
+
     // ── Approval Roles ──────────────────────────────────────────────
 
     public function approvalRoles(): \Illuminate\Database\Eloquent\Relations\BelongsToMany

@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\ActivityLog;
+use App\Models\EmployeeDataChange;
+use App\Services\AuditLogService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -11,35 +14,62 @@ use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
-    /**
-     * Display the user's profile form.
-     */
     public function edit(Request $request): View
     {
+        $user = $request->user()->load('employee.documents', 'employee.dataChangeRequests');
+
+        $recentActivity = ActivityLog::where('user_id', $user->id)
+            ->latest('created_at')
+            ->limit(5)
+            ->get();
+
+        $pendingChange = null;
+        $changeHistory = collect();
+        if ($user->employee) {
+            $pendingChange = $user->employee->dataChangeRequests()
+                ->where('status', EmployeeDataChange::STATUS_PENDING)
+                ->first();
+            $changeHistory = $user->employee->dataChangeRequests()
+                ->latest()
+                ->limit(5)
+                ->get();
+        }
+
         return view('profile.edit', [
-            'user' => $request->user(),
+            'user'           => $user,
+            'recentActivity' => $recentActivity,
+            'pendingChange'  => $pendingChange,
+            'changeHistory'  => $changeHistory,
         ]);
     }
 
-    /**
-     * Update the user's profile information.
-     */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
+        $oldData = $user->only(['name', 'email']);
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        $user->fill($request->validated());
+
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
         }
 
-        $request->user()->save();
+        $user->save();
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        AuditLogService::log(
+            'users',
+            'update',
+            "User {$user->email} updated their profile",
+            $oldData,
+            $user->only(['name', 'email']),
+            $user
+        );
+
+        return Redirect::route('profile.edit')
+            ->with('status', 'profile-updated')
+            ->with('flash_type', 'success');
     }
 
-    /**
-     * Delete the user's account.
-     */
     public function destroy(Request $request): RedirectResponse
     {
         $request->validateWithBag('userDeletion', [
@@ -47,6 +77,15 @@ class ProfileController extends Controller
         ]);
 
         $user = $request->user();
+
+        AuditLogService::log(
+            'users',
+            'delete',
+            "User {$user->email} deleted their own account",
+            null,
+            null,
+            $user
+        );
 
         Auth::logout();
 

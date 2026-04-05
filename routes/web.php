@@ -3,6 +3,7 @@
 use App\Http\Controllers\AccountingReportController;
 use App\Http\Controllers\AccountsPayableController;
 use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\EssController;
 use App\Http\Controllers\FinancialReportController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ChartOfAccountController;
@@ -93,6 +94,21 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Employee Self-Service (ESS) — Profile Sub-routes
+    Route::prefix('profile/ess')->name('profile.ess.')->group(function () {
+        Route::post('/document/upload', [EssController::class, 'uploadDocument'])->name('document.upload');
+        Route::get('/document/{document}/view', [EssController::class, 'viewDocument'])->name('document.view');
+        Route::delete('/document/{document}', [EssController::class, 'deleteDocument'])->name('document.delete');
+        Route::post('/data-change', [EssController::class, 'requestDataChange'])->name('data-change');
+    });
+
+    // ESS — HR Approval Routes (admin/HR only)
+    Route::prefix('ess-admin')->name('ess-admin.')->middleware('permission:hr.edit')->group(function () {
+        Route::post('/change/{change}/approve', [EssController::class, 'approveChange'])->name('change.approve');
+        Route::post('/change/{change}/reject', [EssController::class, 'rejectChange'])->name('change.reject');
+        Route::post('/document/{document}/verify', [EssController::class, 'verifyDocument'])->name('document.verify');
+    });
 
     // Impersonation (Role Simulation — Phase 7)
     Route::post('/impersonate/{user}/start', [ImpersonationController::class, 'start'])->name('impersonate.start')->middleware('permission:admin.impersonate');

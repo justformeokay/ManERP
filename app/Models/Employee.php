@@ -101,6 +101,16 @@ class Employee extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function documents(): HasMany
+    {
+        return $this->hasMany(EmployeeDocument::class);
+    }
+
+    public function dataChangeRequests(): HasMany
+    {
+        return $this->hasMany(EmployeeDataChange::class);
+    }
+
     public function salaryStructures(): HasMany
     {
         return $this->hasMany(SalaryStructure::class);
