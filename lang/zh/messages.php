@@ -1588,4 +1588,16 @@ return [
     'other_earnings_label' => '其他收入',
     'loan_deduction_label' => '借款扣除',
     'other_deductions_label' => '其他扣除',
+
+    // ── Phase 5: 会计完整性与控制账户补丁 ──
+    'system_account_manual_blocked' => '系统/控制账户不允许手动分录: :codes',
+    'missing_coa_stock_adjustment' => '库存调整所需的会计科目未找到 (1300 库存 或 5102 库存调整差异)。请初始化会计科目表。',
+    'stock_adjustment_increase' => '库存调整 (增加)',
+    'stock_adjustment_decrease' => '库存调整 (减少)',
+    'current_assets_label' => '流动资产',
+    'non_current_assets_label' => '非流动资产',
+    'current_liabilities_label' => '流动负债',
+    'non_current_liabilities_label' => '非流动负债',
+    'system_account_label' => '系统账户',
+    'liquidity_classification_label' => '流动性分类',
 ];

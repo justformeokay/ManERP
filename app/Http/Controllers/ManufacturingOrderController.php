@@ -219,7 +219,9 @@ class ManufacturingOrderController extends Controller
                         $order->number . '-WIP-IN',
                         now()->toDateString(),
                         (float) $totalMaterialCost,
-                        "Material consumed to WIP — {$order->number}"
+                        "Material consumed to WIP — {$order->number}",
+                        ManufacturingOrder::class,
+                        $order->id
                     );
                 }
 
@@ -256,7 +258,9 @@ class ManufacturingOrderController extends Controller
                         $order->number . '-WIP-OUT',
                         now()->toDateString(),
                         (float) $totalMaterialCost,
-                        "WIP completed to FG — {$order->number}"
+                        "WIP completed to FG — {$order->number}",
+                        ManufacturingOrder::class,
+                        $order->id
                     );
                 }
 
@@ -355,7 +359,9 @@ class ManufacturingOrderController extends Controller
             $order->number . '-VAR',
             now()->toDateString(),
             $variance['variance'],
-            "Manufacturing variance — {$order->number} ({$variance['variance_pct']}%)"
+            "Manufacturing variance — {$order->number} ({$variance['variance_pct']}%)",
+            ManufacturingOrder::class,
+            $order->id
         );
     }
 

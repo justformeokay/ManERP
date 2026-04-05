@@ -95,6 +95,17 @@ class StockMovementController extends Controller
                                 'Stock adjustment (decrease)'
                             );
                         }
+
+                        // Auto-journal: Dr/Cr Inventory vs Inventory Adjustment Variance
+                        $adjustmentValue = bcmul((string) $delta, (string) $avgCost, 4);
+                        $this->valuationService->journalStockAdjustment(
+                            'ADJ-' . $movement->id,
+                            now()->toDateString(),
+                            (float) $adjustmentValue,
+                            "Stock adjustment — product #{$data['product_id']}",
+                            StockMovement::class,
+                            $movement->id
+                        );
                     }
 
                     return $movement;

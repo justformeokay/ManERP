@@ -1609,4 +1609,16 @@ return [
     'other_earnings_label' => 'Pendapatan Lainnya',
     'loan_deduction_label' => 'Potongan Kasbon',
     'other_deductions_label' => 'Potongan Lainnya',
+
+    // ── Phase 5: Integritas Akuntansi & Patch Akun Kontrol ──
+    'system_account_manual_blocked' => 'Jurnal manual tidak diizinkan untuk akun sistem/kontrol: :codes',
+    'missing_coa_stock_adjustment' => 'Akun CoA yang diperlukan untuk Penyesuaian Stok tidak ditemukan (1300 Persediaan atau 5102 Varian Penyesuaian Persediaan). Silakan seed Chart of Accounts.',
+    'stock_adjustment_increase' => 'Penyesuaian stok (penambahan)',
+    'stock_adjustment_decrease' => 'Penyesuaian stok (pengurangan)',
+    'current_assets_label' => 'Aset Lancar',
+    'non_current_assets_label' => 'Aset Tidak Lancar',
+    'current_liabilities_label' => 'Liabilitas Jangka Pendek',
+    'non_current_liabilities_label' => 'Liabilitas Jangka Panjang',
+    'system_account_label' => 'Akun Sistem',
+    'liquidity_classification_label' => 'Klasifikasi Likuiditas',
 ];

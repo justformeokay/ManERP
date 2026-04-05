@@ -315,7 +315,9 @@ class SalesOrderController extends Controller
                     $order->number . '-COGS',
                     now()->toDateString(),
                     (float) $totalCogs,
-                    "COGS — {$order->number}"
+                    "COGS — {$order->number}",
+                    SalesOrder::class,
+                    $order->id
                 );
             }
         });
@@ -429,7 +431,9 @@ class SalesOrderController extends Controller
                         $order->number . '-COGS-REV',
                         now()->toDateString(),
                         (float) $totalReverseCogs,
-                        "COGS reversal — {$order->number}"
+                        "COGS reversal — {$order->number}",
+                        SalesOrder::class,
+                        $order->id
                     );
                 }
             });

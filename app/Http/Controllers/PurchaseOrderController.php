@@ -238,7 +238,9 @@ class PurchaseOrderController extends Controller
                         $order->number,
                         now()->toDateString(),
                         (float) $totalReceiveValue,
-                        "Goods received — {$order->number}"
+                        "Goods received — {$order->number}",
+                        PurchaseOrder::class,
+                        $order->id
                     );
                 }
 
@@ -323,7 +325,9 @@ class PurchaseOrderController extends Controller
                     $order->number . '-CANCEL',
                     now()->toDateString(),
                     (float) $totalReverseValue,
-                    "PO cancelled — {$order->number}"
+                    "PO cancelled — {$order->number}",
+                    PurchaseOrder::class,
+                    $order->id
                 );
             }
 

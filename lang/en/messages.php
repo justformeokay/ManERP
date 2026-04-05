@@ -1618,4 +1618,16 @@ return [
     'other_earnings_label' => 'Other Earnings',
     'loan_deduction_label' => 'Loan Deduction',
     'other_deductions_label' => 'Other Deductions',
+
+    // ── Phase 5: Accounting Integrity & Control Account Patch ──
+    'system_account_manual_blocked' => 'Manual journal entries are not allowed for system/control accounts: :codes',
+    'missing_coa_stock_adjustment' => 'Required CoA accounts for Stock Adjustment not found (1300 Inventory or 5102 Inventory Adjustment Variance). Please seed the Chart of Accounts.',
+    'stock_adjustment_increase' => 'Stock adjustment (increase)',
+    'stock_adjustment_decrease' => 'Stock adjustment (decrease)',
+    'current_assets_label' => 'Current Assets',
+    'non_current_assets_label' => 'Non-Current Assets',
+    'current_liabilities_label' => 'Current Liabilities',
+    'non_current_liabilities_label' => 'Non-Current Liabilities',
+    'system_account_label' => 'System Account',
+    'liquidity_classification_label' => 'Liquidity Classification',
 ];

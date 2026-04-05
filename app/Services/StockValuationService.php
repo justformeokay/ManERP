@@ -192,7 +192,9 @@ class StockValuationService
         string $reference,
         string $date,
         float $totalValue,
-        string $description
+        string $description,
+        ?string $sourceableType = null,
+        ?int $sourceableId = null
     ): void {
         $inventoryAccount = ChartOfAccount::where('code', '1300')->first();
         $payableAccount = ChartOfAccount::where('code', '2000')->first();
@@ -210,7 +212,7 @@ class StockValuationService
         $this->accountingService->createJournalEntry($reference, $date, $description, [
             ['account_id' => $inventoryAccount->id, 'debit' => round($totalValue, 2), 'credit' => 0],
             ['account_id' => $payableAccount->id, 'debit' => 0, 'credit' => round($totalValue, 2)],
-        ]);
+        ], $sourceableType, $sourceableId, 'auto');
     }
 
     /**
@@ -221,7 +223,9 @@ class StockValuationService
         string $reference,
         string $date,
         float $totalValue,
-        string $description
+        string $description,
+        ?string $sourceableType = null,
+        ?int $sourceableId = null
     ): void {
         $inventoryAccount = ChartOfAccount::where('code', '1300')->first();
         $payableAccount = ChartOfAccount::where('code', '2000')->first();
@@ -239,7 +243,7 @@ class StockValuationService
         $this->accountingService->createJournalEntry($reference, $date, $description, [
             ['account_id' => $payableAccount->id, 'debit' => round($totalValue, 2), 'credit' => 0],
             ['account_id' => $inventoryAccount->id, 'debit' => 0, 'credit' => round($totalValue, 2)],
-        ]);
+        ], $sourceableType, $sourceableId, 'auto');
     }
 
     /**
@@ -250,7 +254,9 @@ class StockValuationService
         string $reference,
         string $date,
         float $totalCogs,
-        string $description
+        string $description,
+        ?string $sourceableType = null,
+        ?int $sourceableId = null
     ): void {
         $inventoryAccount = ChartOfAccount::where('code', '1300')->first();
         $cogsAccount = ChartOfAccount::where('code', '5000')->first();
@@ -268,7 +274,7 @@ class StockValuationService
         $this->accountingService->createJournalEntry($reference, $date, $description, [
             ['account_id' => $cogsAccount->id, 'debit' => round($totalCogs, 2), 'credit' => 0],
             ['account_id' => $inventoryAccount->id, 'debit' => 0, 'credit' => round($totalCogs, 2)],
-        ]);
+        ], $sourceableType, $sourceableId, 'auto');
     }
 
     /**
@@ -279,7 +285,9 @@ class StockValuationService
         string $reference,
         string $date,
         float $totalCogs,
-        string $description
+        string $description,
+        ?string $sourceableType = null,
+        ?int $sourceableId = null
     ): void {
         $inventoryAccount = ChartOfAccount::where('code', '1300')->first();
         $cogsAccount = ChartOfAccount::where('code', '5000')->first();
@@ -297,7 +305,7 @@ class StockValuationService
         $this->accountingService->createJournalEntry($reference, $date, $description, [
             ['account_id' => $inventoryAccount->id, 'debit' => round($totalCogs, 2), 'credit' => 0],
             ['account_id' => $cogsAccount->id, 'debit' => 0, 'credit' => round($totalCogs, 2)],
-        ]);
+        ], $sourceableType, $sourceableId, 'auto');
     }
 
     /**
@@ -310,7 +318,9 @@ class StockValuationService
         string $reference,
         string $date,
         float $totalMaterialCost,
-        string $description
+        string $description,
+        ?string $sourceableType = null,
+        ?int $sourceableId = null
     ): void {
         $fgAccount = ChartOfAccount::where('code', '1300-FG')->first();
         $rmAccount = ChartOfAccount::where('code', '1300-RM')->first();
@@ -330,7 +340,7 @@ class StockValuationService
         $this->accountingService->createJournalEntry($reference, $date, $description, [
             ['account_id' => $fgAccount->id, 'debit' => round($totalMaterialCost, 2), 'credit' => 0],
             ['account_id' => $rmAccount->id, 'debit' => 0, 'credit' => round($totalMaterialCost, 2)],
-        ]);
+        ], $sourceableType, $sourceableId, 'auto');
     }
 
     /**
@@ -342,7 +352,9 @@ class StockValuationService
         string $reference,
         string $date,
         float $totalMaterialCost,
-        string $description
+        string $description,
+        ?string $sourceableType = null,
+        ?int $sourceableId = null
     ): void {
         $wipAccount = ChartOfAccount::where('code', '1400')->first();
         $rmAccount = ChartOfAccount::where('code', '1300-RM')->first();
@@ -362,7 +374,7 @@ class StockValuationService
         $this->accountingService->createJournalEntry($reference, $date, $description, [
             ['account_id' => $wipAccount->id, 'debit' => round($totalMaterialCost, 2), 'credit' => 0],
             ['account_id' => $rmAccount->id, 'debit' => 0, 'credit' => round($totalMaterialCost, 2)],
-        ]);
+        ], $sourceableType, $sourceableId, 'auto');
     }
 
     /**
@@ -374,7 +386,9 @@ class StockValuationService
         string $reference,
         string $date,
         float $totalCost,
-        string $description
+        string $description,
+        ?string $sourceableType = null,
+        ?int $sourceableId = null
     ): void {
         $fgAccount = ChartOfAccount::where('code', '1300-FG')->first();
         $wipAccount = ChartOfAccount::where('code', '1400')->first();
@@ -394,7 +408,7 @@ class StockValuationService
         $this->accountingService->createJournalEntry($reference, $date, $description, [
             ['account_id' => $fgAccount->id, 'debit' => round($totalCost, 2), 'credit' => 0],
             ['account_id' => $wipAccount->id, 'debit' => 0, 'credit' => round($totalCost, 2)],
-        ]);
+        ], $sourceableType, $sourceableId, 'auto');
     }
 
     /**
@@ -408,7 +422,9 @@ class StockValuationService
         string $reference,
         string $date,
         float $variance,
-        string $description
+        string $description,
+        ?string $sourceableType = null,
+        ?int $sourceableId = null
     ): void {
         $wipAccount = ChartOfAccount::where('code', '1400')->first();
         $varianceAccount = ChartOfAccount::where('code', '6500')->first();
@@ -440,7 +456,51 @@ class StockValuationService
             ];
         }
 
-        $this->accountingService->createJournalEntry($reference, $date, $description, $entries);
+        $this->accountingService->createJournalEntry($reference, $date, $description, $entries, $sourceableType, $sourceableId, 'auto');
+    }
+
+    /**
+     * Create auto-journal for stock adjustment.
+     * Increase: Dr Inventory (1300) / Cr Inventory Adjustment Variance (5102)
+     * Decrease: Dr Inventory Adjustment Variance (5102) / Cr Inventory (1300)
+     */
+    public function journalStockAdjustment(
+        string $reference,
+        string $date,
+        float $adjustmentValue,
+        string $description,
+        ?string $sourceableType = null,
+        ?int $sourceableId = null
+    ): void {
+        $inventoryAccount = ChartOfAccount::where('code', '1300')->first();
+        $varianceAccount = ChartOfAccount::where('code', '5102')->first();
+
+        if (!$inventoryAccount || !$varianceAccount) {
+            throw new \RuntimeException(
+                __('messages.missing_coa_stock_adjustment')
+            );
+        }
+
+        $absValue = round(abs($adjustmentValue), 2);
+        if ($absValue < 0.01) {
+            return;
+        }
+
+        if ($adjustmentValue > 0) {
+            // Increase: Dr Inventory / Cr Variance
+            $entries = [
+                ['account_id' => $inventoryAccount->id, 'debit' => $absValue, 'credit' => 0],
+                ['account_id' => $varianceAccount->id, 'debit' => 0, 'credit' => $absValue],
+            ];
+        } else {
+            // Decrease: Dr Variance / Cr Inventory
+            $entries = [
+                ['account_id' => $varianceAccount->id, 'debit' => $absValue, 'credit' => 0],
+                ['account_id' => $inventoryAccount->id, 'debit' => 0, 'credit' => $absValue],
+            ];
+        }
+
+        $this->accountingService->createJournalEntry($reference, $date, $description, $entries, $sourceableType, $sourceableId, 'auto');
     }
 
     /**

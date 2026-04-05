@@ -8,12 +8,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ChartOfAccount extends Model
 {
-    protected $fillable = ['code', 'name', 'type', 'cash_flow_category', 'parent_id', 'is_active', 'is_tax_account', 'tax_type'];
+    protected $fillable = ['code', 'name', 'type', 'cash_flow_category', 'liquidity_classification', 'parent_id', 'is_active', 'is_system_account', 'is_tax_account', 'tax_type'];
 
     protected function casts(): array
     {
         return [
             'is_active' => 'boolean',
+            'is_system_account' => 'boolean',
             'is_tax_account' => 'boolean',
         ];
     }
@@ -21,6 +22,11 @@ class ChartOfAccount extends Model
     public function scopeTax($query)
     {
         return $query->where('is_tax_account', true);
+    }
+
+    public function scopeSystem($query)
+    {
+        return $query->where('is_system_account', true);
     }
 
     public static function taxTypeOptions(): array
@@ -55,6 +61,11 @@ class ChartOfAccount extends Model
     public static function cashFlowCategoryOptions(): array
     {
         return ['operating', 'investing', 'financing', 'cash', 'none'];
+    }
+
+    public static function liquidityClassificationOptions(): array
+    {
+        return ['current', 'non_current'];
     }
 
     public static function typeColors(): array

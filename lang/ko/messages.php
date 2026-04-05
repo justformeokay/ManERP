@@ -1585,4 +1585,16 @@ return [
     'other_earnings_label' => '기타 수입',
     'loan_deduction_label' => '대출 공제',
     'other_deductions_label' => '기타 공제',
+
+    // ── Phase 5: 회계 무결성 및 통제 계정 패치 ──
+    'system_account_manual_blocked' => '시스템/통제 계정에 대한 수동 분개는 허용되지 않습니다: :codes',
+    'missing_coa_stock_adjustment' => '재고 조정에 필요한 계정과목이 없습니다 (1300 재고 또는 5102 재고 조정 차이). 계정과목표를 시드하세요.',
+    'stock_adjustment_increase' => '재고 조정 (증가)',
+    'stock_adjustment_decrease' => '재고 조정 (감소)',
+    'current_assets_label' => '유동자산',
+    'non_current_assets_label' => '비유동자산',
+    'current_liabilities_label' => '유동부채',
+    'non_current_liabilities_label' => '비유동부채',
+    'system_account_label' => '시스템 계정',
+    'liquidity_classification_label' => '유동성 분류',
 ];

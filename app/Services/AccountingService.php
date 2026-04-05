@@ -27,10 +27,27 @@ class AccountingService
      * @param string $description
      * @param array  $entries    [['account_id'=>int, 'debit'=>float, 'credit'=>float], ...]
      */
-    public function createJournalEntry(string $reference, string $date, string $description, array $entries, ?string $sourceableType = null, ?int $sourceableId = null): JournalEntry
+    public function createJournalEntry(string $reference, string $date, string $description, array $entries, ?string $sourceableType = null, ?int $sourceableId = null, string $entryType = 'manual'): JournalEntry
     {
         if (empty($entries)) {
             throw new InvalidArgumentException('Journal entries cannot be empty.');
+        }
+
+        // ── Block manual journals to system/control accounts ──
+        if ($entryType === 'manual') {
+            $accountIds = array_unique(array_column($entries, 'account_id'));
+            $systemAccounts = ChartOfAccount::whereIn('id', $accountIds)
+                ->where('is_system_account', true)
+                ->pluck('code')
+                ->toArray();
+
+            if (!empty($systemAccounts)) {
+                throw new InvalidArgumentException(
+                    __('messages.system_account_manual_blocked', [
+                        'codes' => implode(', ', $systemAccounts),
+                    ])
+                );
+            }
         }
 
         // ── Fiscal period lock (service-level enforcement) ──
@@ -53,11 +70,12 @@ class AccountingService
             );
         }
 
-        return DB::transaction(function () use ($reference, $date, $description, $entries, $sourceableType, $sourceableId) {
+        return DB::transaction(function () use ($reference, $date, $description, $entries, $sourceableType, $sourceableId, $entryType) {
             $journalData = [
                 'reference'   => $reference,
                 'date'        => $date,
                 'description' => $description,
+                'entry_type'  => $entryType,
             ];
 
             if ($sourceableType && $sourceableId) {
@@ -206,15 +224,18 @@ class AccountingService
                 'chart_of_accounts.code',
                 'chart_of_accounts.name',
                 'chart_of_accounts.type',
+                'chart_of_accounts.liquidity_classification',
                 DB::raw('SUM(journal_items.debit) as total_debit'),
                 DB::raw('SUM(journal_items.credit) as total_credit')
             )
-            ->groupBy('chart_of_accounts.id', 'chart_of_accounts.code', 'chart_of_accounts.name', 'chart_of_accounts.type')
+            ->groupBy('chart_of_accounts.id', 'chart_of_accounts.code', 'chart_of_accounts.name', 'chart_of_accounts.type', 'chart_of_accounts.liquidity_classification')
             ->orderBy('chart_of_accounts.code')
             ->get();
 
-        $assets = collect();
-        $liabilities = collect();
+        $currentAssets = collect();
+        $nonCurrentAssets = collect();
+        $currentLiabilities = collect();
+        $nonCurrentLiabilities = collect();
         $equity = collect();
         $retainedEarnings = 0;
 
@@ -225,11 +246,19 @@ class AccountingService
             switch ($row->type) {
                 case 'asset':
                     $row->balance = round($debit - $credit, 2);
-                    $assets->push($row);
+                    if ($row->liquidity_classification === 'non_current') {
+                        $nonCurrentAssets->push($row);
+                    } else {
+                        $currentAssets->push($row);
+                    }
                     break;
                 case 'liability':
                     $row->balance = round($credit - $debit, 2);
-                    $liabilities->push($row);
+                    if ($row->liquidity_classification === 'non_current') {
+                        $nonCurrentLiabilities->push($row);
+                    } else {
+                        $currentLiabilities->push($row);
+                    }
                     break;
                 case 'equity':
                     $row->balance = round($credit - $debit, 2);
@@ -246,21 +275,31 @@ class AccountingService
 
         $retainedEarnings = round($retainedEarnings, 2);
 
-        $totalAssets = round($assets->sum('balance'), 2);
-        $totalLiabilities = round($liabilities->sum('balance'), 2);
+        $totalCurrentAssets = round($currentAssets->sum('balance'), 2);
+        $totalNonCurrentAssets = round($nonCurrentAssets->sum('balance'), 2);
+        $totalAssets = round($totalCurrentAssets + $totalNonCurrentAssets, 2);
+        $totalCurrentLiabilities = round($currentLiabilities->sum('balance'), 2);
+        $totalNonCurrentLiabilities = round($nonCurrentLiabilities->sum('balance'), 2);
+        $totalLiabilities = round($totalCurrentLiabilities + $totalNonCurrentLiabilities, 2);
         $totalEquity = round($equity->sum('balance') + $retainedEarnings, 2);
 
         return [
-            'date'                      => $date,
-            'assets'                    => $assets,
-            'liabilities'               => $liabilities,
-            'equity'                    => $equity,
-            'retained_earnings'         => $retainedEarnings,
-            'total_assets'              => $totalAssets,
-            'total_liabilities'         => $totalLiabilities,
-            'total_equity'              => $totalEquity,
-            'total_liabilities_equity'  => round($totalLiabilities + $totalEquity, 2),
-            'is_balanced'               => abs($totalAssets - ($totalLiabilities + $totalEquity)) < 0.01,
+            'date'                        => $date,
+            'current_assets'              => $currentAssets,
+            'non_current_assets'          => $nonCurrentAssets,
+            'current_liabilities'         => $currentLiabilities,
+            'non_current_liabilities'     => $nonCurrentLiabilities,
+            'equity'                      => $equity,
+            'retained_earnings'           => $retainedEarnings,
+            'total_current_assets'        => $totalCurrentAssets,
+            'total_non_current_assets'    => $totalNonCurrentAssets,
+            'total_assets'                => $totalAssets,
+            'total_current_liabilities'   => $totalCurrentLiabilities,
+            'total_non_current_liabilities' => $totalNonCurrentLiabilities,
+            'total_liabilities'           => $totalLiabilities,
+            'total_equity'                => $totalEquity,
+            'total_liabilities_equity'    => round($totalLiabilities + $totalEquity, 2),
+            'is_balanced'                 => abs($totalAssets - ($totalLiabilities + $totalEquity)) < 0.01,
         ];
     }
 
@@ -476,11 +515,13 @@ class AccountingService
                     'CLOSE-' . $period->end_date->format('Ym'),
                     $period->end_date->toDateString(),
                     "Closing entry for period: {$period->name}",
-                    $closingEntries
+                    $closingEntries,
+                    null,
+                    null,
+                    'closing'
                 );
 
                 $closingJournal->update([
-                    'entry_type' => 'closing',
                     'is_posted'  => true,
                 ]);
             }
@@ -547,11 +588,13 @@ class AccountingService
             'REV-' . $original->reference,
             $date,
             "Reversing: {$original->description}",
-            $reversingItems
+            $reversingItems,
+            null,
+            null,
+            'reversing'
         );
 
         $journal->update([
-            'entry_type'        => 'reversing',
             'reversed_entry_id' => $original->id,
             'is_posted'         => true,
         ]);
@@ -572,10 +615,9 @@ class AccountingService
             4, '0', STR_PAD_LEFT
         );
 
-        $journal = $this->createJournalEntry($ref, $date, $description, $entries);
+        $journal = $this->createJournalEntry($ref, $date, $description, $entries, null, null, 'adjusting');
 
         $journal->update([
-            'entry_type' => 'adjusting',
             'is_posted'  => true,
         ]);
 

@@ -121,6 +121,8 @@ class AuditLogService
             $record['created_at'] instanceof \DateTimeInterface
                 ? $record['created_at']->toIso8601String()
                 : (string) $record['created_at'],
+            $record['old_data'] ?? null,
+            $record['new_data'] ?? null,
         ]);
 
         return hash_hmac('sha256', $payload, config('app.key'));
@@ -142,6 +144,8 @@ class AuditLogService
             $log->description,
             $log->ip_address,
             $log->created_at->toIso8601String(),
+            $log->old_data,
+            $log->new_data,
         ]);
 
         return hash_equals($log->checksum, hash_hmac('sha256', $payload, config('app.key')));

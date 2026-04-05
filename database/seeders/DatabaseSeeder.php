@@ -45,20 +45,27 @@ class DatabaseSeeder extends Seeder
 
         // Seed default Chart of Accounts
         $accounts = [
-            ['code' => '1100', 'name' => 'Cash & Bank', 'type' => 'asset'],
-            ['code' => '1200', 'name' => 'Accounts Receivable', 'type' => 'asset'],
-            ['code' => '1300', 'name' => 'Inventory', 'type' => 'asset'],
-            ['code' => '2000', 'name' => 'Accounts Payable', 'type' => 'liability'],
-            ['code' => '3000', 'name' => "Owner's Equity", 'type' => 'equity'],
-            ['code' => '4000', 'name' => 'Revenue', 'type' => 'revenue'],
-            ['code' => '5000', 'name' => 'Cost of Goods Sold', 'type' => 'expense'],
-            ['code' => '6000', 'name' => 'Operating Expenses', 'type' => 'expense'],
+            ['code' => '1100', 'name' => 'Cash & Bank', 'type' => 'asset', 'is_system_account' => false, 'liquidity_classification' => 'current'],
+            ['code' => '1200', 'name' => 'Accounts Receivable', 'type' => 'asset', 'is_system_account' => true, 'liquidity_classification' => 'current'],
+            ['code' => '1300', 'name' => 'Inventory', 'type' => 'asset', 'is_system_account' => true, 'liquidity_classification' => 'current'],
+            ['code' => '2000', 'name' => 'Accounts Payable', 'type' => 'liability', 'is_system_account' => true, 'liquidity_classification' => 'current'],
+            ['code' => '3000', 'name' => "Owner's Equity", 'type' => 'equity', 'is_system_account' => false, 'liquidity_classification' => null],
+            ['code' => '4000', 'name' => 'Revenue', 'type' => 'revenue', 'is_system_account' => false, 'liquidity_classification' => null],
+            ['code' => '5000', 'name' => 'Cost of Goods Sold', 'type' => 'expense', 'is_system_account' => false, 'liquidity_classification' => null],
+            ['code' => '5102', 'name' => 'Inventory Adjustment Variance', 'type' => 'expense', 'is_system_account' => true, 'liquidity_classification' => null],
+            ['code' => '6000', 'name' => 'Operating Expenses', 'type' => 'expense', 'is_system_account' => false, 'liquidity_classification' => null],
         ];
 
         foreach ($accounts as $acc) {
             ChartOfAccount::firstOrCreate(
                 ['code' => $acc['code']],
-                ['name' => $acc['name'], 'type' => $acc['type'], 'is_active' => true]
+                [
+                    'name' => $acc['name'],
+                    'type' => $acc['type'],
+                    'is_active' => true,
+                    'is_system_account' => $acc['is_system_account'],
+                    'liquidity_classification' => $acc['liquidity_classification'],
+                ]
             );
         }
 
