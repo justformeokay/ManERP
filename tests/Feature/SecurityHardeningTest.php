@@ -215,17 +215,15 @@ class SecurityHardeningTest extends TestCase
     {
         Setting::set('default_tax_rate', '11');
 
-        $this->actingAs($this->admin)->post(route('settings.update'), [
-            'company_name'          => 'Test Corp',
-            'company_email'         => 'test@corp.com',
-            'company_phone'         => '021-123',
-            'company_address'       => 'Jakarta',
-            'default_currency'      => 'IDR',
-            'timezone'              => 'Asia/Jakarta',
-            'default_payment_terms' => 30,
-            'default_tax_rate'      => 12,
-            'low_stock_threshold'   => 5,
-            'items_per_page'        => 25,
+        $this->actingAs($this->admin)->post(route('settings.update.financial'), [
+            'fiscal_year_start_month' => 1,
+            'fiscal_closing_month'    => 12,
+            'system_account_lock'     => 0,
+            'opening_balance_date'    => '',
+            'default_currency'        => 'IDR',
+            'timezone'                => 'Asia/Jakarta',
+            'default_payment_terms'   => 30,
+            'default_tax_rate'        => 12,
         ]);
 
         $log = ActivityLog::where('module', 'settings')

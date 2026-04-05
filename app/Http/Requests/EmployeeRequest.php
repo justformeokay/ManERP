@@ -33,6 +33,7 @@ class EmployeeRequest extends FormRequest
             'bank_account_number' => ['nullable', 'string', 'max:30'],
             'bank_account_name'   => ['nullable', 'string', 'max:255'],
             'status'              => ['required', Rule::in(Employee::statusOptions())],
+            'user_id'             => ['nullable', 'integer', Rule::exists('users', 'id'), Rule::unique('employees', 'user_id')->ignore($employeeId)],
         ];
     }
 }

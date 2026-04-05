@@ -12,6 +12,7 @@ use App\Models\PayslipItem;
 use App\Models\PayrollPeriod;
 use App\Models\Pph21TerRate;
 use App\Models\JournalEntry;
+use App\Models\Setting;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -21,24 +22,19 @@ class PayrollService
 {
     /*
     |--------------------------------------------------------------------------
-    | BPJS Rates & Caps (per January 2024 — latest regulations)
+    | BPJS Rates & Caps — loaded from Settings (admin-configurable)
     |--------------------------------------------------------------------------
     */
 
-    // BPJS Ketenagakerjaan
-    private const JHT_COMPANY  = 0.037;   // 3.7%
-    private const JHT_EMPLOYEE = 0.02;    // 2%
-    private const JKK_RATE     = 0.0024;  // 0.24% (Tingkat risiko rendah — configurable)
-    private const JKM_RATE     = 0.003;   // 0.3%
-    private const JP_COMPANY   = 0.02;    // 2%
-    private const JP_EMPLOYEE  = 0.01;    // 1%
-    private const JP_MAX_SALARY = 10042300; // Batas upah JP 2024 (updated annually by BPJS)
+    private function bpjsRate(string $key, float $default): float
+    {
+        return (float) Setting::get($key, $default) / 100;
+    }
 
-    // BPJS Kesehatan
-    private const BPJS_KES_COMPANY  = 0.04;      // 4%
-    private const BPJS_KES_EMPLOYEE = 0.01;       // 1%
-    private const BPJS_KES_MIN_SALARY = 2942421;  // UMP DKI 2024 as floor
-    private const BPJS_KES_MAX_SALARY = 12000000; // Batas atas BPJS Kesehatan
+    private function bpjsCap(string $key, float $default): float
+    {
+        return (float) Setting::get($key, $default);
+    }
 
     /*
     |--------------------------------------------------------------------------
@@ -75,24 +71,24 @@ class PayrollService
      */
     public function calculateBpjs(float $monthlyFixed, float $grossSalary): array
     {
-        // ── BPJS Ketenagakerjaan ──
-        $jhtCompany  = round($monthlyFixed * self::JHT_COMPANY, 2);
-        $jhtEmployee = round($monthlyFixed * self::JHT_EMPLOYEE, 2);
-        $jkkCompany  = round($monthlyFixed * self::JKK_RATE, 2);
-        $jkmCompany  = round($monthlyFixed * self::JKM_RATE, 2);
+        // ── BPJS Ketenagakerjaan (rates from Settings) ──
+        $jhtCompany  = round($monthlyFixed * $this->bpjsRate('bpjs_jht_company', 3.7), 2);
+        $jhtEmployee = round($monthlyFixed * $this->bpjsRate('bpjs_jht_employee', 2), 2);
+        $jkkCompany  = round($monthlyFixed * $this->bpjsRate('bpjs_jkk_rate', 0.24), 2);
+        $jkmCompany  = round($monthlyFixed * $this->bpjsRate('bpjs_jkm_rate', 0.3), 2);
 
-        // JP — capped at maximum salary
-        $jpBase      = min($monthlyFixed, self::JP_MAX_SALARY);
-        $jpCompany   = round($jpBase * self::JP_COMPANY, 2);
-        $jpEmployee  = round($jpBase * self::JP_EMPLOYEE, 2);
+        // JP — capped at maximum salary (from Settings)
+        $jpBase      = min($monthlyFixed, $this->bpjsCap('bpjs_jp_max_salary', 10042300));
+        $jpCompany   = round($jpBase * $this->bpjsRate('bpjs_jp_company', 2), 2);
+        $jpEmployee  = round($jpBase * $this->bpjsRate('bpjs_jp_employee', 1), 2);
 
-        // ── BPJS Kesehatan ──
+        // ── BPJS Kesehatan (rates from Settings) ──
         $kesBase     = max(
-            self::BPJS_KES_MIN_SALARY,
-            min($grossSalary, self::BPJS_KES_MAX_SALARY)
+            $this->bpjsCap('bpjs_kes_min_salary', 2942421),
+            min($grossSalary, $this->bpjsCap('bpjs_kes_max_salary', 12000000))
         );
-        $kesCompany  = round($kesBase * self::BPJS_KES_COMPANY, 2);
-        $kesEmployee = round($kesBase * self::BPJS_KES_EMPLOYEE, 2);
+        $kesCompany  = round($kesBase * $this->bpjsRate('bpjs_kes_company', 4), 2);
+        $kesEmployee = round($kesBase * $this->bpjsRate('bpjs_kes_employee', 1), 2);
 
         return [
             'jht_company'    => $jhtCompany,
@@ -335,10 +331,19 @@ class PayrollService
         // ── Other Deductions ──
         $loanDeduction    = (float) ($override['loan_deduction'] ?? 0);
 
-        // Absence deduction: attendance-based (absent days × daily rate), fallback to manual
-        $absenceDeduction = $attendanceData['absent_days'] > 0
-            ? round($attendanceData['absent_days'] * ($basicSalary / $this->getWorkingDaysInMonth($period->month, $period->year)), 2)
-            : (float) ($override['absence_deduction'] ?? 0);
+        // Absence deduction: absent days lose proportional basic + meal + transport (bcmath)
+        $workingDays = (string) $this->getWorkingDaysInMonth($period->month, $period->year);
+        $absentDays  = $attendanceData['absent_days'];
+
+        if ($absentDays > 0 && !isset($override['absence_deduction'])) {
+            $dailyBasic     = bcdiv((string) $basicSalary,    $workingDays, 2);
+            $dailyMeal      = bcdiv((string) $mealAllowance,  $workingDays, 2);
+            $dailyTransport = bcdiv((string) $transportAllow, $workingDays, 2);
+            $dailyTotal     = bcadd($dailyBasic, bcadd($dailyMeal, $dailyTransport, 2), 2);
+            $absenceDeduction = (float) bcmul((string) $absentDays, $dailyTotal, 2);
+        } else {
+            $absenceDeduction = (float) ($override['absence_deduction'] ?? 0);
+        }
 
         $otherDeductions  = (float) ($override['other_deductions'] ?? 0);
 
@@ -432,13 +437,13 @@ class PayrollService
         // ── Deductions ──
         $order = 0;
         $deductions = [
-            'BPJS JHT (2%)'     => $bpjs['jht_employee'],
-            'BPJS JP (1%)'      => $bpjs['jp_employee'],
-            'BPJS Kesehatan (1%)' => $bpjs['kes_employee'],
-            'PPh 21'             => $pph21,
-            'Potongan Kasbon'    => (float) ($override['loan_deduction'] ?? 0),
-            'Potongan Absensi'   => (float) ($override['absence_deduction'] ?? 0),
-            'Potongan Lainnya'   => (float) ($override['other_deductions'] ?? 0),
+            'BPJS JHT (2%)'         => $bpjs['jht_employee'],
+            'BPJS JP (1%)'          => $bpjs['jp_employee'],
+            'BPJS Kesehatan (1%)'   => $bpjs['kes_employee'],
+            'PPh 21'                => $pph21,
+            'Potongan Kasbon'       => (float) ($override['loan_deduction'] ?? 0),
+            'Potongan Absensi'      => (float) $payslip->absence_deduction,
+            'Potongan Lainnya'      => (float) ($override['other_deductions'] ?? 0),
         ];
 
         foreach ($deductions as $label => $amount) {

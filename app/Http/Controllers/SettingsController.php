@@ -2,30 +2,268 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CompanySetting;
 use App\Models\Setting;
 use App\Services\AuditLogService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\View\View;
 
 class SettingsController extends Controller
 {
-    public function index()
-    {
-        $settings = [
-            'company_name' => Setting::get('company_name', ''),
-            'company_email' => Setting::get('company_email', ''),
-            'company_phone' => Setting::get('company_phone', ''),
-            'company_address' => Setting::get('company_address', ''),
-            'default_currency' => Setting::get('default_currency', 'USD'),
-            'timezone' => Setting::get('timezone', 'UTC'),
-            'default_payment_terms' => Setting::get('default_payment_terms', '30'),
-            'default_tax_rate' => Setting::get('default_tax_rate', '11'),
-            'low_stock_threshold' => Setting::get('low_stock_threshold', '10'),
-            'items_per_page' => Setting::get('items_per_page', '15'),
-        ];
+    private const TABS = ['company', 'financial', 'payroll', 'security', 'localization'];
 
-        $currencies = [
-            'USD' => '$ - US Dollar',
+    // ════════════════════════════════════════════════════════════════
+    // INDEX — Tabbed Interface
+    // ════════════════════════════════════════════════════════════════
+
+    public function index(Request $request): View
+    {
+        $tab = in_array($request->query('tab'), self::TABS, true)
+            ? $request->query('tab')
+            : 'company';
+
+        $data = ['currentTab' => $tab, 'tabs' => self::TABS];
+
+        $data += match ($tab) {
+            'company'      => $this->companyData(),
+            'financial'    => $this->financialData(),
+            'payroll'      => $this->payrollData(),
+            'security'     => $this->securityData(),
+            'localization' => $this->localizationData(),
+        };
+
+        // Configuration version history (last 20 settings changes)
+        $data['configHistory'] = \App\Models\ActivityLog::where('module', 'settings')
+            ->latest()
+            ->limit(20)
+            ->get();
+
+        return view('settings.index', $data);
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // TAB: Company Profile
+    // ════════════════════════════════════════════════════════════════
+
+    private function companyData(): array
+    {
+        $company = CompanySetting::getSettings();
+        return ['company' => $company];
+    }
+
+    public function updateCompany(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'company_name'    => 'nullable|string|max:255',
+            'company_email'   => 'nullable|email|max:255',
+            'company_phone'   => 'nullable|string|max:30',
+            'company_address' => 'nullable|string|max:1000',
+            'company_logo'    => 'nullable|image|mimes:png,jpg,jpeg,svg|max:1024',
+        ]);
+
+        $company = CompanySetting::first() ?? new CompanySetting();
+        $oldData = $company->only(['name', 'email', 'phone', 'address', 'logo']);
+
+        $company->name    = $validated['company_name'] ?? $company->name;
+        $company->email   = $validated['company_email'] ?? $company->email;
+        $company->phone   = $validated['company_phone'] ?? $company->phone;
+        $company->address = $validated['company_address'] ?? $company->address;
+
+        if ($request->hasFile('company_logo')) {
+            if ($company->logo) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($company->logo);
+            }
+            $company->logo = $request->file('company_logo')->store('logos', 'public');
+        }
+
+        $company->save();
+
+        // Also sync to key-value settings for backward compat
+        Setting::setMany([
+            'company_name'    => $company->name,
+            'company_email'   => $company->email,
+            'company_phone'   => $company->phone,
+            'company_address' => $company->address,
+        ]);
+
+        $newData = $company->only(['name', 'email', 'phone', 'address', 'logo']);
+
+        AuditLogService::log('settings', 'update', 'Updated company profile', $oldData, $newData);
+
+        return back()->with('success', __('messages.settings_saved'));
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // TAB: Accounting & Financial
+    // ════════════════════════════════════════════════════════════════
+
+    private function financialData(): array
+    {
+        return [
+            'settings' => $this->getSettingsArray([
+                'fiscal_year_start_month', 'fiscal_closing_month',
+                'system_account_lock', 'opening_balance_date',
+                'default_tax_rate', 'default_payment_terms',
+                'default_currency', 'timezone',
+            ]),
+            'currencies' => $this->getCurrencies(),
+            'timezones'  => timezone_identifiers_list(),
+        ];
+    }
+
+    public function updateFinancial(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'fiscal_year_start_month' => 'required|integer|min:1|max:12',
+            'fiscal_closing_month'    => 'required|integer|min:1|max:12',
+            'system_account_lock'     => 'required|boolean',
+            'opening_balance_date'    => 'nullable|date',
+            'default_tax_rate'        => 'required|numeric|min:0|max:100',
+            'default_payment_terms'   => 'required|integer|min:0|max:365',
+            'default_currency'        => 'required|string|max:10',
+            'timezone'                => 'required|string|timezone',
+        ]);
+
+        return $this->saveSettings($validated, 'Updated accounting & financial settings', 'financial');
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // TAB: HR & Payroll
+    // ════════════════════════════════════════════════════════════════
+
+    private function payrollData(): array
+    {
+        return [
+            'settings' => $this->getSettingsArray([
+                'bpjs_jht_company', 'bpjs_jht_employee',
+                'bpjs_jkk_rate', 'bpjs_jkm_rate',
+                'bpjs_jp_company', 'bpjs_jp_employee', 'bpjs_jp_max_salary',
+                'bpjs_kes_company', 'bpjs_kes_employee',
+                'bpjs_kes_min_salary', 'bpjs_kes_max_salary',
+                'standard_work_hours', 'late_tolerance_minutes',
+            ]),
+        ];
+    }
+
+    public function updatePayroll(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'bpjs_jht_company'       => 'required|numeric|min:0|max:100',
+            'bpjs_jht_employee'      => 'required|numeric|min:0|max:100',
+            'bpjs_jkk_rate'          => 'required|numeric|min:0|max:100',
+            'bpjs_jkm_rate'          => 'required|numeric|min:0|max:100',
+            'bpjs_jp_company'        => 'required|numeric|min:0|max:100',
+            'bpjs_jp_employee'       => 'required|numeric|min:0|max:100',
+            'bpjs_jp_max_salary'     => 'required|numeric|min:0',
+            'bpjs_kes_company'       => 'required|numeric|min:0|max:100',
+            'bpjs_kes_employee'      => 'required|numeric|min:0|max:100',
+            'bpjs_kes_min_salary'    => 'required|numeric|min:0',
+            'bpjs_kes_max_salary'    => 'required|numeric|min:0',
+            'standard_work_hours'    => 'required|integer|min:1|max:24',
+            'late_tolerance_minutes' => 'required|integer|min:0|max:120',
+        ]);
+
+        return $this->saveSettings($validated, 'Updated HR & payroll settings', 'payroll');
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // TAB: System & Security
+    // ════════════════════════════════════════════════════════════════
+
+    private function securityData(): array
+    {
+        return [
+            'settings' => $this->getSettingsArray([
+                'session_lifetime_minutes',
+                'mandatory_2fa_admin',
+                'api_rate_limit_per_minute',
+                'low_stock_threshold',
+                'items_per_page',
+            ]),
+        ];
+    }
+
+    public function updateSecurity(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'session_lifetime_minutes'  => 'required|integer|min:5|max:1440',
+            'mandatory_2fa_admin'       => 'required|boolean',
+            'api_rate_limit_per_minute' => 'required|integer|min:10|max:1000',
+            'low_stock_threshold'       => 'required|integer|min:0',
+            'items_per_page'            => 'required|integer|in:10,15,25,50,100',
+        ]);
+
+        return $this->saveSettings($validated, 'Updated system & security settings', 'security');
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // TAB: Localization
+    // ════════════════════════════════════════════════════════════════
+
+    private function localizationData(): array
+    {
+        return [
+            'settings' => $this->getSettingsArray([
+                'currency_symbol', 'thousand_separator',
+                'decimal_separator', 'decimal_places',
+                'default_locale',
+            ]),
+        ];
+    }
+
+    public function updateLocalization(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'currency_symbol'     => 'required|string|max:10',
+            'thousand_separator'  => 'required|string|max:1',
+            'decimal_separator'   => 'required|string|max:1',
+            'decimal_places'      => 'required|integer|min:0|max:4',
+            'default_locale'      => 'required|string|in:en,id,ko,zh',
+        ]);
+
+        return $this->saveSettings($validated, 'Updated localization settings', 'localization');
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // HELPERS
+    // ════════════════════════════════════════════════════════════════
+
+    private function saveSettings(array $validated, string $description, string $tab): RedirectResponse
+    {
+        $oldData = [];
+        foreach (array_keys($validated) as $key) {
+            $oldData[$key] = Setting::get($key);
+        }
+
+        $newData = array_map(fn($v) => (string) $v, $validated);
+        Setting::setMany($newData);
+
+        // Force cache bust
+        Cache::forget('app_settings');
+
+        AuditLogService::log('settings', 'update', $description, $oldData, $newData);
+
+        return redirect()
+            ->route('settings.index', ['tab' => $tab])
+            ->with('success', __('messages.settings_saved'));
+    }
+
+    private function getSettingsArray(array $keys): array
+    {
+        $result = [];
+        foreach ($keys as $key) {
+            $result[$key] = Setting::get($key, '');
+        }
+        return $result;
+    }
+
+    private function getCurrencies(): array
+    {
+        return [
             'IDR' => 'Rp - Indonesian Rupiah',
+            'USD' => '$ - US Dollar',
             'CNY' => '¥ - Chinese Yuan',
             'KRW' => '₩ - Korean Won',
             'EUR' => '€ - Euro',
@@ -34,48 +272,16 @@ class SettingsController extends Controller
             'SGD' => 'S$ - Singapore Dollar',
             'MYR' => 'RM - Malaysian Ringgit',
             'AUD' => 'A$ - Australian Dollar',
-            'CAD' => 'C$ - Canadian Dollar',
-            'CHF' => 'Fr - Swiss Franc',
         ];
-        $timezones = timezone_identifiers_list();
-
-        return view('settings.index', compact('settings', 'currencies', 'timezones'));
     }
 
-    public function update(Request $request)
+    // ════════════════════════════════════════════════════════════════
+    // LEGACY — Keep for backward compat (redirects to new system)
+    // ════════════════════════════════════════════════════════════════
+
+    public function update(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'company_name' => 'nullable|string|max:255',
-            'company_email' => 'nullable|email|max:255',
-            'company_phone' => 'nullable|string|max:30',
-            'company_address' => 'nullable|string|max:1000',
-            'default_currency' => 'required|string|max:10',
-            'timezone' => 'required|string|timezone',
-            'default_payment_terms' => 'required|integer|min:0|max:365',
-            'default_tax_rate' => 'required|numeric|min:0|max:100',
-            'low_stock_threshold' => 'required|integer|min:0',
-            'items_per_page' => 'required|integer|min:5|max:100',
-        ]);
-
-        // Capture old values before update
-        $oldData = [];
-        foreach (array_keys($validated) as $key) {
-            $oldData[$key] = Setting::get($key);
-        }
-
-        Setting::setMany($validated);
-
-        // Cast validated to string values for comparison (settings store strings)
-        $newData = array_map(fn($v) => (string) $v, $validated);
-
-        AuditLogService::log(
-            'settings',
-            'update',
-            'Updated system settings',
-            $oldData,
-            $newData,
-        );
-
-        return back()->with('success', __('messages.settings_saved'));
+        // Delegate to financial tab for legacy POST
+        return $this->updateFinancial($request);
     }
 }

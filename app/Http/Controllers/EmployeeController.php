@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\EmployeeRequest;
 use App\Models\Employee;
+use App\Models\User;
 use App\Traits\Auditable;
 use Illuminate\Http\Request;
 
@@ -34,7 +35,8 @@ class EmployeeController extends Controller
 
     public function create()
     {
-        return view('hr.employees.create');
+        $availableUsers = $this->getAvailableUsers();
+        return view('hr.employees.create', compact('availableUsers'));
     }
 
     public function store(EmployeeRequest $request)
@@ -56,7 +58,8 @@ class EmployeeController extends Controller
 
     public function edit(Employee $employee)
     {
-        return view('hr.employees.edit', compact('employee'));
+        $availableUsers = $this->getAvailableUsers($employee->user_id);
+        return view('hr.employees.edit', compact('employee', 'availableUsers'));
     }
 
     public function update(EmployeeRequest $request, Employee $employee)
@@ -76,5 +79,21 @@ class EmployeeController extends Controller
 
         return redirect()->route('hr.employees.index')
             ->with('success', 'Karyawan berhasil dihapus.');
+    }
+
+    /**
+     * Get users that are not yet linked to any employee.
+     * Optionally include the currently linked user_id (for edit form).
+     */
+    private function getAvailableUsers(?int $currentUserId = null): \Illuminate\Support\Collection
+    {
+        $linkedUserIds = Employee::whereNotNull('user_id')
+            ->when($currentUserId, fn($q) => $q->where('user_id', '!=', $currentUserId))
+            ->pluck('user_id');
+
+        return User::where('status', User::STATUS_ACTIVE)
+            ->whereNotIn('id', $linkedUserIds)
+            ->orderBy('name')
+            ->get(['id', 'name', 'email', 'role']);
     }
 }

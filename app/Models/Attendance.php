@@ -9,7 +9,8 @@ class Attendance extends Model
 {
     protected $fillable = [
         'employee_id', 'date', 'clock_in', 'clock_out',
-        'status', 'overtime_hours', 'notes',
+        'latitude', 'longitude',
+        'status', 'overtime_hours', 'notes', 'source',
     ];
 
     protected function casts(): array
@@ -19,6 +20,8 @@ class Attendance extends Model
             'clock_in'       => 'datetime',
             'clock_out'      => 'datetime',
             'overtime_hours' => 'decimal:2',
+            'latitude'       => 'decimal:7',
+            'longitude'      => 'decimal:7',
         ];
     }
 

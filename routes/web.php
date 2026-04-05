@@ -540,6 +540,11 @@ Route::middleware(['auth'])->group(function () {
         Route::prefix('settings')->name('settings.')->middleware('permission:admin.manage_settings')->group(function () {
             Route::get('/', [SettingsController::class, 'index'])->name('index');
             Route::post('/', [SettingsController::class, 'update'])->name('update');
+            Route::post('/company', [SettingsController::class, 'updateCompany'])->name('update.company');
+            Route::post('/financial', [SettingsController::class, 'updateFinancial'])->name('update.financial');
+            Route::post('/payroll', [SettingsController::class, 'updatePayroll'])->name('update.payroll');
+            Route::post('/security', [SettingsController::class, 'updateSecurity'])->name('update.security');
+            Route::post('/localization', [SettingsController::class, 'updateLocalization'])->name('update.localization');
             
             // User Management
             Route::resource('users', UserController::class)->except(['show'])->middleware('permission:admin.manage_users');

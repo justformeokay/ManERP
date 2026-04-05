@@ -1,6 +1,32 @@
 @php $e = $employee ?? null; @endphp
 
 <div class="space-y-6">
+    {{-- Link to User Account --}}
+    @if(isset($availableUsers))
+    <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+        <h3 class="text-lg font-semibold text-gray-900 mb-1">{{ __('messages.link_user_account') }}</h3>
+        <p class="text-xs text-gray-500 mb-4">{{ __('messages.link_user_desc') }}</p>
+        <div class="max-w-md">
+            <select name="user_id"
+                class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                <option value="">— {{ __('messages.no_linked_user') }} —</option>
+                @foreach($availableUsers as $u)
+                    <option value="{{ $u->id }}" @selected(old('user_id', $e?->user_id) == $u->id)>
+                        {{ $u->name }} ({{ $u->email }}) — {{ ucfirst($u->role) }}
+                    </option>
+                @endforeach
+            </select>
+            @error('user_id') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+        </div>
+        @if($e?->user)
+            <div class="mt-3 flex items-center gap-2 rounded-lg bg-green-50 px-3 py-2 ring-1 ring-green-200">
+                <svg class="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                <span class="text-xs text-green-800">{{ __('messages.currently_linked_to') }}: <strong>{{ $e->user->name }}</strong> ({{ $e->user->email }})</span>
+            </div>
+        @endif
+    </div>
+    @endif
+
     {{-- Personal Data --}}
     <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
         <h3 class="text-lg font-semibold text-gray-900 mb-4">{{ __('messages.personal_data') }}</h3>

@@ -422,9 +422,15 @@ class PayrollEngineTest extends TestCase
         $payslip = $this->payrollService->generatePayslip($period, $employee, $salary);
 
         // Working days in March 2026 (Mon-Fri): 22 days
-        // Absence deduction = 2 × (10,000,000 / 22) = 909,090.91
-        $workingDays = $this->payrollService->getWorkingDaysInMonth(3, 2026);
-        $expectedDeduction = round(2 * (10000000 / $workingDays), 2);
+        // Absence deduction = 2 × ((10,000,000 + 500,000 + 500,000) / 22) using bcmath
+        // dailyBasic=454545.45  dailyMeal=22727.27  dailyTransport=22727.27
+        // dailyTotal=499999.99  deduction=999999.98
+        $workingDays = (string) $this->payrollService->getWorkingDaysInMonth(3, 2026);
+        $dailyBasic     = bcdiv('10000000', $workingDays, 2);
+        $dailyMeal      = bcdiv('500000', $workingDays, 2);
+        $dailyTransport = bcdiv('500000', $workingDays, 2);
+        $dailyTotal     = bcadd($dailyBasic, bcadd($dailyMeal, $dailyTransport, 2), 2);
+        $expectedDeduction = (float) bcmul('2', $dailyTotal, 2);
 
         $this->assertEquals($expectedDeduction, (float) $payslip->absence_deduction);
     }

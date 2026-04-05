@@ -33,8 +33,9 @@ class EmployeeSelfServiceTest extends TestCase
             'permissions' => [],
         ]);
 
-        $this->employee = Employee::factory()->create([
-            'user_id'             => $this->employeeUser->id,
+        // UserObserver auto-creates an Employee; update it with test-specific fields
+        $this->employee = $this->employeeUser->employee;
+        $this->employee->update([
             'bank_name'           => 'BCA',
             'bank_account_number' => '1234567890',
             'bank_account_name'   => 'Test Employee',
@@ -48,9 +49,8 @@ class EmployeeSelfServiceTest extends TestCase
             'permissions' => ['hr.view', 'hr.edit'],
         ]);
 
-        $this->hrEmployee = Employee::factory()->create([
-            'user_id' => $this->hrUser->id,
-        ]);
+        // Use the observer-created employee for HR user too
+        $this->hrEmployee = $this->hrUser->employee;
     }
 
     // ── DOCUMENT UPLOAD TESTS ───────────────────────────────────
@@ -208,7 +208,7 @@ class EmployeeSelfServiceTest extends TestCase
         $otherUser = User::factory()->create([
             'role' => 'staff', 'status' => 'active', 'permissions' => [],
         ]);
-        Employee::factory()->create(['user_id' => $otherUser->id]);
+        // Observer auto-creates employee for $otherUser
 
         $response = $this->actingAs($otherUser)->get($signedUrl);
         $response->assertForbidden();
@@ -268,7 +268,7 @@ class EmployeeSelfServiceTest extends TestCase
         $otherUser = User::factory()->create([
             'role' => 'staff', 'status' => 'active', 'permissions' => [],
         ]);
-        Employee::factory()->create(['user_id' => $otherUser->id]);
+        // Observer auto-creates employee for $otherUser
 
         $response = $this->actingAs($otherUser)
             ->delete(route('profile.ess.document.delete', $document));
@@ -564,6 +564,9 @@ class EmployeeSelfServiceTest extends TestCase
         $userNoEmployee = User::factory()->create([
             'role' => 'staff', 'status' => 'active', 'permissions' => [],
         ]);
+        // Remove auto-created employee to simulate orphan user
+        Employee::where('user_id', $userNoEmployee->id)->forceDelete();
+        $userNoEmployee->unsetRelation('employee');
 
         $file = UploadedFile::fake()->create('ktp.pdf', 512, 'application/pdf');
 
@@ -581,6 +584,9 @@ class EmployeeSelfServiceTest extends TestCase
         $userNoEmployee = User::factory()->create([
             'role' => 'staff', 'status' => 'active', 'permissions' => [],
         ]);
+        // Remove auto-created employee to simulate orphan user
+        Employee::where('user_id', $userNoEmployee->id)->forceDelete();
+        $userNoEmployee->unsetRelation('employee');
 
         $response = $this->actingAs($userNoEmployee)
             ->post(route('profile.ess.data-change'), [

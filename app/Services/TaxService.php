@@ -4,17 +4,24 @@ namespace App\Services;
 
 use App\Models\ChartOfAccount;
 use App\Models\Invoice;
+use App\Models\Setting;
 use App\Models\SupplierBill;
 use Illuminate\Support\Facades\DB;
 
 class TaxService
 {
-    public const PPN_RATE = 11; // PPN 11% (effective since April 2022)
-
     public const PPN_KELUARAN = '2110';  // PPN Keluaran (Output VAT — liability)
     public const PPN_MASUKAN  = '1140';  // PPN Masukan (Input VAT — asset)
 
     public function __construct(private AccountingService $accountingService) {}
+
+    /**
+     * PPN rate loaded from Settings (admin-configurable).
+     */
+    public static function ppnRate(): float
+    {
+        return (float) Setting::get('default_tax_rate', 11);
+    }
 
     // ════════════════════════════════════════════════════════════════
     // PPN CALCULATION
@@ -25,7 +32,7 @@ class TaxService
      */
     public function calculatePPN(float $dpp, ?float $rate = null): array
     {
-        $rate = $rate ?? self::PPN_RATE;
+        $rate = $rate ?? self::ppnRate();
         $ppn  = round($dpp * $rate / 100, 2);
 
         return [
@@ -41,7 +48,7 @@ class TaxService
      */
     public function extractPPNFromTotal(float $totalInclusive, ?float $rate = null): array
     {
-        $rate = $rate ?? self::PPN_RATE;
+        $rate = $rate ?? self::ppnRate();
         $dpp  = round($totalInclusive / (1 + $rate / 100), 2);
         $ppn  = round($totalInclusive - $dpp, 2);
 

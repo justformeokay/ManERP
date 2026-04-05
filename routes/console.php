@@ -35,3 +35,9 @@ Schedule::command('backup:monitor')->dailyAt('06:00')
 Schedule::command('log:archive')->weeklyOn(0, '04:00')
     ->withoutOverlapping()
     ->appendOutputTo(storage_path('logs/log-archive.log'));
+
+// ── Attendance: Auto-mark absent ──────────────────────────────────────
+// Runs at midnight to mark employees who did not check in yesterday as Absent
+Schedule::command('attendance:mark-absent')->dailyAt('00:05')
+    ->withoutOverlapping()
+    ->appendOutputTo(storage_path('logs/attendance.log'));

@@ -29,12 +29,23 @@ class CompanySetting extends Model
      */
     public static function getSettings(): static
     {
-        return Cache::remember('company_settings', 3600, function () {
-            return static::first() ?? new static([
-                'name' => 'Company Name',
-                'currency' => 'IDR',
-            ]);
-        });
+        $cached = Cache::get('company_settings');
+
+        // Discard stale/incompletely-deserialized cache entries
+        if ($cached instanceof static) {
+            return $cached;
+        }
+
+        Cache::forget('company_settings');
+
+        $instance = static::first() ?? new static([
+            'name'     => 'Company Name',
+            'currency' => 'IDR',
+        ]);
+
+        Cache::put('company_settings', $instance, 3600);
+
+        return $instance;
     }
 
     /**
