@@ -493,24 +493,47 @@
         <p class="text-xs text-gray-500 mb-4">{{ __('messages.profile_2fa_desc') }}</p>
 
         @if($user->two_factor_confirmed_at)
-            <div class="flex items-center justify-between rounded-xl bg-green-50 p-4 ring-1 ring-green-100">
-                <div class="flex items-center gap-3">
-                    <div class="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
-                        <svg class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            <div x-data="{ confirmDisable: false }">
+                <div x-show="!confirmDisable" class="flex items-center justify-between rounded-xl bg-green-50 p-4 ring-1 ring-green-100">
+                    <div class="flex items-center gap-3">
+                        <div class="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                            <svg class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-green-800">{{ __('messages.profile_2fa_active') }}</p>
+                            <p class="text-xs text-green-600">{{ __('messages.profile_2fa_active_desc') }}</p>
+                        </div>
                     </div>
-                    <div>
-                        <p class="text-sm font-semibold text-green-800">{{ __('messages.profile_2fa_active') }}</p>
-                        <p class="text-xs text-green-600">{{ __('messages.profile_2fa_active_desc') }}</p>
-                    </div>
-                </div>
-                <form method="POST" action="{{ route('two-factor.disable') }}">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" onclick="return confirm('{{ __('messages.profile_2fa_disable_confirm') }}')"
+                    <button type="button" @click="confirmDisable = true"
                         class="rounded-lg bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-100 transition ring-1 ring-red-200">
                         {{ __('messages.profile_2fa_disable_btn') }}
                     </button>
-                </form>
+                </div>
+
+                <div x-show="confirmDisable" x-cloak x-transition>
+                    <form method="POST" action="{{ route('two-factor.disable') }}" class="rounded-xl bg-red-50 p-4 ring-1 ring-red-200">
+                        @csrf
+                        @method('DELETE')
+                        <p class="text-sm font-semibold text-red-800 mb-3">{{ __('messages.profile_2fa_disable_confirm') }}</p>
+                        <div class="mb-3">
+                            <label class="block text-xs font-medium text-red-700 mb-1">{{ __('messages.profile_current_password') }}</label>
+                            <input type="password" name="password" required autofocus
+                                class="w-full max-w-xs rounded-xl border border-red-200 bg-white px-4 py-2.5 text-sm text-gray-700 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500 transition"
+                                placeholder="••••••••">
+                            @error('password') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                        </div>
+                        <div class="flex gap-2">
+                            <button type="submit"
+                                class="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 transition">
+                                {{ __('messages.profile_2fa_disable_btn') }}
+                            </button>
+                            <button type="button" @click="confirmDisable = false"
+                                class="rounded-xl bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition ring-1 ring-gray-200">
+                                {{ __('messages.cancel') }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         @else
             <div class="flex items-center justify-between rounded-xl bg-amber-50 p-4 ring-1 ring-amber-100">
