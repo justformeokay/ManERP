@@ -1558,4 +1558,15 @@ return [
     'credit_manually_blocked' => 'Credit Manually Blocked',
     'credit_blocked_desc' => 'All new sales order confirmations are blocked for this client.',
     'overdue_invoices_warning' => ':count overdue invoice(s) — oldest :days days past due.',
+
+    // ── Purchase Integrity & AP Accounting ──────────────────────
+    'purchase_bill_cannot_post' => 'Cannot post this bill. It must be in draft status with items.',
+    'purchase_bill_cannot_pay' => 'Cannot pay this bill. Check status or outstanding amount.',
+    'purchase_payment_amount_positive' => 'Payment amount must be greater than zero.',
+    'purchase_payment_exceeds_outstanding' => 'Payment amount (:amount) exceeds outstanding balance (:outstanding).',
+    'purchase_coa_ap_missing' => 'Accounts Payable account (2000) not found. Please seed the Chart of Accounts.',
+    'purchase_coa_expense_missing' => 'Expense account (5000) not found. Please seed the Chart of Accounts.',
+    'purchase_coa_ppn_masukan_missing' => 'PPN Masukan account (1140) not found. Please seed the Chart of Accounts.',
+    'purchase_coa_ppv_missing' => 'Purchase Price Variance account (5101) not found. Please seed the Chart of Accounts.',
+    'purchase_bill_no_received_items' => 'Cannot create bill: no items have been received on this PO.',
 ];

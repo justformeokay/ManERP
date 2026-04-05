@@ -1528,4 +1528,15 @@ return [
     'credit_manually_blocked' => '信用手动冻结',
     'credit_blocked_desc' => '该客户的所有新销售订单确认已被冻结。',
     'overdue_invoices_warning' => ':count 张逾期发票 — 最长逾期 :days 天。',
+
+    // ── 采购完整性 & 应付账款会计 ───────────────────────────────
+    'purchase_bill_cannot_post' => '无法过账此账单。必须为草稿状态且包含明细项。',
+    'purchase_bill_cannot_pay' => '无法支付此账单。请检查状态或未付金额。',
+    'purchase_payment_amount_positive' => '付款金额必须大于零。',
+    'purchase_payment_exceeds_outstanding' => '付款金额（:amount）超过未付余额（:outstanding）。',
+    'purchase_coa_ap_missing' => '未找到应付账款科目（2000）。请初始化会计科目表。',
+    'purchase_coa_expense_missing' => '未找到费用科目（5000）。请初始化会计科目表。',
+    'purchase_coa_ppn_masukan_missing' => '未找到进项税科目（1140）。请初始化会计科目表。',
+    'purchase_coa_ppv_missing' => '未找到采购价差科目（5101）。请初始化会计科目表。',
+    'purchase_bill_no_received_items' => '无法创建账单：该采购单尚无已收货项目。',
 ];

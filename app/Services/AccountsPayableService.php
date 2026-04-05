@@ -19,6 +19,8 @@ class AccountsPayableService
     public const INVENTORY        = '1300';  // Asset (when receiving goods)
     public const EXPENSE          = '5000';  // Expense (for services/other)
     public const CASH_BANK        = '1100';  // Asset
+    public const PPN_MASUKAN      = '1140';  // PPN Masukan (Input VAT — asset)
+    public const PPV              = '5101';  // Purchase Price Variance
 
     protected AccountingService $accountingService;
 
@@ -101,62 +103,132 @@ class AccountsPayableService
 
     /**
      * Post a bill - creates journal entry and changes status.
-     * 
-     * Journal Entry:
-     *   Dr: Inventory/Expense (based on items)
-     *   Cr: Accounts Payable
+     *
+     * Accrual-to-Bill logic:
+     *  - If linked to a PO (goods already accrued at receive), the bill
+     *    only journals any price variance (PPV) and PPN Masukan.
+     *  - If NOT linked to a PO (service bill), full expense journal.
+     *
+     * Journal for PO-linked bill (no variance):
+     *   Dr: PPN Masukan (1140)     = tax_amount
+     *   Cr: Accounts Payable (2000) = tax_amount   (only the PPN portion)
+     *
+     * Journal for PO-linked bill (with variance):
+     *   Dr/Cr: PPV (5101)          = |bill_dpp - accrued_value|
+     *   Dr:    PPN Masukan (1140)   = tax_amount
+     *   Cr:    Accounts Payable (2000) = variance + tax_amount
+     *
+     * Journal for non-PO bill:
+     *   Dr: Expense (5000)          = DPP
+     *   Dr: PPN Masukan (1140)      = tax_amount
+     *   Cr: Accounts Payable (2000) = total
      */
     public function postBill(SupplierBill $bill): SupplierBill
     {
         if (!$bill->canPost()) {
-            throw new InvalidArgumentException('Cannot post this bill. It must be in draft status with items.');
+            throw new InvalidArgumentException(__('messages.purchase_bill_cannot_post'));
         }
 
         return DB::transaction(function () use ($bill) {
-            // Resolve accounts
-            $apAccount = $this->resolveAccount(self::ACCOUNTS_PAYABLE);
-            $expenseAccount = $this->resolveAccount(self::EXPENSE);
+            $bill->load(['items', 'supplier']);
+
+            // Resolve required accounts
+            $apAccount  = $this->resolveAccount(self::ACCOUNTS_PAYABLE);
+            $ppnAccount = $this->resolveAccount(self::PPN_MASUKAN);
 
             if (!$apAccount) {
-                throw new InvalidArgumentException('Accounts Payable account (2000) not found.');
-            }
-            if (!$expenseAccount) {
-                throw new InvalidArgumentException('Expense account (5000) not found.');
+                throw new \RuntimeException(__('messages.purchase_coa_ap_missing'));
             }
 
-            // Build journal entries
+            $taxAmount = (float) ($bill->tax_amount ?? 0);
+            $billDpp   = (float) ($bill->dpp > 0 ? $bill->dpp : bcsub((string) $bill->total, (string) $taxAmount, 2));
+
             $entries = [];
 
-            // Debit: Expense/Inventory for total amount
-            $entries[] = [
-                'account_id' => $expenseAccount->id,
-                'debit'      => $bill->total,
-                'credit'     => 0,
-            ];
+            // ── Determine if this bill is linked to a received PO ───
+            $po = $bill->purchase_order_id
+                ? PurchaseOrder::with('items')->find($bill->purchase_order_id)
+                : null;
 
-            // Credit: Accounts Payable
-            $entries[] = [
-                'account_id' => $apAccount->id,
-                'debit'      => 0,
-                'credit'     => $bill->total,
-            ];
+            if ($po) {
+                // Accrual-to-bill: goods value was already journaled at PO receive
+                // (Dr Inventory 1300 / Cr AP 2000). We only journal the DIFFERENCE.
+                $accruedValue = '0';
+                foreach ($po->items as $poItem) {
+                    $accruedValue = bcadd(
+                        $accruedValue,
+                        bcmul((string) $poItem->received_quantity, (string) $poItem->unit_price, 4),
+                        4
+                    );
+                }
 
-            // Create journal entry
-            $journal = $this->accountingService->createJournalEntry(
-                reference: $bill->bill_number,
-                date: $bill->bill_date->format('Y-m-d'),
-                description: "Supplier Bill: {$bill->supplier->name}",
-                entries: $entries
-            );
+                $variance = bcsub((string) $billDpp, $accruedValue, 2);
 
-            // Mark journal as posted
-            $journal->update(['is_posted' => true]);
+                // Journal price variance if any
+                if (bccomp($variance, '0', 2) !== 0) {
+                    $ppvAccount = $this->resolveAccount(self::PPV);
+                    if (!$ppvAccount) {
+                        throw new \RuntimeException(__('messages.purchase_coa_ppv_missing'));
+                    }
 
-            // Update bill
-            $bill->update([
-                'status'           => 'posted',
-                'journal_entry_id' => $journal->id,
-            ]);
+                    if (bccomp($variance, '0', 2) > 0) {
+                        // Bill > accrued: additional expense (debit PPV)
+                        $entries[] = ['account_id' => $ppvAccount->id, 'debit' => (float) $variance, 'credit' => 0];
+                    } else {
+                        // Bill < accrued: favorable variance (credit PPV)
+                        $entries[] = ['account_id' => $ppvAccount->id, 'debit' => 0, 'credit' => (float) abs((float) $variance)];
+                    }
+                }
+
+                // AP credit = variance + tax (the DPP portion was already in AP from receive)
+                $apCreditAmount = bcadd((string) abs((float) $variance), (string) $taxAmount, 2);
+                if (bccomp($variance, '0', 2) < 0) {
+                    // Favorable variance: AP credit is tax minus the favorable amount
+                    $apCreditAmount = bcsub((string) $taxAmount, (string) abs((float) $variance), 2);
+                }
+            } else {
+                // Non-PO bill: full expense debit
+                $expenseAccount = $this->resolveAccount(self::EXPENSE);
+                if (!$expenseAccount) {
+                    throw new \RuntimeException(__('messages.purchase_coa_expense_missing'));
+                }
+                $entries[] = ['account_id' => $expenseAccount->id, 'debit' => $billDpp, 'credit' => 0];
+                $apCreditAmount = (string) $bill->total;
+            }
+
+            // PPN Masukan debit (if any tax)
+            if (bccomp((string) $taxAmount, '0', 2) > 0) {
+                if (!$ppnAccount) {
+                    throw new \RuntimeException(__('messages.purchase_coa_ppn_masukan_missing'));
+                }
+                $entries[] = ['account_id' => $ppnAccount->id, 'debit' => $taxAmount, 'credit' => 0];
+            }
+
+            // AP credit
+            if (bccomp((string) $apCreditAmount, '0', 2) > 0) {
+                $entries[] = ['account_id' => $apAccount->id, 'debit' => 0, 'credit' => (float) $apCreditAmount];
+            } elseif (bccomp((string) $apCreditAmount, '0', 2) < 0) {
+                // Negative means AP should be debited (favorable PPV > tax)
+                $entries[] = ['account_id' => $apAccount->id, 'debit' => (float) abs((float) $apCreditAmount), 'credit' => 0];
+            }
+
+            // Only create journal if there are entries
+            if (!empty($entries)) {
+                $journal = $this->accountingService->createJournalEntry(
+                    reference: $bill->bill_number,
+                    date: $bill->bill_date->format('Y-m-d'),
+                    description: "Supplier Bill: {$bill->supplier->name}",
+                    entries: $entries
+                );
+                $journal->update(['is_posted' => true]);
+                $bill->update([
+                    'status'           => 'posted',
+                    'journal_entry_id' => $journal->id,
+                ]);
+            } else {
+                // No journal needed (PO-linked, no variance, no tax)
+                $bill->update(['status' => 'posted']);
+            }
 
             return $bill->fresh();
         });
@@ -212,24 +284,26 @@ class AccountsPayableService
      */
     public function recordPayment(array $data): SupplierPayment
     {
-        $bill = SupplierBill::findOrFail($data['supplier_bill_id']);
+        return DB::transaction(function () use ($data) {
+            // Lock the bill row to prevent double payment from concurrent requests
+            $bill = SupplierBill::lockForUpdate()->findOrFail($data['supplier_bill_id']);
 
-        if (!$bill->canPay()) {
-            throw new InvalidArgumentException('Cannot pay this bill. Check status or outstanding amount.');
-        }
+            if (!$bill->canPay()) {
+                throw new InvalidArgumentException(__('messages.purchase_bill_cannot_pay'));
+            }
 
-        $amount = (float) $data['amount'];
-        if ($amount <= 0) {
-            throw new InvalidArgumentException('Payment amount must be greater than zero.');
-        }
+            $amount = (float) $data['amount'];
+            if ($amount <= 0) {
+                throw new InvalidArgumentException(__('messages.purchase_payment_amount_positive'));
+            }
 
-        if ($amount > $bill->outstanding) {
-            throw new InvalidArgumentException(
-                "Payment amount ({$amount}) exceeds outstanding balance ({$bill->outstanding})."
-            );
-        }
+            if (bccomp((string) $amount, (string) $bill->outstanding, 2) > 0) {
+                throw new InvalidArgumentException(__('messages.purchase_payment_exceeds_outstanding', [
+                    'amount'      => $amount,
+                    'outstanding' => $bill->outstanding,
+                ]));
+            }
 
-        return DB::transaction(function () use ($bill, $data, $amount) {
             // Resolve accounts
             $apAccount = $this->resolveAccount(self::ACCOUNTS_PAYABLE);
             $cashAccount = $this->resolveAccount(self::CASH_BANK);
@@ -281,18 +355,26 @@ class AccountsPayableService
     // ════════════════════════════════════════════════════════════════
 
     /**
-     * Create a bill from a purchase order.
+     * Create a bill from a purchase order (uses received_quantity, not ordered).
      */
     public function createBillFromPO(PurchaseOrder $po, array $overrides = []): SupplierBill
     {
-        $items = $po->items->map(function ($item) {
-            return [
-                'product_id'  => $item->product_id,
-                'description' => $item->product->name ?? $item->description ?? 'Item',
-                'quantity'    => $item->quantity,
-                'price'       => $item->price,
-            ];
-        })->toArray();
+        $po->load('items.product');
+
+        $items = $po->items
+            ->filter(fn($item) => $item->received_quantity > 0)
+            ->map(function ($item) {
+                return [
+                    'product_id'  => $item->product_id,
+                    'description' => $item->product->name ?? $item->description ?? 'Item',
+                    'quantity'    => $item->received_quantity,
+                    'price'       => $item->unit_price,
+                ];
+            })->values()->toArray();
+
+        if (empty($items)) {
+            throw new InvalidArgumentException(__('messages.purchase_bill_no_received_items'));
+        }
 
         return $this->createBill(array_merge([
             'supplier_id'       => $po->supplier_id,

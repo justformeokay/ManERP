@@ -1525,4 +1525,15 @@ return [
     'credit_manually_blocked' => '수동 신용 차단',
     'credit_blocked_desc' => '이 고객의 모든 신규 판매 주문 확인이 차단되었습니다.',
     'overdue_invoices_warning' => '연체 송장 :count건 — 최장 :days일 경과.',
+
+    // ── 구매 무결성 & 매입채무 회계 ─────────────────────────────
+    'purchase_bill_cannot_post' => '이 청구서를 게시할 수 없습니다. 초안 상태이며 항목이 있어야 합니다.',
+    'purchase_bill_cannot_pay' => '이 청구서를 결제할 수 없습니다. 상태 또는 미결제 금액을 확인하세요.',
+    'purchase_payment_amount_positive' => '결제 금액은 0보다 커야 합니다.',
+    'purchase_payment_exceeds_outstanding' => '결제 금액(:amount)이 미결제 잔액(:outstanding)을 초과합니다.',
+    'purchase_coa_ap_missing' => '매입채무 계정(2000)을 찾을 수 없습니다. 계정과목표를 시드하세요.',
+    'purchase_coa_expense_missing' => '비용 계정(5000)을 찾을 수 없습니다. 계정과목표를 시드하세요.',
+    'purchase_coa_ppn_masukan_missing' => '매입세액 계정(1140)을 찾을 수 없습니다. 계정과목표를 시드하세요.',
+    'purchase_coa_ppv_missing' => '구매가격차이 계정(5101)을 찾을 수 없습니다. 계정과목표를 시드하세요.',
+    'purchase_bill_no_received_items' => '청구서를 생성할 수 없습니다: 이 PO에서 수령된 항목이 없습니다.',
 ];

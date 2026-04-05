@@ -1549,4 +1549,15 @@ return [
     'credit_manually_blocked' => 'Kredit Diblokir Manual',
     'credit_blocked_desc' => 'Semua konfirmasi pesanan penjualan baru diblokir untuk klien ini.',
     'overdue_invoices_warning' => ':count faktur jatuh tempo — terlama :days hari lewat jatuh tempo.',
+
+    // ── Integritas Pembelian & Akuntansi Hutang ─────────────────
+    'purchase_bill_cannot_post' => 'Tidak dapat memposting tagihan ini. Status harus draft dan memiliki item.',
+    'purchase_bill_cannot_pay' => 'Tidak dapat membayar tagihan ini. Periksa status atau saldo terutang.',
+    'purchase_payment_amount_positive' => 'Jumlah pembayaran harus lebih dari nol.',
+    'purchase_payment_exceeds_outstanding' => 'Jumlah pembayaran (:amount) melebihi saldo terutang (:outstanding).',
+    'purchase_coa_ap_missing' => 'Akun Hutang Dagang (2000) tidak ditemukan. Silakan seed Chart of Accounts.',
+    'purchase_coa_expense_missing' => 'Akun Beban (5000) tidak ditemukan. Silakan seed Chart of Accounts.',
+    'purchase_coa_ppn_masukan_missing' => 'Akun PPN Masukan (1140) tidak ditemukan. Silakan seed Chart of Accounts.',
+    'purchase_coa_ppv_missing' => 'Akun Selisih Harga Pembelian (5101) tidak ditemukan. Silakan seed Chart of Accounts.',
+    'purchase_bill_no_received_items' => 'Tidak dapat membuat tagihan: belum ada barang yang diterima pada PO ini.',
 ];

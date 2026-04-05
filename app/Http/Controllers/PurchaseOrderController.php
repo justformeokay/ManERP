@@ -14,6 +14,7 @@ use App\Services\StockService;
 use App\Services\StockValuationService;
 use App\Traits\Auditable;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PurchaseOrderController extends Controller
 {
@@ -178,81 +179,89 @@ class PurchaseOrderController extends Controller
             'receive.*.quantity'   => ['required', 'numeric', 'min:0'],
         ]);
 
-        $order->load('items');
-        $receivedAny = false;
-        $totalReceiveValue = 0;
+        try {
+            DB::transaction(function () use ($request, $order) {
+                $order->load('items');
+                $receivedAny = false;
+                $totalReceiveValue = 0;
 
-        foreach ($request->input('receive') as $row) {
-            $qty = (float) $row['quantity'];
-            if ($qty <= 0) continue;
+                foreach ($request->input('receive') as $row) {
+                    $qty = (float) $row['quantity'];
+                    if ($qty <= 0) continue;
 
-            $item = $order->items->firstWhere('id', $row['item_id']);
-            if (!$item) continue;
+                    $item = $order->items->firstWhere('id', $row['item_id']);
+                    if (!$item) continue;
 
-            $remaining = $item->quantity - $item->received_quantity;
-            $qty = min($qty, $remaining);
-            if ($qty <= 0) continue;
+                    $remaining = $item->quantity - $item->received_quantity;
+                    $qty = min($qty, $remaining);
+                    if ($qty <= 0) continue;
 
-            $unitCost = (float) $item->unit_price;
+                    $unitCost = (float) $item->unit_price;
 
-            // Stock IN with unit cost
-            $movement = $this->stockService->processMovement([
-                'product_id'     => $item->product_id,
-                'warehouse_id'   => $order->warehouse_id,
-                'type'           => 'in',
-                'quantity'       => $qty,
-                'unit_cost'      => $unitCost,
-                'reference_type' => 'purchase_order',
-                'reference_id'   => $order->id,
-                'notes'          => "Received from {$order->number}",
-            ]);
+                    // Stock IN with unit cost
+                    $movement = $this->stockService->processMovement([
+                        'product_id'     => $item->product_id,
+                        'warehouse_id'   => $order->warehouse_id,
+                        'type'           => 'in',
+                        'quantity'       => $qty,
+                        'unit_cost'      => $unitCost,
+                        'reference_type' => 'purchase_order',
+                        'reference_id'   => $order->id,
+                        'notes'          => "Received from {$order->number}",
+                    ]);
 
-            // Record WAC valuation layer
-            $this->valuationService->recordIncoming(
-                $item->product_id,
-                $order->warehouse_id,
-                $qty,
-                $unitCost,
-                $movement,
-                'purchase_order',
-                $order->id,
-                'PO ' . $order->number . ' — ' . ($item->product->name ?? '')
-            );
+                    // Record WAC valuation layer
+                    $this->valuationService->recordIncoming(
+                        $item->product_id,
+                        $order->warehouse_id,
+                        $qty,
+                        $unitCost,
+                        $movement,
+                        'purchase_order',
+                        $order->id,
+                        'PO ' . $order->number . ' — ' . ($item->product->name ?? '')
+                    );
 
-            $totalReceiveValue = bcadd((string) $totalReceiveValue, bcmul((string) $qty, (string) $unitCost, 4), 4);
+                    $totalReceiveValue = bcadd((string) $totalReceiveValue, bcmul((string) $qty, (string) $unitCost, 4), 4);
 
-            $item->increment('received_quantity', $qty);
-            $receivedAny = true;
-        }
+                    $item->increment('received_quantity', $qty);
+                    $receivedAny = true;
+                }
 
-        if (!$receivedAny) {
-            return back()->with('error', 'No items were received.');
-        }
+                if (!$receivedAny) {
+                    throw new \RuntimeException('no_items_received');
+                }
 
-        // Auto-journal: Dr Inventory / Cr AP
-        if ($totalReceiveValue > 0) {
-            $this->valuationService->journalPurchaseReceive(
-                $order->number,
-                now()->toDateString(),
-                (float) $totalReceiveValue,
-                "Goods received — {$order->number}"
-            );
-        }
+                // Auto-journal: Dr Inventory / Cr AP
+                if ($totalReceiveValue > 0) {
+                    $this->valuationService->journalPurchaseReceive(
+                        $order->number,
+                        now()->toDateString(),
+                        (float) $totalReceiveValue,
+                        "Goods received — {$order->number}"
+                    );
+                }
 
-        // Update status
-        $oldData = $order->toArray();
-        $order->refresh()->load('items');
-        $isFullyReceived = $order->isFullyReceived();
-        $order->transitionToAndSave($isFullyReceived ? 'received' : 'partial');
-        $this->logAction($order, 'receive', "Purchase order {$order->number} items received", $oldData);
+                // Update status
+                $order->refresh()->load('items');
+                $isFullyReceived = $order->isFullyReceived();
+                $order->transitionToAndSave($isFullyReceived ? 'received' : 'partial');
+                $this->logAction($order, 'receive', "Purchase order {$order->number} items received", $order->toArray());
 
-        // Notify admin users when fully received
-        if ($isFullyReceived) {
-            $order->load('supplier');
-            $admins = User::where('role', 'admin')->get();
-            foreach ($admins as $admin) {
-                $admin->notify(new PurchaseOrderReceivedNotification($order));
+                // Notify admin users when fully received
+                if ($isFullyReceived) {
+                    $order->load('supplier');
+                    $admins = User::where('role', 'admin')->get();
+                    foreach ($admins as $admin) {
+                        $admin->notify(new PurchaseOrderReceivedNotification($order));
+                    }
+                }
+            });
+        } catch (\RuntimeException $e) {
+            if ($e->getMessage() === 'no_items_received') {
+                return back()->with('error', 'No items were received.');
             }
+            throw $e;
         }
 
         return back()->with('success', 'Items received and stock updated.');
@@ -268,59 +277,59 @@ class PurchaseOrderController extends Controller
             return back()->with('error', $check);
         }
 
-        // Reverse any partially received stock
-        $order->load('items.product');
-        $totalReverseValue = 0;
-        foreach ($order->items as $item) {
-            if ($item->received_quantity > 0) {
-                $unitCost = (float) $item->unit_price; // Original purchase price
+        // Reverse any partially received stock — all-or-nothing
+        DB::transaction(function () use ($order) {
+            $order->load('items.product');
+            $totalReverseValue = 0;
+            foreach ($order->items as $item) {
+                if ($item->received_quantity > 0) {
+                    $unitCost = (float) $item->unit_price;
 
-                $movement = $this->stockService->processMovement([
-                    'product_id'     => $item->product_id,
-                    'warehouse_id'   => $order->warehouse_id,
-                    'type'           => 'out',
-                    'quantity'       => $item->received_quantity,
-                    'unit_cost'      => $unitCost,
-                    'reference_type' => 'purchase_order_cancel',
-                    'reference_id'   => $order->id,
-                    'notes'          => "Stock reversed — cancelled {$order->number}",
-                ]);
+                    $movement = $this->stockService->processMovement([
+                        'product_id'     => $item->product_id,
+                        'warehouse_id'   => $order->warehouse_id,
+                        'type'           => 'out',
+                        'quantity'       => $item->received_quantity,
+                        'unit_cost'      => $unitCost,
+                        'reference_type' => 'purchase_order_cancel',
+                        'reference_id'   => $order->id,
+                        'notes'          => "Stock reversed — cancelled {$order->number}",
+                    ]);
 
-                // Record WAC purchase return (recalculates avg_cost)
-                $this->valuationService->recordPurchaseReturn(
-                    $item->product_id,
-                    $order->warehouse_id,
-                    $item->received_quantity,
-                    $unitCost,
-                    $movement,
-                    'purchase_order_cancel',
-                    $order->id,
-                    'PO cancel ' . $order->number . ' — ' . ($item->product->name ?? '')
-                );
+                    $this->valuationService->recordPurchaseReturn(
+                        $item->product_id,
+                        $order->warehouse_id,
+                        $item->received_quantity,
+                        $unitCost,
+                        $movement,
+                        'purchase_order_cancel',
+                        $order->id,
+                        'PO cancel ' . $order->number . ' — ' . ($item->product->name ?? '')
+                    );
 
-                $totalReverseValue = bcadd(
-                    (string) $totalReverseValue,
-                    bcmul((string) $item->received_quantity, (string) $unitCost, 4),
-                    4
-                );
+                    $totalReverseValue = bcadd(
+                        (string) $totalReverseValue,
+                        bcmul((string) $item->received_quantity, (string) $unitCost, 4),
+                        4
+                    );
 
-                $item->update(['received_quantity' => 0]);
+                    $item->update(['received_quantity' => 0]);
+                }
             }
-        }
 
-        // Auto-journal: Dr AP / Cr Inventory (reverse)
-        if ($totalReverseValue > 0) {
-            $this->valuationService->journalPurchaseCancel(
-                $order->number . '-CANCEL',
-                now()->toDateString(),
-                (float) $totalReverseValue,
-                "PO cancelled — {$order->number}"
-            );
-        }
+            // Auto-journal: Dr AP / Cr Inventory (reverse)
+            if ($totalReverseValue > 0) {
+                $this->valuationService->journalPurchaseCancel(
+                    $order->number . '-CANCEL',
+                    now()->toDateString(),
+                    (float) $totalReverseValue,
+                    "PO cancelled — {$order->number}"
+                );
+            }
 
-        $oldData = $order->toArray();
-        $order->transitionToAndSave('cancelled');
-        $this->logAction($order, 'cancel', "Purchase order {$order->number} cancelled", $oldData);
+            $order->transitionToAndSave('cancelled');
+            $this->logAction($order, 'cancel', "Purchase order {$order->number} cancelled", $order->toArray());
+        });
 
         return back()->with('success', 'Purchase order cancelled.');
     }

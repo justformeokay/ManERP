@@ -197,7 +197,13 @@ class StockValuationService
         $inventoryAccount = ChartOfAccount::where('code', '1300')->first();
         $payableAccount = ChartOfAccount::where('code', '2000')->first();
 
-        if (!$inventoryAccount || !$payableAccount || $totalValue <= 0) {
+        if (!$inventoryAccount || !$payableAccount) {
+            throw new \RuntimeException(
+                'Required CoA accounts for Purchase Receive not found (1300 Inventory or 2000 Accounts Payable). Please seed the Chart of Accounts.'
+            );
+        }
+
+        if ($totalValue <= 0) {
             return;
         }
 
@@ -220,7 +226,13 @@ class StockValuationService
         $inventoryAccount = ChartOfAccount::where('code', '1300')->first();
         $payableAccount = ChartOfAccount::where('code', '2000')->first();
 
-        if (!$inventoryAccount || !$payableAccount || $totalValue <= 0) {
+        if (!$inventoryAccount || !$payableAccount) {
+            throw new \RuntimeException(
+                'Required CoA accounts for Purchase Cancel not found (1300 Inventory or 2000 Accounts Payable). Please seed the Chart of Accounts.'
+            );
+        }
+
+        if ($totalValue <= 0) {
             return;
         }
 

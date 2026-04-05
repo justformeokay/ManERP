@@ -279,13 +279,13 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [PurchaseOrderController::class, 'index'])->name('index')->middleware('permission:purchasing.view');
         Route::get('/create', [PurchaseOrderController::class, 'create'])->name('create')->middleware('permission:purchasing.create');
         Route::post('/', [PurchaseOrderController::class, 'store'])->name('store')->middleware('permission:purchasing.create');
-        Route::get('/{purchaseOrder}', [PurchaseOrderController::class, 'show'])->name('show')->middleware('permission:purchasing.view');
-        Route::get('/{purchaseOrder}/edit', [PurchaseOrderController::class, 'edit'])->name('edit')->middleware('permission:purchasing.edit');
-        Route::put('/{purchaseOrder}', [PurchaseOrderController::class, 'update'])->name('update')->middleware('permission:purchasing.edit');
-        Route::delete('/{purchaseOrder}', [PurchaseOrderController::class, 'destroy'])->name('destroy')->middleware('permission:purchasing.delete');
-        Route::post('/{purchaseOrder}/confirm', [PurchaseOrderController::class, 'confirm'])->name('confirm')->middleware('permission:purchasing.edit');
-        Route::post('/{purchaseOrder}/receive', [PurchaseOrderController::class, 'receive'])->name('receive')->middleware(['permission:purchasing.edit', 'fiscal-lock']);
-        Route::post('/{purchaseOrder}/cancel', [PurchaseOrderController::class, 'cancel'])->name('cancel')->middleware(['permission:purchasing.delete', 'fiscal-lock']);
+        Route::get('/{order}', [PurchaseOrderController::class, 'show'])->name('show')->middleware('permission:purchasing.view');
+        Route::get('/{order}/edit', [PurchaseOrderController::class, 'edit'])->name('edit')->middleware('permission:purchasing.edit');
+        Route::put('/{order}', [PurchaseOrderController::class, 'update'])->name('update')->middleware('permission:purchasing.edit');
+        Route::delete('/{order}', [PurchaseOrderController::class, 'destroy'])->name('destroy')->middleware('permission:purchasing.delete');
+        Route::post('/{order}/confirm', [PurchaseOrderController::class, 'confirm'])->name('confirm')->middleware('permission:purchasing.edit');
+        Route::post('/{order}/receive', [PurchaseOrderController::class, 'receive'])->name('receive')->middleware(['permission:purchasing.edit', 'fiscal-lock']);
+        Route::post('/{order}/cancel', [PurchaseOrderController::class, 'cancel'])->name('cancel')->middleware(['permission:purchasing.delete', 'fiscal-lock']);
     });
 
     // Finance - Invoices & Payments
