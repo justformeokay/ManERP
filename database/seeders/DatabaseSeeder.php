@@ -37,6 +37,7 @@ class DatabaseSeeder extends Seeder
                     'purchasing.view' => true, 'purchasing.create' => true, 'purchasing.edit' => true, 'purchasing.delete' => true,
                     'finance.view' => true, 'finance.create' => true, 'finance.edit' => true, 'finance.delete' => true,
                     'accounting.view' => true, 'accounting.create' => true, 'accounting.edit' => true, 'accounting.delete' => true,
+                    'hr.view' => true, 'hr.create' => true, 'hr.edit' => true, 'hr.delete' => true,
                     'reports.view' => true,
                 ],
             ]

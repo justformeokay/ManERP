@@ -134,7 +134,9 @@ class FinanceService
             $invoice->invoice_number,
             $invoice->invoice_date,
             "Invoice {$invoice->invoice_number} issued",
-            $entries
+            $entries,
+            Invoice::class,
+            $invoice->id
         );
     }
 
@@ -171,7 +173,9 @@ class FinanceService
             'REV-' . $invoice->invoice_number,
             now()->toDateString(),
             "Reversing journal — invoice {$invoice->invoice_number} cancelled",
-            $entries
+            $entries,
+            Invoice::class,
+            $invoice->id
         );
     }
 
@@ -192,7 +196,9 @@ class FinanceService
             [
                 ['account_id' => $cash->id, 'debit' => $payment->amount, 'credit' => 0],
                 ['account_id' => $ar->id, 'debit' => 0, 'credit' => $payment->amount],
-            ]
+            ],
+            Payment::class,
+            $payment->id
         );
     }
 

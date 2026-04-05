@@ -28,7 +28,7 @@ class EmployeeRequest extends FormRequest
             'bpjs_tk_number'      => ['nullable', 'string', 'max:30'],
             'bpjs_kes_number'     => ['nullable', 'string', 'max:30'],
             'ptkp_status'         => ['required', Rule::in(Employee::ptkpOptions())],
-            'ter_category'        => ['required', Rule::in(Employee::TER_CATEGORIES)],
+            'ter_category'        => ['nullable', Rule::in(Employee::TER_CATEGORIES)],
             'bank_name'           => ['nullable', 'string', 'max:255'],
             'bank_account_number' => ['nullable', 'string', 'max:30'],
             'bank_account_name'   => ['nullable', 'string', 'max:255'],

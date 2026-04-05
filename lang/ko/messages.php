@@ -1536,4 +1536,53 @@ return [
     'purchase_coa_ppn_masukan_missing' => '매입세액 계정(1140)을 찾을 수 없습니다. 계정과목표를 시드하세요.',
     'purchase_coa_ppv_missing' => '구매가격차이 계정(5101)을 찾을 수 없습니다. 계정과목표를 시드하세요.',
     'purchase_bill_no_received_items' => '청구서를 생성할 수 없습니다: 이 PO에서 수령된 항목이 없습니다.',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Finance & GL Integrity (Phase 3)
+    |--------------------------------------------------------------------------
+    */
+    'fiscal_period_already_open' => '이 회계기간은 이미 열려 있습니다.',
+    'bank_reconciliation_not_balanced' => '조정을 완료할 수 없습니다: 차이 :difference. 완료 전에 모든 거래를 일치시켜야 합니다.',
+
+    /*
+    |--------------------------------------------------------------------------
+    | HR & Payroll Integrity (Phase 4)
+    |--------------------------------------------------------------------------
+    */
+    'payroll_not_draft' => '급여명세서를 생성할 수 없습니다: 급여 기간이 초안 상태가 아닙니다.',
+    'payroll_no_payslips' => '이 급여 기간에 대한 급여명세서가 없습니다.',
+    'payroll_coa_missing' => 'COA 계정 :code를 찾을 수 없습니다. HR 마이그레이션을 실행하세요.',
+    'attendance' => '출근',
+    'attendance_list' => '출근 목록',
+    'clock_in' => '출근 시간',
+    'clock_out' => '퇴근 시간',
+    'overtime_hours' => '초과근무 시간',
+    'absent_days' => '결근 일수',
+    'present_days' => '출근 일수',
+    'late_days' => '지각 일수',
+    'leave_requests' => '휴가 신청',
+    'leave_type' => '휴가 유형',
+    'leave_balance' => '휴가 잔여',
+    'leave_entitlement' => '휴가 일수',
+    'leave_used' => '사용한 휴가',
+    'leave_remaining' => '남은 휴가',
+    'leave_annual' => '연차 휴가',
+    'leave_sick' => '병가',
+    'leave_maternity' => '출산 휴가',
+    'leave_unpaid' => '무급 휴가',
+    'leave_other' => '기타 휴가',
+    'leave_pending' => '대기 중',
+    'leave_approved' => '승인됨',
+    'leave_rejected' => '거절됨',
+    'leave_cancelled' => '취소됨',
+    'absence_deduction_label' => '결근 공제',
+    'overtime_label' => '초과근무',
+    'basic_salary_label' => '기본급',
+    'fixed_allowance_label' => '고정 수당',
+    'meal_allowance_label' => '식대',
+    'transport_allowance_label' => '교통비',
+    'other_earnings_label' => '기타 수입',
+    'loan_deduction_label' => '대출 공제',
+    'other_deductions_label' => '기타 공제',
 ];

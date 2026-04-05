@@ -2,13 +2,17 @@
 
 namespace App\Services;
 
+use App\Models\Attendance;
 use App\Models\ChartOfAccount;
 use App\Models\Employee;
+use App\Models\LeaveBalance;
+use App\Models\LeaveRequest;
 use App\Models\Payslip;
 use App\Models\PayslipItem;
 use App\Models\PayrollPeriod;
 use App\Models\Pph21TerRate;
 use App\Models\JournalEntry;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -130,7 +134,8 @@ class PayrollService
         int $month = 1,
         float $annualGrossSoFar = 0,
         float $pph21PaidSoFar = 0,
-        string $ptkpStatus = 'TK/0'
+        string $ptkpStatus = 'TK/0',
+        float $annualBpjsEmployee = 0
     ): float {
         if ($month < 12) {
             // ── TER Method (Jan–Nov) ──
@@ -142,7 +147,8 @@ class PayrollService
         return $this->calculatePph21December(
             $annualGrossSoFar + $grossBruto,
             $pph21PaidSoFar,
-            $ptkpStatus
+            $ptkpStatus,
+            $annualBpjsEmployee
         );
     }
 
@@ -153,18 +159,18 @@ class PayrollService
     private function calculatePph21December(
         float $annualGross,
         float $pph21PaidJanNov,
-        string $ptkpStatus
+        string $ptkpStatus,
+        float $annualBpjsEmployee = 0
     ): float {
         // Biaya Jabatan = 5% of annual gross, max 6.000.000/year
         $biayaJabatan = min($annualGross * 0.05, 6000000);
 
-        // BPJS JHT employee = 2% (already deducted monthly, annualize it)
-        // For simplicity, we approximate annual JHT employee deduction
-        $annualJhtEmployee = $annualGross * self::JHT_EMPLOYEE;
-        $annualJpEmployee  = min($annualGross, self::JP_MAX_SALARY * 12) * self::JP_EMPLOYEE;
+        // BPJS employee deductions (JHT + JP) — use actual YTD amounts from payslips
+        // instead of approximating from gross (which over-estimates for variable earnings)
+        $bpjsEmployeeDeduction = $annualBpjsEmployee;
 
         // Penghasilan Neto = Gross - Biaya Jabatan - BPJS (employee portion)
-        $penghNeto = $annualGross - $biayaJabatan - $annualJhtEmployee - $annualJpEmployee;
+        $penghNeto = $annualGross - $biayaJabatan - $bpjsEmployeeDeduction;
 
         // PTKP
         $ptkpAmount = Employee::PTKP_AMOUNTS[$ptkpStatus] ?? 54000000;
@@ -225,6 +231,12 @@ class PayrollService
      */
     public function generatePayslips(PayrollPeriod $period, array $overrides = []): int
     {
+        if ($period->status !== 'draft') {
+            throw new InvalidArgumentException(
+                __('messages.payroll_not_draft')
+            );
+        }
+
         $employees = Employee::active()
             ->with('salaryStructures')
             ->get();
@@ -250,6 +262,7 @@ class PayrollService
 
     /**
      * Generate a single payslip for one employee.
+     * Integrates attendance data for overtime and absence deduction.
      */
     public function generatePayslip(
         PayrollPeriod $period,
@@ -257,12 +270,19 @@ class PayrollService
         \App\Models\SalaryStructure $salary,
         array $override = []
     ): Payslip {
+        // ── Attendance Integration ──
+        $attendanceData = $this->getAttendanceData($employee->id, $period->month, $period->year);
+
         // ── Earnings ──
         $basicSalary    = (float) $salary->basic_salary;
         $fixedAllowance = (float) $salary->fixed_allowance;
         $mealAllowance  = (float) $salary->meal_allowance;
         $transportAllow = (float) $salary->transport_allowance;
-        $overtimeHours  = (float) ($override['overtime_hours'] ?? 0);
+
+        // Overtime: attendance-based, fallback to manual override
+        $overtimeHours  = $attendanceData['overtime_hours'] > 0
+            ? $attendanceData['overtime_hours']
+            : (float) ($override['overtime_hours'] ?? 0);
         $overtimeAmount = round($overtimeHours * (float) $salary->overtime_rate, 2);
         $otherEarnings  = (float) ($override['other_earnings'] ?? 0);
 
@@ -284,6 +304,7 @@ class PayrollService
         // For December, we need cumulative data
         $annualGrossSoFar = 0;
         $pph21PaidSoFar   = 0;
+        $annualBpjsEmployee = 0;
 
         if ($period->month == 12) {
             $prior = Payslip::where('employee_id', $employee->id)
@@ -291,11 +312,14 @@ class PayrollService
                     $q->where('year', $period->year)
                       ->where('month', '<', 12);
                 })
-                ->selectRaw('COALESCE(SUM(gross_salary), 0) as total_gross, COALESCE(SUM(pph21_amount), 0) as total_pph21')
+                ->selectRaw('COALESCE(SUM(gross_salary), 0) as total_gross, COALESCE(SUM(pph21_amount), 0) as total_pph21, COALESCE(SUM(bpjs_jht_employee + bpjs_jp_employee), 0) as total_bpjs_emp')
                 ->first();
 
             $annualGrossSoFar = (float) ($prior->total_gross ?? 0);
             $pph21PaidSoFar   = (float) ($prior->total_pph21 ?? 0);
+            $annualBpjsEmployee = (float) ($prior->total_bpjs_emp ?? 0);
+            // Add current month's BPJS employee
+            $annualBpjsEmployee += $bpjs['jht_employee'] + $bpjs['jp_employee'];
         }
 
         $pph21 = $this->calculatePph21TER(
@@ -304,12 +328,18 @@ class PayrollService
             $period->month,
             $annualGrossSoFar,
             $pph21PaidSoFar,
-            $employee->ptkp_status
+            $employee->ptkp_status,
+            $annualBpjsEmployee
         );
 
         // ── Other Deductions ──
         $loanDeduction    = (float) ($override['loan_deduction'] ?? 0);
-        $absenceDeduction = (float) ($override['absence_deduction'] ?? 0);
+
+        // Absence deduction: attendance-based (absent days × daily rate), fallback to manual
+        $absenceDeduction = $attendanceData['absent_days'] > 0
+            ? round($attendanceData['absent_days'] * ($basicSalary / $this->getWorkingDaysInMonth($period->month, $period->year)), 2)
+            : (float) ($override['absence_deduction'] ?? 0);
+
         $otherDeductions  = (float) ($override['other_deductions'] ?? 0);
 
         // ── Total Deductions (employee portions only) ──
@@ -438,6 +468,7 @@ class PayrollService
 
     /**
      * Post payroll to accounting: create journal entry for the entire period.
+     * Uses bcmath for monetary precision and passes sourceable link for drill-down.
      *
      * Debit:
      *   5100 — Beban Gaji & Upah (total basic + overtime)
@@ -454,54 +485,72 @@ class PayrollService
         $payslips = $period->payslips;
 
         if ($payslips->isEmpty()) {
-            throw new InvalidArgumentException('No payslips found for this period.');
+            throw new InvalidArgumentException(__('messages.payroll_no_payslips'));
         }
 
-        // ── Aggregate amounts ──
-        $totalBasicOT   = round($payslips->sum(fn($p) => (float) $p->basic_salary + (float) $p->overtime_amount), 2);
-        $totalAllowance = round($payslips->sum(fn($p) => (float) $p->fixed_allowance + (float) $p->meal_allowance + (float) $p->transport_allowance + (float) $p->other_earnings), 2);
-        $totalBpjsCo    = round($payslips->sum(fn($p) => $p->total_bpjs_company), 2);
-        $totalNet       = round($payslips->sum('net_salary'), 2);
-        $totalPph21     = round($payslips->sum('pph21_amount'), 2);
-        $totalBpjsAll   = round($payslips->sum(fn($p) => $p->total_bpjs_company + $p->total_bpjs_employee), 2);
+        // ── Aggregate amounts using bcmath ──
+        $totalBasicOT   = '0';
+        $totalAllowance = '0';
+        $totalBpjsCo    = '0';
+        $totalNet       = '0';
+        $totalPph21     = '0';
+        $totalBpjsAll   = '0';
+
+        foreach ($payslips as $p) {
+            $basicOT = bcadd((string) $p->basic_salary, (string) $p->overtime_amount, 2);
+            $totalBasicOT = bcadd($totalBasicOT, $basicOT, 2);
+
+            $allowance = bcadd(
+                bcadd((string) $p->fixed_allowance, (string) $p->meal_allowance, 2),
+                bcadd((string) $p->transport_allowance, (string) $p->other_earnings, 2),
+                2
+            );
+            $totalAllowance = bcadd($totalAllowance, $allowance, 2);
+
+            $totalBpjsCo = bcadd($totalBpjsCo, (string) $p->total_bpjs_company, 2);
+            $totalNet    = bcadd($totalNet, (string) $p->net_salary, 2);
+            $totalPph21  = bcadd($totalPph21, (string) $p->pph21_amount, 2);
+
+            $bpjsAll = bcadd((string) $p->total_bpjs_company, (string) $p->total_bpjs_employee, 2);
+            $totalBpjsAll = bcadd($totalBpjsAll, $bpjsAll, 2);
+        }
 
         // ── Resolve COA accounts ──
         $accounts = $this->resolvePayrollAccounts();
 
-        $totalDebit  = round($totalBasicOT + $totalAllowance + $totalBpjsCo, 2);
-        $totalCredit = round($totalNet + $totalPph21 + $totalBpjsAll, 2);
+        $totalDebit  = bcadd(bcadd($totalBasicOT, $totalAllowance, 2), $totalBpjsCo, 2);
+        $totalCredit = bcadd(bcadd($totalNet, $totalPph21, 2), $totalBpjsAll, 2);
 
-        // Balance check — adjust rounding differences to payroll payable
-        $diff = round($totalDebit - $totalCredit, 2);
-        if (abs($diff) > 0 && abs($diff) <= 1) {
-            $totalNet = round($totalNet + $diff, 2);
+        // Balance check — adjust rounding differences to payroll payable (≤ 1.00)
+        $diff = bcsub($totalDebit, $totalCredit, 2);
+        if (bccomp((string) abs((float) $diff), '0', 2) > 0 && bccomp((string) abs((float) $diff), '1.00', 2) <= 0) {
+            $totalNet = bcadd($totalNet, $diff, 2);
         }
 
-        $date = sprintf('%04d-%02d-%02d', $period->year, $period->month,
-            cal_days_in_month(CAL_GREGORIAN, $period->month, $period->year));
+        $date = Carbon::create($period->year, $period->month, 1)->endOfMonth()->toDateString();
 
         $entries = [];
 
         // Debits
-        if ($totalBasicOT > 0) {
-            $entries[] = ['account_id' => $accounts['salary']->id,    'debit' => $totalBasicOT,   'credit' => 0];
+        if (bccomp($totalBasicOT, '0', 2) > 0) {
+            $entries[] = ['account_id' => $accounts['salary']->id,    'debit' => (float) $totalBasicOT,   'credit' => 0];
         }
-        if ($totalAllowance > 0) {
-            $entries[] = ['account_id' => $accounts['allowance']->id, 'debit' => $totalAllowance, 'credit' => 0];
+        if (bccomp($totalAllowance, '0', 2) > 0) {
+            $entries[] = ['account_id' => $accounts['allowance']->id, 'debit' => (float) $totalAllowance, 'credit' => 0];
         }
-        if ($totalBpjsCo > 0) {
-            $entries[] = ['account_id' => $accounts['bpjs_exp']->id,  'debit' => $totalBpjsCo,    'credit' => 0];
+        if (bccomp($totalBpjsCo, '0', 2) > 0) {
+            $entries[] = ['account_id' => $accounts['bpjs_exp']->id,  'debit' => (float) $totalBpjsCo,    'credit' => 0];
         }
 
         // Credits
-        if ($totalNet > 0) {
-            $entries[] = ['account_id' => $accounts['payable']->id,     'debit' => 0, 'credit' => $totalNet];
+        if (bccomp($totalNet, '0', 2) > 0) {
+            $entries[] = ['account_id' => $accounts['payable']->id,     'debit' => 0, 'credit' => (float) $totalNet];
         }
-        if ($totalPph21 > 0) {
-            $entries[] = ['account_id' => $accounts['pph21']->id,       'debit' => 0, 'credit' => $totalPph21];
+        if (bccomp($totalPph21, '0', 2) > 0) {
+            $entries[] = ['account_id' => $accounts['pph21']->id,       'debit' => 0, 'credit' => (float) $totalPph21];
         }
-        if ($totalBpjsAll > 0) {
-            $entries[] = ['account_id' => $accounts['bpjs_payable']->id,'debit' => 0, 'credit' => $totalBpjsAll];
+        if (bccomp($totalBpjsAll, '0', 2) > 0) {
+            $entries[] = ['account_id' => $accounts['bpjs_payable']->id,'debit' => 0, 'credit' => (float) $totalBpjsAll];
         }
 
         $reference = sprintf('PAYROLL-%04d-%02d', $period->year, $period->month);
@@ -510,7 +559,9 @@ class PayrollService
             $reference,
             $date,
             "Payroll {$period->period_label}",
-            $entries
+            $entries,
+            PayrollPeriod::class,
+            $period->id
         );
     }
 
@@ -532,11 +583,60 @@ class PayrollService
         foreach ($codes as $key => $code) {
             $account = ChartOfAccount::where('code', $code)->first();
             if (!$account) {
-                throw new InvalidArgumentException("COA account {$code} not found. Please run the HR migration.");
+                throw new InvalidArgumentException(
+                    __('messages.payroll_coa_missing', ['code' => $code])
+                );
             }
             $accounts[$key] = $account;
         }
 
         return $accounts;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Attendance Integration
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Get attendance summary for an employee in a given month.
+     * Returns overtime hours and absent days from the attendances table.
+     */
+    public function getAttendanceData(int $employeeId, int $month, int $year): array
+    {
+        $attendances = Attendance::where('employee_id', $employeeId)
+            ->forPeriod($month, $year)
+            ->get();
+
+        $overtimeHours = $attendances->sum('overtime_hours');
+        $absentDays = $attendances->where('status', 'absent')->count();
+
+        return [
+            'overtime_hours' => (float) $overtimeHours,
+            'absent_days'    => $absentDays,
+            'present_days'   => $attendances->whereIn('status', ['present', 'late'])->count(),
+            'late_days'      => $attendances->where('status', 'late')->count(),
+            'leave_days'     => $attendances->where('status', 'leave')->count(),
+        ];
+    }
+
+    /**
+     * Get number of working days in a month (excludes weekends).
+     * Uses Carbon for portability (no calendar extension needed).
+     */
+    public function getWorkingDaysInMonth(int $month, int $year): int
+    {
+        $start = Carbon::create($year, $month, 1);
+        $end   = $start->copy()->endOfMonth();
+        $days  = 0;
+
+        for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
+            if (!$date->isWeekend()) {
+                $days++;
+            }
+        }
+
+        return max($days, 1); // Prevent division by zero
     }
 }

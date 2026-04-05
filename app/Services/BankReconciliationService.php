@@ -5,12 +5,20 @@ namespace App\Services;
 use App\Models\BankAccount;
 use App\Models\BankReconciliation;
 use App\Models\BankTransaction;
+use App\Models\ChartOfAccount;
 use App\Services\AuditLogService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 
 class BankReconciliationService
 {
+    private AccountingService $accountingService;
+
+    public function __construct(AccountingService $accountingService)
+    {
+        $this->accountingService = $accountingService;
+    }
     /**
      * Get book balance for a bank account (from linked COA journal entries).
      */
@@ -82,7 +90,7 @@ class BankReconciliationService
     }
 
     /**
-     * Complete a reconciliation.
+     * Complete a reconciliation. Rejects if difference is not zero.
      */
     public function completeReconciliation(BankReconciliation $reconciliation): BankReconciliation
     {
@@ -90,6 +98,16 @@ class BankReconciliationService
             $oldData = $reconciliation->toArray();
 
             $this->recalculateDifference($reconciliation);
+            $reconciliation->refresh();
+
+            // Block completion if difference is not zero
+            if (bccomp((string) abs((float) $reconciliation->difference), '0.01', 2) >= 0) {
+                throw new InvalidArgumentException(
+                    __('messages.bank_reconciliation_not_balanced', [
+                        'difference' => number_format((float) $reconciliation->difference, 2),
+                    ])
+                );
+            }
 
             $reconciliation->update([
                 'status'        => 'completed',
@@ -146,16 +164,80 @@ class BankReconciliationService
     }
 
     /**
-     * Record a bank transaction and optionally update balance.
+     * Record a bank transaction with atomic GL journal creation.
+     * Dr/Cr the bank's linked COA + Cr/Dr the contra account.
      */
     public function recordTransaction(array $data): BankTransaction
     {
-        $transaction = BankTransaction::create($data);
+        return DB::transaction(function () use ($data) {
+            $bankAccount = BankAccount::findOrFail($data['bank_account_id']);
 
-        $bankAccount = BankAccount::find($data['bank_account_id']);
-        $adjustment = $data['type'] === 'debit' ? $data['amount'] : -$data['amount'];
-        $bankAccount->increment('current_balance', $adjustment);
+            $journalEntryId = null;
 
-        return $transaction;
+            // Create GL journal if bank account has a linked COA
+            if ($bankAccount->coa_id) {
+                $contraAccountCode = $data['contra_account_code'] ?? null;
+                $contraAccount = $contraAccountCode
+                    ? ChartOfAccount::where('code', $contraAccountCode)->first()
+                    : null;
+
+                if ($contraAccount) {
+                    $amount = (float) $data['amount'];
+                    $isDebit = ($data['type'] === 'debit');
+
+                    $entries = [
+                        [
+                            'account_id' => $bankAccount->coa_id,
+                            'debit'      => $isDebit ? $amount : 0,
+                            'credit'     => $isDebit ? 0 : $amount,
+                        ],
+                        [
+                            'account_id' => $contraAccount->id,
+                            'debit'      => $isDebit ? 0 : $amount,
+                            'credit'     => $isDebit ? $amount : 0,
+                        ],
+                    ];
+
+                    $journal = $this->accountingService->createJournalEntry(
+                        $data['reference'] ?? 'BANK-TRX-' . now()->format('YmdHis'),
+                        $data['transaction_date'],
+                        $data['description'] ?? 'Bank Transaction',
+                        $entries
+                    );
+                    $journal->update(['is_posted' => true]);
+                    $journalEntryId = $journal->id;
+                }
+            }
+
+            $transaction = BankTransaction::create(array_merge($data, [
+                'journal_entry_id' => $journalEntryId,
+            ]));
+
+            $adjustment = $data['type'] === 'debit' ? $data['amount'] : -$data['amount'];
+            $bankAccount->increment('current_balance', $adjustment);
+
+            return $transaction;
+        });
+    }
+
+    /**
+     * Verify that the bank account balance matches GL balance.
+     * Returns the difference (should be 0 if in sync).
+     */
+    public function verifyBankGLSync(BankAccount $bankAccount, ?string $date = null): array
+    {
+        $date = $date ?? now()->toDateString();
+        $bankBalance = (float) $bankAccount->current_balance;
+        $glBalance = $this->getBookBalance($bankAccount, $date);
+
+        $difference = bcsub((string) $bankBalance, (string) $glBalance, 2);
+
+        return [
+            'bank_balance' => $bankBalance,
+            'gl_balance'   => $glBalance,
+            'difference'   => (float) $difference,
+            'is_synced'    => bccomp($difference, '0', 2) === 0,
+            'as_of'        => $date,
+        ];
     }
 }

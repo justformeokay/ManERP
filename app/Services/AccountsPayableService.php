@@ -218,7 +218,9 @@ class AccountsPayableService
                     reference: $bill->bill_number,
                     date: $bill->bill_date->format('Y-m-d'),
                     description: "Supplier Bill: {$bill->supplier->name}",
-                    entries: $entries
+                    entries: $entries,
+                    sourceableType: SupplierBill::class,
+                    sourceableId: $bill->id
                 );
                 $journal->update(['is_posted' => true]);
                 $bill->update([
@@ -261,7 +263,9 @@ class AccountsPayableService
                     reference: "{$bill->bill_number}-VOID",
                     date: now()->format('Y-m-d'),
                     description: "Void: {$bill->bill_number}",
-                    entries: $reversingEntries
+                    entries: $reversingEntries,
+                    sourceableType: SupplierBill::class,
+                    sourceableId: $bill->id
                 );
             }
 
@@ -331,7 +335,9 @@ class AccountsPayableService
                 entries: [
                     ['account_id' => $apAccount->id, 'debit' => $amount, 'credit' => 0],
                     ['account_id' => $cashAccount->id, 'debit' => 0, 'credit' => $amount],
-                ]
+                ],
+                sourceableType: SupplierPayment::class,
+                sourceableId: $payment->id
             );
 
             $journal->update(['is_posted' => true]);

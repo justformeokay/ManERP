@@ -468,8 +468,8 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/dashboard', [PayrollController::class, 'dashboard'])->name('dashboard');
             Route::get('/create', [PayrollController::class, 'create'])->name('create')->middleware('permission:hr.create');
             Route::post('/', [PayrollController::class, 'store'])->name('store')->middleware('permission:hr.create');
-            Route::get('/{period}', [PayrollController::class, 'show'])->name('show');
             Route::get('/payslip/{payslip}', [PayrollController::class, 'payslip'])->name('payslip');
+            Route::get('/{period}', [PayrollController::class, 'show'])->name('show');
             Route::post('/{period}/approve', [PayrollController::class, 'approve'])->name('approve')->middleware('permission:hr.edit');
             Route::post('/{period}/post', [PayrollController::class, 'postToAccounting'])->name('post')->middleware('permission:hr.edit');
         });

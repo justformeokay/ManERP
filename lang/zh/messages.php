@@ -1539,4 +1539,53 @@ return [
     'purchase_coa_ppn_masukan_missing' => '未找到进项税科目（1140）。请初始化会计科目表。',
     'purchase_coa_ppv_missing' => '未找到采购价差科目（5101）。请初始化会计科目表。',
     'purchase_bill_no_received_items' => '无法创建账单：该采购单尚无已收货项目。',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Finance & GL Integrity (Phase 3)
+    |--------------------------------------------------------------------------
+    */
+    'fiscal_period_already_open' => '该会计期间已处于开放状态。',
+    'bank_reconciliation_not_balanced' => '无法完成对账：差额为 :difference。完成前必须匹配所有交易。',
+
+    /*
+    |--------------------------------------------------------------------------
+    | HR & Payroll Integrity (Phase 4)
+    |--------------------------------------------------------------------------
+    */
+    'payroll_not_draft' => '无法生成工资单：工资期间不是草稿状态。',
+    'payroll_no_payslips' => '该工资期间没有工资单。',
+    'payroll_coa_missing' => '未找到COA科目 :code。请运行HR迁移。',
+    'attendance' => '考勤',
+    'attendance_list' => '考勤列表',
+    'clock_in' => '签到',
+    'clock_out' => '签退',
+    'overtime_hours' => '加班时数',
+    'absent_days' => '缺勤天数',
+    'present_days' => '出勤天数',
+    'late_days' => '迟到天数',
+    'leave_requests' => '请假申请',
+    'leave_type' => '请假类型',
+    'leave_balance' => '假期余额',
+    'leave_entitlement' => '假期额度',
+    'leave_used' => '已用假期',
+    'leave_remaining' => '剩余假期',
+    'leave_annual' => '年假',
+    'leave_sick' => '病假',
+    'leave_maternity' => '产假',
+    'leave_unpaid' => '无薪假',
+    'leave_other' => '其他假期',
+    'leave_pending' => '待审批',
+    'leave_approved' => '已批准',
+    'leave_rejected' => '已拒绝',
+    'leave_cancelled' => '已取消',
+    'absence_deduction_label' => '缺勤扣款',
+    'overtime_label' => '加班费',
+    'basic_salary_label' => '基本工资',
+    'fixed_allowance_label' => '固定津贴',
+    'meal_allowance_label' => '餐补',
+    'transport_allowance_label' => '交通补贴',
+    'other_earnings_label' => '其他收入',
+    'loan_deduction_label' => '借款扣除',
+    'other_deductions_label' => '其他扣除',
 ];

@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+use Illuminate\Database\Eloquent\Relations\MorphTo;
+
 class JournalEntry extends Model
 {
     protected $fillable = [
@@ -13,6 +15,7 @@ class JournalEntry extends Model
         'description', 'is_posted',
         'entry_type', 'cash_flow_category', 'reversed_entry_id',
         'created_by',
+        'sourceable_type', 'sourceable_id',
     ];
 
     protected function casts(): array
@@ -49,6 +52,11 @@ class JournalEntry extends Model
     }
 
     // ── Relationships ───────────────────────────────────────────
+
+    public function sourceable(): MorphTo
+    {
+        return $this->morphTo();
+    }
 
     public function items(): HasMany
     {

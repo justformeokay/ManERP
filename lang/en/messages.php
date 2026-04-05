@@ -1569,4 +1569,53 @@ return [
     'purchase_coa_ppn_masukan_missing' => 'PPN Masukan account (1140) not found. Please seed the Chart of Accounts.',
     'purchase_coa_ppv_missing' => 'Purchase Price Variance account (5101) not found. Please seed the Chart of Accounts.',
     'purchase_bill_no_received_items' => 'Cannot create bill: no items have been received on this PO.',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Finance & GL Integrity (Phase 3)
+    |--------------------------------------------------------------------------
+    */
+    'fiscal_period_already_open' => 'This fiscal period is already open.',
+    'bank_reconciliation_not_balanced' => 'Cannot complete reconciliation: difference is :difference. All transactions must be matched before completing.',
+
+    /*
+    |--------------------------------------------------------------------------
+    | HR & Payroll Integrity (Phase 4)
+    |--------------------------------------------------------------------------
+    */
+    'payroll_not_draft' => 'Cannot generate payslips: payroll period is not in draft status.',
+    'payroll_no_payslips' => 'No payslips found for this payroll period.',
+    'payroll_coa_missing' => 'COA account :code not found. Please run the HR migration.',
+    'attendance' => 'Attendance',
+    'attendance_list' => 'Attendance List',
+    'clock_in' => 'Clock In',
+    'clock_out' => 'Clock Out',
+    'overtime_hours' => 'Overtime Hours',
+    'absent_days' => 'Absent Days',
+    'present_days' => 'Present Days',
+    'late_days' => 'Late Days',
+    'leave_requests' => 'Leave Requests',
+    'leave_type' => 'Leave Type',
+    'leave_balance' => 'Leave Balance',
+    'leave_entitlement' => 'Leave Entitlement',
+    'leave_used' => 'Leave Used',
+    'leave_remaining' => 'Leave Remaining',
+    'leave_annual' => 'Annual Leave',
+    'leave_sick' => 'Sick Leave',
+    'leave_maternity' => 'Maternity Leave',
+    'leave_unpaid' => 'Unpaid Leave',
+    'leave_other' => 'Other Leave',
+    'leave_pending' => 'Pending',
+    'leave_approved' => 'Approved',
+    'leave_rejected' => 'Rejected',
+    'leave_cancelled' => 'Cancelled',
+    'absence_deduction_label' => 'Absence Deduction',
+    'overtime_label' => 'Overtime',
+    'basic_salary_label' => 'Basic Salary',
+    'fixed_allowance_label' => 'Fixed Allowance',
+    'meal_allowance_label' => 'Meal Allowance',
+    'transport_allowance_label' => 'Transport Allowance',
+    'other_earnings_label' => 'Other Earnings',
+    'loan_deduction_label' => 'Loan Deduction',
+    'other_deductions_label' => 'Other Deductions',
 ];

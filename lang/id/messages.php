@@ -1560,4 +1560,53 @@ return [
     'purchase_coa_ppn_masukan_missing' => 'Akun PPN Masukan (1140) tidak ditemukan. Silakan seed Chart of Accounts.',
     'purchase_coa_ppv_missing' => 'Akun Selisih Harga Pembelian (5101) tidak ditemukan. Silakan seed Chart of Accounts.',
     'purchase_bill_no_received_items' => 'Tidak dapat membuat tagihan: belum ada barang yang diterima pada PO ini.',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Finance & GL Integrity (Phase 3)
+    |--------------------------------------------------------------------------
+    */
+    'fiscal_period_already_open' => 'Periode fiskal ini sudah terbuka.',
+    'bank_reconciliation_not_balanced' => 'Tidak dapat menyelesaikan rekonsiliasi: selisih :difference. Semua transaksi harus dicocokkan sebelum menyelesaikan.',
+
+    /*
+    |--------------------------------------------------------------------------
+    | HR & Payroll Integrity (Phase 4)
+    |--------------------------------------------------------------------------
+    */
+    'payroll_not_draft' => 'Tidak dapat membuat slip gaji: status periode payroll bukan draft.',
+    'payroll_no_payslips' => 'Tidak ada slip gaji untuk periode payroll ini.',
+    'payroll_coa_missing' => 'Akun COA :code tidak ditemukan. Silakan jalankan migrasi HR.',
+    'attendance' => 'Kehadiran',
+    'attendance_list' => 'Daftar Kehadiran',
+    'clock_in' => 'Jam Masuk',
+    'clock_out' => 'Jam Keluar',
+    'overtime_hours' => 'Jam Lembur',
+    'absent_days' => 'Hari Tidak Hadir',
+    'present_days' => 'Hari Hadir',
+    'late_days' => 'Hari Terlambat',
+    'leave_requests' => 'Pengajuan Cuti',
+    'leave_type' => 'Jenis Cuti',
+    'leave_balance' => 'Saldo Cuti',
+    'leave_entitlement' => 'Jatah Cuti',
+    'leave_used' => 'Cuti Terpakai',
+    'leave_remaining' => 'Sisa Cuti',
+    'leave_annual' => 'Cuti Tahunan',
+    'leave_sick' => 'Cuti Sakit',
+    'leave_maternity' => 'Cuti Melahirkan',
+    'leave_unpaid' => 'Cuti Tanpa Bayar',
+    'leave_other' => 'Cuti Lainnya',
+    'leave_pending' => 'Menunggu',
+    'leave_approved' => 'Disetujui',
+    'leave_rejected' => 'Ditolak',
+    'leave_cancelled' => 'Dibatalkan',
+    'absence_deduction_label' => 'Potongan Absensi',
+    'overtime_label' => 'Lembur',
+    'basic_salary_label' => 'Gaji Pokok',
+    'fixed_allowance_label' => 'Tunjangan Tetap',
+    'meal_allowance_label' => 'Tunjangan Makan',
+    'transport_allowance_label' => 'Tunjangan Transport',
+    'other_earnings_label' => 'Pendapatan Lainnya',
+    'loan_deduction_label' => 'Potongan Kasbon',
+    'other_deductions_label' => 'Potongan Lainnya',
 ];

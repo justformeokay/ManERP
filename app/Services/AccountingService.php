@@ -27,27 +27,45 @@ class AccountingService
      * @param string $description
      * @param array  $entries    [['account_id'=>int, 'debit'=>float, 'credit'=>float], ...]
      */
-    public function createJournalEntry(string $reference, string $date, string $description, array $entries): JournalEntry
+    public function createJournalEntry(string $reference, string $date, string $description, array $entries, ?string $sourceableType = null, ?int $sourceableId = null): JournalEntry
     {
         if (empty($entries)) {
             throw new InvalidArgumentException('Journal entries cannot be empty.');
         }
 
-        $totalDebit  = round(array_sum(array_column($entries, 'debit')), 2);
-        $totalCredit = round(array_sum(array_column($entries, 'credit')), 2);
+        // ── Fiscal period lock (service-level enforcement) ──
+        if ($this->isDateInClosedPeriod($date)) {
+            throw new InvalidArgumentException(
+                __('messages.transaction_in_closed_period', ['date' => $date])
+            );
+        }
 
-        if (abs($totalDebit - $totalCredit) > 0.01) {
+        $totalDebit  = 0;
+        $totalCredit = 0;
+        foreach ($entries as $line) {
+            $totalDebit  = bcadd((string) $totalDebit, (string) ($line['debit'] ?? 0), 2);
+            $totalCredit = bcadd((string) $totalCredit, (string) ($line['credit'] ?? 0), 2);
+        }
+
+        if (bccomp((string) abs((float) bcsub($totalDebit, $totalCredit, 2)), '0.01', 2) > 0) {
             throw new InvalidArgumentException(
                 "Journal entry is not balanced: Debit ({$totalDebit}) ≠ Credit ({$totalCredit})"
             );
         }
 
-        return DB::transaction(function () use ($reference, $date, $description, $entries) {
-            $journal = JournalEntry::create([
+        return DB::transaction(function () use ($reference, $date, $description, $entries, $sourceableType, $sourceableId) {
+            $journalData = [
                 'reference'   => $reference,
                 'date'        => $date,
                 'description' => $description,
-            ]);
+            ];
+
+            if ($sourceableType && $sourceableId) {
+                $journalData['sourceable_type'] = $sourceableType;
+                $journalData['sourceable_id']   = $sourceableId;
+            }
+
+            $journal = JournalEntry::create($journalData);
 
             foreach ($entries as $line) {
                 $journal->items()->create([
@@ -121,42 +139,53 @@ class AccountingService
 
     /**
      * Get trial balance: total debits and credits per account.
+     * Uses lockForUpdate to prevent phantom reads during report generation.
      */
     public function getTrialBalance(?string $from = null, ?string $to = null): array
     {
-        $query = DB::table('journal_items')
-            ->join('journal_entries', 'journal_entries.id', '=', 'journal_items.journal_entry_id')
-            ->join('chart_of_accounts', 'chart_of_accounts.id', '=', 'journal_items.account_id')
-            ->where('journal_entries.is_posted', true)
-            ->select(
-                'chart_of_accounts.id',
-                'chart_of_accounts.code',
-                'chart_of_accounts.name',
-                'chart_of_accounts.type',
-                DB::raw('SUM(journal_items.debit) as total_debit'),
-                DB::raw('SUM(journal_items.credit) as total_credit')
-            )
-            ->groupBy('chart_of_accounts.id', 'chart_of_accounts.code', 'chart_of_accounts.name', 'chart_of_accounts.type')
-            ->orderBy('chart_of_accounts.code');
+        return DB::transaction(function () use ($from, $to) {
+            $query = DB::table('journal_items')
+                ->join('journal_entries', 'journal_entries.id', '=', 'journal_items.journal_entry_id')
+                ->join('chart_of_accounts', 'chart_of_accounts.id', '=', 'journal_items.account_id')
+                ->where('journal_entries.is_posted', true)
+                ->lockForUpdate()
+                ->select(
+                    'chart_of_accounts.id',
+                    'chart_of_accounts.code',
+                    'chart_of_accounts.name',
+                    'chart_of_accounts.type',
+                    DB::raw('SUM(journal_items.debit) as total_debit'),
+                    DB::raw('SUM(journal_items.credit) as total_credit')
+                )
+                ->groupBy('chart_of_accounts.id', 'chart_of_accounts.code', 'chart_of_accounts.name', 'chart_of_accounts.type')
+                ->orderBy('chart_of_accounts.code');
 
-        if ($from) {
-            $query->where('journal_entries.date', '>=', $from);
-        }
-        if ($to) {
-            $query->where('journal_entries.date', '<=', $to);
-        }
+            if ($from) {
+                $query->where('journal_entries.date', '>=', $from);
+            }
+            if ($to) {
+                $query->where('journal_entries.date', '<=', $to);
+            }
 
-        $rows = $query->get();
+            $rows = $query->get();
 
-        $grandDebit  = round((float) $rows->sum('total_debit'), 2);
-        $grandCredit = round((float) $rows->sum('total_credit'), 2);
+            $grandDebit  = '0';
+            $grandCredit = '0';
+            foreach ($rows as $row) {
+                $grandDebit  = bcadd($grandDebit, (string) $row->total_debit, 2);
+                $grandCredit = bcadd($grandCredit, (string) $row->total_credit, 2);
+            }
 
-        return [
-            'accounts'     => $rows,
-            'grand_debit'  => $grandDebit,
-            'grand_credit' => $grandCredit,
-            'is_balanced'  => abs($grandDebit - $grandCredit) < 0.01,
-        ];
+            return [
+                'accounts'     => $rows,
+                'grand_debit'  => (float) $grandDebit,
+                'grand_credit' => (float) $grandCredit,
+                'is_balanced'  => bccomp(
+                    (string) abs((float) bcsub($grandDebit, $grandCredit, 2)),
+                    '0.01', 2
+                ) < 0,
+            ];
+        });
     }
 
     /**
@@ -470,20 +499,31 @@ class AccountingService
 
     /**
      * Reopen a closed period (admin only).
+     * Deletes the closing journal entry and its items to prevent
+     * double Retained Earnings when re-closing.
      */
     public function reopenPeriod(FiscalPeriod $period): FiscalPeriod
     {
         if ($period->isOpen()) {
-            throw new InvalidArgumentException('This period is already open.');
+            throw new InvalidArgumentException(__('messages.fiscal_period_already_open'));
         }
 
-        $period->update([
-            'status'    => 'open',
-            'closed_by' => null,
-            'closed_at' => null,
-        ]);
+        return DB::transaction(function () use ($period) {
+            // Delete the closing journal entry (cascade deletes journal_items)
+            if ($period->closing_journal_id) {
+                JournalEntry::where('id', $period->closing_journal_id)->delete();
+            }
 
-        return $period->fresh();
+            $period->update([
+                'status'             => 'open',
+                'closed_by'          => null,
+                'closed_at'          => null,
+                'closing_notes'      => null,
+                'closing_journal_id' => null,
+            ]);
+
+            return $period->fresh();
+        });
     }
 
     // ════════════════════════════════════════════════════════════════

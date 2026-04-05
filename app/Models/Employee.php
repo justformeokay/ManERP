@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Employee extends Model
 {
-    use SoftDeletes;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'nik', 'name', 'position', 'department',
@@ -45,6 +46,32 @@ class Employee extends Model
     public const TER_CATEGORIES = ['A', 'B', 'C'];
 
     /**
+     * Mapping PTKP status → TER category per PMK 168/2023.
+     *
+     * Category A: TK/0, TK/1
+     * Category B: TK/2, TK/3, K/0, K/1
+     * Category C: K/2, K/3
+     */
+    public const PTKP_TO_TER = [
+        'TK/0' => 'A',
+        'TK/1' => 'A',
+        'TK/2' => 'B',
+        'TK/3' => 'B',
+        'K/0'  => 'B',
+        'K/1'  => 'B',
+        'K/2'  => 'C',
+        'K/3'  => 'C',
+    ];
+
+    /**
+     * Derive TER category from PTKP status per PMK 168/2023.
+     */
+    public static function deriveTerCategory(string $ptkpStatus): string
+    {
+        return self::PTKP_TO_TER[$ptkpStatus] ?? 'A';
+    }
+
+    /**
      * PTKP annual amounts (PP 101/2016 – still effective).
      */
     public const PTKP_AMOUNTS = [
@@ -59,6 +86,15 @@ class Employee extends Model
     ];
 
     // ── Relationships ────────────────────────────────────────
+
+    protected static function booted(): void
+    {
+        static::saving(function (Employee $employee) {
+            if ($employee->ptkp_status) {
+                $employee->ter_category = self::deriveTerCategory($employee->ptkp_status);
+            }
+        });
+    }
 
     public function user(): BelongsTo
     {
@@ -80,6 +116,21 @@ class Employee extends Model
     public function payslips(): HasMany
     {
         return $this->hasMany(Payslip::class);
+    }
+
+    public function attendances(): HasMany
+    {
+        return $this->hasMany(Attendance::class);
+    }
+
+    public function leaveRequests(): HasMany
+    {
+        return $this->hasMany(LeaveRequest::class);
+    }
+
+    public function leaveBalances(): HasMany
+    {
+        return $this->hasMany(LeaveBalance::class);
     }
 
     // ── Helpers ──────────────────────────────────────────────

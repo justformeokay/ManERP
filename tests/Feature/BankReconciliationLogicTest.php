@@ -168,10 +168,11 @@ class BankReconciliationLogicTest extends TestCase
 
     public function test_complete_reconciliation_updates_status_and_bank_balance(): void
     {
+        // Create reconciliation with matching balances (difference = 0)
         $reconciliation = BankReconciliation::create([
             'bank_account_id'   => $this->bankAccount->id,
             'statement_date'    => now()->toDateString(),
-            'statement_balance' => 10500000,
+            'statement_balance' => 10000000,
             'book_balance'      => 10000000,
             'difference'        => 0,
             'status'            => 'draft',
@@ -186,7 +187,7 @@ class BankReconciliationLogicTest extends TestCase
 
         // Bank balance should be updated to statement balance
         $this->bankAccount->refresh();
-        $this->assertEqualsWithDelta(10500000, (float) $this->bankAccount->current_balance, 0.01,
+        $this->assertEqualsWithDelta(10000000, (float) $this->bankAccount->current_balance, 0.01,
             'Bank balance must be updated to statement balance after reconciliation');
     }
 
