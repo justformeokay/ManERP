@@ -550,6 +550,16 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/shifts', [SettingsController::class, 'storeShift'])->name('shifts.store');
             Route::put('/shifts/{shift}', [SettingsController::class, 'updateShift'])->name('shifts.update');
             Route::delete('/shifts/{shift}', [SettingsController::class, 'destroyShift'])->name('shifts.destroy');
+
+            // Department Management (under payroll tab)
+            Route::post('/departments', [SettingsController::class, 'storeDepartment'])->name('departments.store');
+            Route::put('/departments/{department}', [SettingsController::class, 'updateDepartment'])->name('departments.update');
+            Route::delete('/departments/{department}', [SettingsController::class, 'destroyDepartment'])->name('departments.destroy');
+
+            // Position Management (under payroll tab)
+            Route::post('/positions', [SettingsController::class, 'storePosition'])->name('positions.store');
+            Route::put('/positions/{position}', [SettingsController::class, 'updatePosition'])->name('positions.update');
+            Route::delete('/positions/{position}', [SettingsController::class, 'destroyPosition'])->name('positions.destroy');
             
             // User Management
             Route::resource('users', UserController::class)->except(['show'])->middleware('permission:admin.manage_users');

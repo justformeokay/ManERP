@@ -249,6 +249,18 @@
                 </div>
             </div>
 
+            {{-- HR Validation --}}
+            <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+                <h3 class="text-base font-semibold text-gray-900 mb-1">{{ __('messages.hr_validation_settings') }}</h3>
+                <p class="text-xs text-gray-500 mb-5">{{ __('messages.hr_validation_settings_desc') }}</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    @include('settings._field', ['name' => 'nik_min_length', 'label' => __('messages.nik_min_length'), 'type' => 'number', 'value' => $settings['nik_min_length'] ?: 16, 'tooltip' => __('messages.tip_nik_min_length')])
+                    @include('settings._field', ['name' => 'nik_max_length', 'label' => __('messages.nik_max_length'), 'type' => 'number', 'value' => $settings['nik_max_length'] ?: 16, 'tooltip' => __('messages.tip_nik_max_length')])
+                    @include('settings._field', ['name' => 'bank_account_min_length', 'label' => __('messages.bank_account_min_length'), 'type' => 'number', 'value' => $settings['bank_account_min_length'] ?: 8, 'tooltip' => __('messages.tip_bank_account_min_length')])
+                    @include('settings._field', ['name' => 'bank_account_max_length', 'label' => __('messages.bank_account_max_length'), 'type' => 'number', 'value' => $settings['bank_account_max_length'] ?: 16, 'tooltip' => __('messages.tip_bank_account_max_length')])
+                </div>
+            </div>
+
             @include('settings._save_button')
         </form>
 
@@ -352,6 +364,142 @@
             </div>
             @else
                 <p class="text-sm text-gray-400 italic">{{ __('messages.no_shifts_configured') }}</p>
+            @endif
+        </div>
+
+        {{-- Department Management --}}
+        <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+            <div class="flex items-center justify-between mb-5">
+                <div>
+                    <h3 class="text-base font-semibold text-gray-900">{{ __('messages.department_management') }}</h3>
+                    <p class="text-xs text-gray-500 mt-0.5">{{ __('messages.department_management_desc') }}</p>
+                </div>
+                <button type="button" onclick="document.getElementById('dept-form-new').classList.toggle('hidden')"
+                    class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 transition">
+                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                    {{ __('messages.add_department') }}
+                </button>
+            </div>
+
+            <form id="dept-form-new" method="POST" action="{{ route('settings.departments.store') }}" class="hidden mb-6 rounded-xl bg-gray-50 p-4 ring-1 ring-gray-200">
+                @csrf
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">{{ __('messages.dept_name') }}</label>
+                        <input type="text" name="name" required maxlength="100" class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">{{ __('messages.dept_code') }}</label>
+                        <input type="text" name="code" required maxlength="20" class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                    </div>
+                    <div class="flex items-end">
+                        <button type="submit" class="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-medium text-white hover:bg-indigo-700 transition">{{ __('messages.save') }}</button>
+                    </div>
+                </div>
+            </form>
+
+            @if(isset($departments) && $departments->isNotEmpty())
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-gray-100 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                            <th class="pb-2">{{ __('messages.dept_code') }}</th>
+                            <th class="pb-2">{{ __('messages.dept_name') }}</th>
+                            <th class="pb-2">Status</th>
+                            <th class="pb-2"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-50">
+                        @foreach($departments as $dept)
+                        <tr class="group">
+                            <td class="py-2.5 font-mono text-gray-600">{{ $dept->code }}</td>
+                            <td class="py-2.5 font-medium text-gray-900">{{ $dept->name }}</td>
+                            <td class="py-2.5">
+                                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {{ $dept->is_active ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700' }}">
+                                    {{ $dept->is_active ? __('messages.active') : __('messages.inactive') }}
+                                </span>
+                            </td>
+                            <td class="py-2.5 text-right">
+                                <form method="POST" action="{{ route('settings.departments.destroy', $dept) }}" class="inline" onsubmit="return confirm('{{ __('messages.confirm_delete') }}')">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="text-xs text-red-600 hover:text-red-800 opacity-0 group-hover:opacity-100 transition">{{ __('messages.delete') }}</button>
+                                </form>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            @else
+                <p class="text-sm text-gray-400 italic">{{ __('messages.no_departments_configured') }}</p>
+            @endif
+        </div>
+
+        {{-- Position Management --}}
+        <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+            <div class="flex items-center justify-between mb-5">
+                <div>
+                    <h3 class="text-base font-semibold text-gray-900">{{ __('messages.position_management') }}</h3>
+                    <p class="text-xs text-gray-500 mt-0.5">{{ __('messages.position_management_desc') }}</p>
+                </div>
+                <button type="button" onclick="document.getElementById('pos-form-new').classList.toggle('hidden')"
+                    class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 transition">
+                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                    {{ __('messages.add_position') }}
+                </button>
+            </div>
+
+            <form id="pos-form-new" method="POST" action="{{ route('settings.positions.store') }}" class="hidden mb-6 rounded-xl bg-gray-50 p-4 ring-1 ring-gray-200">
+                @csrf
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">{{ __('messages.position_name') }}</label>
+                        <input type="text" name="name" required maxlength="100" class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">{{ __('messages.position_code') }}</label>
+                        <input type="text" name="code" required maxlength="20" class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                    </div>
+                    <div class="flex items-end">
+                        <button type="submit" class="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-medium text-white hover:bg-indigo-700 transition">{{ __('messages.save') }}</button>
+                    </div>
+                </div>
+            </form>
+
+            @if(isset($positions) && $positions->isNotEmpty())
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-gray-100 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                            <th class="pb-2">{{ __('messages.position_code') }}</th>
+                            <th class="pb-2">{{ __('messages.position_name') }}</th>
+                            <th class="pb-2">Status</th>
+                            <th class="pb-2"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-50">
+                        @foreach($positions as $pos)
+                        <tr class="group">
+                            <td class="py-2.5 font-mono text-gray-600">{{ $pos->code }}</td>
+                            <td class="py-2.5 font-medium text-gray-900">{{ $pos->name }}</td>
+                            <td class="py-2.5">
+                                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {{ $pos->is_active ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700' }}">
+                                    {{ $pos->is_active ? __('messages.active') : __('messages.inactive') }}
+                                </span>
+                            </td>
+                            <td class="py-2.5 text-right">
+                                <form method="POST" action="{{ route('settings.positions.destroy', $pos) }}" class="inline" onsubmit="return confirm('{{ __('messages.confirm_delete') }}')">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="text-xs text-red-600 hover:text-red-800 opacity-0 group-hover:opacity-100 transition">{{ __('messages.delete') }}</button>
+                                </form>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            @else
+                <p class="text-sm text-gray-400 italic">{{ __('messages.no_positions_configured') }}</p>
             @endif
         </div>
         @endif

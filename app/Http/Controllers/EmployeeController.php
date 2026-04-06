@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\EmployeeRequest;
 use App\Models\Bank;
+use App\Models\Department;
 use App\Models\Employee;
+use App\Models\Position;
 use App\Models\Shift;
 use App\Models\User;
 use App\Traits\Auditable;
@@ -40,7 +42,9 @@ class EmployeeController extends Controller
         $availableUsers = $this->getAvailableUsers();
         $shifts = Shift::active()->orderBy('name')->get();
         $banks = Bank::active()->orderBy('name')->get();
-        return view('hr.employees.create', compact('availableUsers', 'shifts', 'banks'));
+        $departments = Department::active()->orderBy('name')->get();
+        $positions = Position::active()->orderBy('name')->get();
+        return view('hr.employees.create', compact('availableUsers', 'shifts', 'banks', 'departments', 'positions'));
     }
 
     public function store(EmployeeRequest $request)
@@ -65,7 +69,9 @@ class EmployeeController extends Controller
         $availableUsers = $this->getAvailableUsers($employee->user_id);
         $shifts = Shift::active()->orderBy('name')->get();
         $banks = Bank::active()->orderBy('name')->get();
-        return view('hr.employees.edit', compact('employee', 'availableUsers', 'shifts', 'banks'));
+        $departments = Department::active()->orderBy('name')->get();
+        $positions = Position::active()->orderBy('name')->get();
+        return view('hr.employees.edit', compact('employee', 'availableUsers', 'shifts', 'banks', 'departments', 'positions'));
     }
 
     public function update(EmployeeRequest $request, Employee $employee)

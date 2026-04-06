@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\CompanySetting;
+use App\Models\Department;
+use App\Models\Position;
 use App\Models\Setting;
 use App\Models\Shift;
 use App\Services\AuditLogService;
@@ -145,8 +147,12 @@ class SettingsController extends Controller
                 'bpjs_kes_min_salary', 'bpjs_kes_max_salary',
                 'standard_work_hours', 'late_tolerance_minutes',
                 'late_deduction_per_minute',
+                'nik_min_length', 'nik_max_length',
+                'bank_account_min_length', 'bank_account_max_length',
             ]),
-            'shifts' => Shift::orderBy('name')->get(),
+            'shifts'      => Shift::orderBy('name')->get(),
+            'departments' => Department::orderBy('name')->get(),
+            'positions'   => Position::orderBy('name')->get(),
         ];
     }
 
@@ -167,6 +173,10 @@ class SettingsController extends Controller
             'standard_work_hours'    => 'required|integer|min:1|max:24',
             'late_tolerance_minutes' => 'required|integer|min:0|max:120',
             'late_deduction_per_minute' => 'required|numeric|min:0',
+            'nik_min_length'         => 'required|integer|min:1|max:30',
+            'nik_max_length'         => 'required|integer|min:1|max:30|gte:nik_min_length',
+            'bank_account_min_length'=> 'required|integer|min:1|max:30',
+            'bank_account_max_length'=> 'required|integer|min:1|max:30|gte:bank_account_min_length',
         ]);
 
         return $this->saveSettings($validated, 'Updated HR & payroll settings', 'payroll');
@@ -350,5 +360,107 @@ class SettingsController extends Controller
         return redirect()
             ->route('settings.index', ['tab' => 'payroll'])
             ->with('success', __('messages.shift_deleted'));
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // DEPARTMENT CRUD (under Payroll tab)
+    // ════════════════════════════════════════════════════════════════
+
+    public function storeDepartment(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:100',
+            'code' => 'required|string|max:20|unique:departments,code',
+        ]);
+
+        $dept = Department::create($validated + ['is_active' => true]);
+
+        AuditLogService::log('settings', 'create', "Created department: {$dept->name}", null, $dept->toArray(), $dept);
+
+        return redirect()
+            ->route('settings.index', ['tab' => 'payroll'])
+            ->with('success', __('messages.department_created'));
+    }
+
+    public function updateDepartment(Request $request, Department $department): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name'      => 'required|string|max:100',
+            'code'      => 'required|string|max:20|unique:departments,code,' . $department->id,
+            'is_active' => 'nullable|boolean',
+        ]);
+
+        $validated['is_active'] = $request->boolean('is_active');
+        $oldData = $department->toArray();
+        $department->update($validated);
+
+        AuditLogService::log('settings', 'update', "Updated department: {$department->name}", $oldData, $department->fresh()->toArray(), $department);
+
+        return redirect()
+            ->route('settings.index', ['tab' => 'payroll'])
+            ->with('success', __('messages.department_updated'));
+    }
+
+    public function destroyDepartment(Department $department): RedirectResponse
+    {
+        $oldData = $department->toArray();
+        $department->delete();
+
+        AuditLogService::log('settings', 'delete', "Deleted department: {$oldData['name']}", $oldData, null);
+
+        return redirect()
+            ->route('settings.index', ['tab' => 'payroll'])
+            ->with('success', __('messages.department_deleted'));
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // POSITION CRUD (under Payroll tab)
+    // ════════════════════════════════════════════════════════════════
+
+    public function storePosition(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:100',
+            'code' => 'required|string|max:20|unique:positions,code',
+        ]);
+
+        $pos = Position::create($validated + ['is_active' => true]);
+
+        AuditLogService::log('settings', 'create', "Created position: {$pos->name}", null, $pos->toArray(), $pos);
+
+        return redirect()
+            ->route('settings.index', ['tab' => 'payroll'])
+            ->with('success', __('messages.position_created'));
+    }
+
+    public function updatePosition(Request $request, Position $position): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name'      => 'required|string|max:100',
+            'code'      => 'required|string|max:20|unique:positions,code,' . $position->id,
+            'is_active' => 'nullable|boolean',
+        ]);
+
+        $validated['is_active'] = $request->boolean('is_active');
+        $oldData = $position->toArray();
+        $position->update($validated);
+
+        AuditLogService::log('settings', 'update', "Updated position: {$position->name}", $oldData, $position->fresh()->toArray(), $position);
+
+        return redirect()
+            ->route('settings.index', ['tab' => 'payroll'])
+            ->with('success', __('messages.position_updated'));
+    }
+
+    public function destroyPosition(Position $position): RedirectResponse
+    {
+        $oldData = $position->toArray();
+        $position->delete();
+
+        AuditLogService::log('settings', 'delete', "Deleted position: {$oldData['name']}", $oldData, null);
+
+        return redirect()
+            ->route('settings.index', ['tab' => 'payroll'])
+            ->with('success', __('messages.position_deleted'));
     }
 }

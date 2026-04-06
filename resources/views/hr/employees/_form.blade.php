@@ -45,13 +45,33 @@
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.position') }}</label>
+                @if(isset($positions) && $positions->isNotEmpty())
+                <select name="position"
+                    class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                    <option value="">— {{ __('messages.select_position') }} —</option>
+                    @foreach($positions as $pos)
+                        <option value="{{ $pos->name }}" @selected(old('position', $e?->position) === $pos->name)>{{ $pos->name }}</option>
+                    @endforeach
+                </select>
+                @else
                 <input type="text" name="position" value="{{ old('position', $e?->position) }}"
                     class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary-500">
+                @endif
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.department') }}</label>
+                @if(isset($departments) && $departments->isNotEmpty())
+                <select name="department"
+                    class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                    <option value="">— {{ __('messages.select_department') }} —</option>
+                    @foreach($departments as $dept)
+                        <option value="{{ $dept->name }}" @selected(old('department', $e?->department) === $dept->name)>{{ $dept->name }}</option>
+                    @endforeach
+                </select>
+                @else
                 <input type="text" name="department" value="{{ old('department', $e?->department) }}"
                     class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary-500">
+                @endif
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.join_date') }} <span class="text-red-500">*</span></label>
