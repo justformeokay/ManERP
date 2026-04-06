@@ -56,6 +56,19 @@ class PayrollController extends Controller
                 ->withInput();
         }
 
+        // Pre-check: ada karyawan aktif dengan struktur gaji yang berlaku?
+        $hasEligible = Employee::active()
+            ->whereHas('salaryStructures', fn($q) => $q
+                ->where('is_active', true)
+                ->where('effective_date', '<=', now()->toDateString())
+            )->exists();
+
+        if (! $hasEligible) {
+            return back()
+                ->with('error', 'Tidak ada karyawan aktif dengan struktur gaji yang berlaku. Tambahkan struktur gaji terlebih dahulu di halaman karyawan.')
+                ->withInput();
+        }
+
         $period = DB::transaction(function () use ($month, $year, $request) {
             $period = PayrollPeriod::create([
                 'month'  => $month,
@@ -64,11 +77,7 @@ class PayrollController extends Controller
             ]);
 
             $overrides = $request->input('overrides', []);
-            $count = $this->payrollService->generatePayslips($period, $overrides);
-
-            if ($count === 0) {
-                throw new \RuntimeException('Tidak ada karyawan aktif dengan struktur gaji.');
-            }
+            $this->payrollService->generatePayslips($period, $overrides);
 
             return $period;
         });

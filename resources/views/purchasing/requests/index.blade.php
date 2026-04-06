@@ -14,7 +14,7 @@
         <p class="mt-1 text-sm text-gray-500">{{ __('messages.purchase_requests_subtitle') }}</p>
     </div>
     <a href="{{ route('purchase-requests.create') }}"
-       class="inline-flex items-center gap-2 rounded-xl bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 transition">
+       class="inline-flex items-center gap-2 rounded-xl bg-primary-600 px-4 py-2.5 text-sm font-semibold text-black shadow-md mt-3 border hover:bg-primary-700 transition">
         <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
         {{ __('messages.new_pr_btn') }}
     </a>
