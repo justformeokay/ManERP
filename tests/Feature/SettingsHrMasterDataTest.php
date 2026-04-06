@@ -197,7 +197,6 @@ class SettingsHrMasterDataTest extends TestCase
 
         $response = $this->actingAs($this->admin)->put(route('settings.departments.update', $dept), [
             'name'      => 'New Name',
-            'code'      => 'NEW',
             'is_active' => true,
         ]);
 
@@ -205,7 +204,7 @@ class SettingsHrMasterDataTest extends TestCase
 
         $dept->refresh();
         $this->assertEquals('New Name', $dept->name);
-        $this->assertEquals('NEW', $dept->code);
+        $this->assertEquals('OLD', $dept->code); // code is read-only
     }
 
     public function test_department_update_logs_old_and_new_data(): void
@@ -214,7 +213,6 @@ class SettingsHrMasterDataTest extends TestCase
 
         $this->actingAs($this->admin)->put(route('settings.departments.update', $dept), [
             'name'      => 'Updated',
-            'code'      => 'UPD',
             'is_active' => true,
         ]);
 
@@ -321,7 +319,6 @@ class SettingsHrMasterDataTest extends TestCase
 
         $response = $this->actingAs($this->admin)->put(route('settings.positions.update', $pos), [
             'name'      => 'New Pos',
-            'code'      => 'NWP',
             'is_active' => true,
         ]);
 
@@ -329,7 +326,7 @@ class SettingsHrMasterDataTest extends TestCase
 
         $pos->refresh();
         $this->assertEquals('New Pos', $pos->name);
-        $this->assertEquals('NWP', $pos->code);
+        $this->assertEquals('OLP', $pos->code); // code is read-only
     }
 
     public function test_position_update_logs_old_and_new_data(): void
@@ -338,7 +335,6 @@ class SettingsHrMasterDataTest extends TestCase
 
         $this->actingAs($this->admin)->put(route('settings.positions.update', $pos), [
             'name'      => 'Updated',
-            'code'      => 'UPP',
             'is_active' => true,
         ]);
 

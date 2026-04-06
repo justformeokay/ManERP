@@ -85,6 +85,8 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             BankSeeder::class,
+            DepartmentSeeder::class,
+            PositionSeeder::class,
         ]);
     }
 }

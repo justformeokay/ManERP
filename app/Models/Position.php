@@ -17,4 +17,12 @@ class Position extends Model
     {
         return $query->where('is_active', true);
     }
+
+    /**
+     * Count employees using this position name.
+     */
+    public function employeeCount(): int
+    {
+        return Employee::where('position', $this->name)->count();
+    }
 }

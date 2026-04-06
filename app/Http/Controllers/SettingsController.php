@@ -370,12 +370,12 @@ class SettingsController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:100',
-            'code' => 'required|string|max:20|unique:departments,code',
+            'code' => 'required|string|max:20|alpha_num:ascii|uppercase|unique:departments,code',
         ]);
 
         $dept = Department::create($validated + ['is_active' => true]);
 
-        AuditLogService::log('settings', 'create', "Created department: {$dept->name}", null, $dept->toArray(), $dept);
+        AuditLogService::log('settings', 'create', "Created department: [{$dept->code}] {$dept->name}", null, $dept->toArray(), $dept);
 
         return redirect()
             ->route('settings.index', ['tab' => 'payroll'])
@@ -386,15 +386,15 @@ class SettingsController extends Controller
     {
         $validated = $request->validate([
             'name'      => 'required|string|max:100',
-            'code'      => 'required|string|max:20|unique:departments,code,' . $department->id,
             'is_active' => 'nullable|boolean',
         ]);
 
+        // Code is read-only after creation — not accepted from the request
         $validated['is_active'] = $request->boolean('is_active');
         $oldData = $department->toArray();
         $department->update($validated);
 
-        AuditLogService::log('settings', 'update', "Updated department: {$department->name}", $oldData, $department->fresh()->toArray(), $department);
+        AuditLogService::log('settings', 'update', "Updated department: [{$department->code}] {$department->name}", $oldData, $department->fresh()->toArray(), $department);
 
         return redirect()
             ->route('settings.index', ['tab' => 'payroll'])
@@ -403,10 +403,24 @@ class SettingsController extends Controller
 
     public function destroyDepartment(Department $department): RedirectResponse
     {
+        $employeeCount = $department->employeeCount();
+
+        if ($employeeCount > 0) {
+            // Soft delete: deactivate instead of hard-deleting
+            $oldData = $department->toArray();
+            $department->update(['is_active' => false]);
+
+            AuditLogService::log('settings', 'update', "Deactivated department: [{$department->code}] {$department->name} ({$employeeCount} employees)", $oldData, $department->fresh()->toArray(), $department);
+
+            return redirect()
+                ->route('settings.index', ['tab' => 'payroll'])
+                ->with('success', __('messages.department_deactivated'));
+        }
+
         $oldData = $department->toArray();
         $department->delete();
 
-        AuditLogService::log('settings', 'delete', "Deleted department: {$oldData['name']}", $oldData, null);
+        AuditLogService::log('settings', 'delete', "Deleted department: [{$oldData['code']}] {$oldData['name']}", $oldData, null);
 
         return redirect()
             ->route('settings.index', ['tab' => 'payroll'])
@@ -421,12 +435,12 @@ class SettingsController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:100',
-            'code' => 'required|string|max:20|unique:positions,code',
+            'code' => 'required|string|max:20|alpha_num:ascii|uppercase|unique:positions,code',
         ]);
 
         $pos = Position::create($validated + ['is_active' => true]);
 
-        AuditLogService::log('settings', 'create', "Created position: {$pos->name}", null, $pos->toArray(), $pos);
+        AuditLogService::log('settings', 'create', "Created position: [{$pos->code}] {$pos->name}", null, $pos->toArray(), $pos);
 
         return redirect()
             ->route('settings.index', ['tab' => 'payroll'])
@@ -437,15 +451,15 @@ class SettingsController extends Controller
     {
         $validated = $request->validate([
             'name'      => 'required|string|max:100',
-            'code'      => 'required|string|max:20|unique:positions,code,' . $position->id,
             'is_active' => 'nullable|boolean',
         ]);
 
+        // Code is read-only after creation — not accepted from the request
         $validated['is_active'] = $request->boolean('is_active');
         $oldData = $position->toArray();
         $position->update($validated);
 
-        AuditLogService::log('settings', 'update', "Updated position: {$position->name}", $oldData, $position->fresh()->toArray(), $position);
+        AuditLogService::log('settings', 'update', "Updated position: [{$position->code}] {$position->name}", $oldData, $position->fresh()->toArray(), $position);
 
         return redirect()
             ->route('settings.index', ['tab' => 'payroll'])
@@ -454,10 +468,24 @@ class SettingsController extends Controller
 
     public function destroyPosition(Position $position): RedirectResponse
     {
+        $employeeCount = $position->employeeCount();
+
+        if ($employeeCount > 0) {
+            // Soft delete: deactivate instead of hard-deleting
+            $oldData = $position->toArray();
+            $position->update(['is_active' => false]);
+
+            AuditLogService::log('settings', 'update', "Deactivated position: [{$position->code}] {$position->name} ({$employeeCount} employees)", $oldData, $position->fresh()->toArray(), $position);
+
+            return redirect()
+                ->route('settings.index', ['tab' => 'payroll'])
+                ->with('success', __('messages.position_deactivated'));
+        }
+
         $oldData = $position->toArray();
         $position->delete();
 
-        AuditLogService::log('settings', 'delete', "Deleted position: {$oldData['name']}", $oldData, null);
+        AuditLogService::log('settings', 'delete', "Deleted position: [{$oldData['code']}] {$oldData['name']}", $oldData, null);
 
         return redirect()
             ->route('settings.index', ['tab' => 'payroll'])

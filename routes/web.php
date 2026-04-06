@@ -471,6 +471,8 @@ Route::middleware(['auth'])->group(function () {
         // Employees
         Route::prefix('employees')->name('employees.')->middleware('permission:hr.view')->group(function () {
             Route::get('/', [EmployeeController::class, 'index'])->name('index');
+            Route::get('/template', [EmployeeController::class, 'downloadTemplate'])->name('template');
+            Route::post('/import', [EmployeeController::class, 'import'])->name('import')->middleware('permission:hr.create');
             Route::get('/create', [EmployeeController::class, 'create'])->name('create')->middleware('permission:hr.create');
             Route::post('/', [EmployeeController::class, 'store'])->name('store')->middleware('permission:hr.create');
             Route::get('/{employee}', [EmployeeController::class, 'show'])->name('show');

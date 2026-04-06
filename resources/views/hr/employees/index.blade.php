@@ -14,7 +14,14 @@
             <h1 class="text-2xl font-bold text-gray-900">{{ __('messages.employees') }}</h1>
             <p class="mt-1 text-sm text-gray-500">{{ __('messages.employees_desc') }}</p>
         </div>
-        @include('components.button', ['label' => __('messages.add_employee'), 'type' => 'primary', 'href' => route('hr.employees.create')])
+        <div class="flex items-center gap-2">
+            <button type="button" onclick="document.getElementById('importModal').classList.remove('hidden')"
+                class="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 transition">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                {{ __('messages.import_excel') }}
+            </button>
+            @include('components.button', ['label' => __('messages.add_employee'), 'type' => 'primary', 'href' => route('hr.employees.create')])
+        </div>
     </div>
 @endsection
 
@@ -101,5 +108,61 @@
                 {{ $employees->links() }}
             </div>
         @endif
+    </div>
+
+    {{-- Import Errors --}}
+    @if(session('import_errors'))
+    <div class="mt-6 rounded-2xl bg-red-50 p-6 ring-1 ring-red-200">
+        <h3 class="text-sm font-semibold text-red-800 mb-3">{{ __('messages.import_error_summary') }}</h3>
+        <ul class="space-y-1 text-sm text-red-700">
+            @foreach(session('import_errors') as $row => $message)
+                <li>
+                    <span class="font-medium">{{ __('messages.import_row', ['row' => $row]) }}:</span>
+                    {{ $message }}
+                </li>
+            @endforeach
+        </ul>
+    </div>
+    @endif
+
+    {{-- Import Modal --}}
+    <div id="importModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50" onclick="if(event.target===this)this.classList.add('hidden')">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">{{ __('messages.import_employees') }}</h3>
+                <button type="button" onclick="document.getElementById('importModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+
+            <div class="mb-5 rounded-xl bg-blue-50 p-4 ring-1 ring-blue-200">
+                <p class="text-sm text-blue-800 mb-2">{{ __('messages.import_instruction') }}</p>
+                <a href="{{ route('hr.employees.template') }}" class="inline-flex items-center gap-1.5 text-sm font-medium text-blue-700 hover:text-blue-900">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    {{ __('messages.download_template') }}
+                </a>
+            </div>
+
+            <form method="POST" action="{{ route('hr.employees.import') }}" enctype="multipart/form-data">
+                @csrf
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('messages.select_file') }}</label>
+                    <input type="file" name="file" accept=".xlsx,.xls,.csv" required
+                        class="block w-full text-sm text-gray-700 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 cursor-pointer">
+                    <p class="mt-1 text-xs text-gray-500">{{ __('messages.import_file_hint') }}</p>
+                </div>
+
+                <div class="flex justify-end gap-2">
+                    <button type="button" onclick="document.getElementById('importModal').classList.add('hidden')"
+                        class="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                        {{ __('messages.cancel') }}
+                    </button>
+                    <button type="submit"
+                        class="rounded-xl bg-primary-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-700 transition">
+                        {{ __('messages.start_import') }}
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 @endsection

@@ -383,19 +383,22 @@
 
             <form id="dept-form-new" method="POST" action="{{ route('settings.departments.store') }}" class="hidden mb-6 rounded-xl bg-gray-50 p-4 ring-1 ring-gray-200">
                 @csrf
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
                     <div>
-                        <label class="block text-xs font-medium text-gray-600 mb-1">{{ __('messages.dept_name') }}</label>
-                        <input type="text" name="name" required maxlength="100" class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                        <label class="block text-xs font-medium text-gray-600 mb-1">{{ __('messages.dept_code') }} <span class="text-red-500">*</span></label>
+                        <input type="text" name="code" required maxlength="20" placeholder="e.g. PROD"
+                            class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-mono uppercase focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                            oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')">
                     </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-600 mb-1">{{ __('messages.dept_code') }}</label>
-                        <input type="text" name="code" required maxlength="20" class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-medium text-gray-600 mb-1">{{ __('messages.dept_name') }} <span class="text-red-500">*</span></label>
+                        <input type="text" name="name" required maxlength="100" class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
                     </div>
                     <div class="flex items-end">
                         <button type="submit" class="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-medium text-white hover:bg-indigo-700 transition">{{ __('messages.save') }}</button>
                     </div>
                 </div>
+                <p class="mt-2 text-xs text-gray-400">{{ __('messages.code_readonly_hint') }}</p>
             </form>
 
             @if(isset($departments) && $departments->isNotEmpty())
@@ -405,24 +408,68 @@
                         <tr class="border-b border-gray-100 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                             <th class="pb-2">{{ __('messages.dept_code') }}</th>
                             <th class="pb-2">{{ __('messages.dept_name') }}</th>
+                            <th class="pb-2">{{ __('messages.employee_count') }}</th>
                             <th class="pb-2">Status</th>
                             <th class="pb-2"></th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-50">
                         @foreach($departments as $dept)
-                        <tr class="group">
+                        @php $deptEmpCount = $dept->employeeCount(); @endphp
+                        <tr class="group" id="dept-row-{{ $dept->id }}">
                             <td class="py-2.5 font-mono text-gray-600">{{ $dept->code }}</td>
-                            <td class="py-2.5 font-medium text-gray-900">{{ $dept->name }}</td>
+                            <td class="py-2.5 font-medium text-gray-900">
+                                <span id="dept-name-display-{{ $dept->id }}">{{ $dept->name }}</span>
+                            </td>
+                            <td class="py-2.5 text-gray-600">
+                                @if($deptEmpCount > 0)
+                                    <span class="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700">{{ $deptEmpCount }}</span>
+                                @else
+                                    <span class="text-gray-400">0</span>
+                                @endif
+                            </td>
                             <td class="py-2.5">
                                 <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {{ $dept->is_active ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700' }}">
                                     {{ $dept->is_active ? __('messages.active') : __('messages.inactive') }}
                                 </span>
                             </td>
-                            <td class="py-2.5 text-right">
-                                <form method="POST" action="{{ route('settings.departments.destroy', $dept) }}" class="inline" onsubmit="return confirm('{{ __('messages.confirm_delete') }}')">
+                            <td class="py-2.5 text-right space-x-2">
+                                <button type="button" onclick="document.getElementById('dept-edit-{{ $dept->id }}').classList.toggle('hidden')"
+                                    class="text-xs text-indigo-600 hover:text-indigo-800 opacity-0 group-hover:opacity-100 transition">{{ __('messages.edit') }}</button>
+                                <form method="POST" action="{{ route('settings.departments.destroy', $dept) }}" class="inline"
+                                    onsubmit="return confirm('{{ $deptEmpCount > 0 ? __('messages.confirm_deactivate_has_employees', ['count' => $deptEmpCount]) : __('messages.confirm_delete') }}')">
                                     @csrf @method('DELETE')
-                                    <button type="submit" class="text-xs text-red-600 hover:text-red-800 opacity-0 group-hover:opacity-100 transition">{{ __('messages.delete') }}</button>
+                                    <button type="submit" class="text-xs text-red-600 hover:text-red-800 opacity-0 group-hover:opacity-100 transition">
+                                        {{ $deptEmpCount > 0 ? __('messages.deactivate') : __('messages.delete') }}
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr id="dept-edit-{{ $dept->id }}" class="hidden bg-gray-50">
+                            <td colspan="5" class="py-3 px-2">
+                                <form method="POST" action="{{ route('settings.departments.update', $dept) }}" class="flex items-end gap-3">
+                                    @csrf @method('PUT')
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">{{ __('messages.dept_code') }}</label>
+                                        <input type="text" value="{{ $dept->code }}" disabled
+                                            class="w-24 rounded-lg border border-gray-200 bg-gray-100 px-3 py-2 text-sm font-mono text-gray-400 cursor-not-allowed">
+                                    </div>
+                                    <div class="flex-1">
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">{{ __('messages.dept_name') }}</label>
+                                        <input type="text" name="name" value="{{ $dept->name }}" required maxlength="100"
+                                            class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <label class="flex items-center gap-1.5 text-xs text-gray-600">
+                                            <input type="hidden" name="is_active" value="0">
+                                            <input type="checkbox" name="is_active" value="1" {{ $dept->is_active ? 'checked' : '' }}
+                                                class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                            {{ __('messages.active') }}
+                                        </label>
+                                    </div>
+                                    <button type="submit" class="rounded-lg bg-indigo-600 px-3 py-2 text-xs font-medium text-white hover:bg-indigo-700 transition">{{ __('messages.update') }}</button>
+                                    <button type="button" onclick="document.getElementById('dept-edit-{{ $dept->id }}').classList.add('hidden')"
+                                        class="rounded-lg bg-gray-200 px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-300 transition">{{ __('messages.cancel') }}</button>
                                 </form>
                             </td>
                         </tr>
@@ -451,19 +498,22 @@
 
             <form id="pos-form-new" method="POST" action="{{ route('settings.positions.store') }}" class="hidden mb-6 rounded-xl bg-gray-50 p-4 ring-1 ring-gray-200">
                 @csrf
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
                     <div>
-                        <label class="block text-xs font-medium text-gray-600 mb-1">{{ __('messages.position_name') }}</label>
-                        <input type="text" name="name" required maxlength="100" class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                        <label class="block text-xs font-medium text-gray-600 mb-1">{{ __('messages.position_code') }} <span class="text-red-500">*</span></label>
+                        <input type="text" name="code" required maxlength="20" placeholder="e.g. MGR"
+                            class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-mono uppercase focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                            oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')">
                     </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-600 mb-1">{{ __('messages.position_code') }}</label>
-                        <input type="text" name="code" required maxlength="20" class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-medium text-gray-600 mb-1">{{ __('messages.position_name') }} <span class="text-red-500">*</span></label>
+                        <input type="text" name="name" required maxlength="100" class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
                     </div>
                     <div class="flex items-end">
                         <button type="submit" class="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-medium text-white hover:bg-indigo-700 transition">{{ __('messages.save') }}</button>
                     </div>
                 </div>
+                <p class="mt-2 text-xs text-gray-400">{{ __('messages.code_readonly_hint') }}</p>
             </form>
 
             @if(isset($positions) && $positions->isNotEmpty())
@@ -473,24 +523,66 @@
                         <tr class="border-b border-gray-100 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                             <th class="pb-2">{{ __('messages.position_code') }}</th>
                             <th class="pb-2">{{ __('messages.position_name') }}</th>
+                            <th class="pb-2">{{ __('messages.employee_count') }}</th>
                             <th class="pb-2">Status</th>
                             <th class="pb-2"></th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-50">
                         @foreach($positions as $pos)
-                        <tr class="group">
+                        @php $posEmpCount = $pos->employeeCount(); @endphp
+                        <tr class="group" id="pos-row-{{ $pos->id }}">
                             <td class="py-2.5 font-mono text-gray-600">{{ $pos->code }}</td>
                             <td class="py-2.5 font-medium text-gray-900">{{ $pos->name }}</td>
+                            <td class="py-2.5 text-gray-600">
+                                @if($posEmpCount > 0)
+                                    <span class="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700">{{ $posEmpCount }}</span>
+                                @else
+                                    <span class="text-gray-400">0</span>
+                                @endif
+                            </td>
                             <td class="py-2.5">
                                 <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {{ $pos->is_active ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700' }}">
                                     {{ $pos->is_active ? __('messages.active') : __('messages.inactive') }}
                                 </span>
                             </td>
-                            <td class="py-2.5 text-right">
-                                <form method="POST" action="{{ route('settings.positions.destroy', $pos) }}" class="inline" onsubmit="return confirm('{{ __('messages.confirm_delete') }}')">
+                            <td class="py-2.5 text-right space-x-2">
+                                <button type="button" onclick="document.getElementById('pos-edit-{{ $pos->id }}').classList.toggle('hidden')"
+                                    class="text-xs text-indigo-600 hover:text-indigo-800 opacity-0 group-hover:opacity-100 transition">{{ __('messages.edit') }}</button>
+                                <form method="POST" action="{{ route('settings.positions.destroy', $pos) }}" class="inline"
+                                    onsubmit="return confirm('{{ $posEmpCount > 0 ? __('messages.confirm_deactivate_has_employees', ['count' => $posEmpCount]) : __('messages.confirm_delete') }}')">
                                     @csrf @method('DELETE')
-                                    <button type="submit" class="text-xs text-red-600 hover:text-red-800 opacity-0 group-hover:opacity-100 transition">{{ __('messages.delete') }}</button>
+                                    <button type="submit" class="text-xs text-red-600 hover:text-red-800 opacity-0 group-hover:opacity-100 transition">
+                                        {{ $posEmpCount > 0 ? __('messages.deactivate') : __('messages.delete') }}
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr id="pos-edit-{{ $pos->id }}" class="hidden bg-gray-50">
+                            <td colspan="5" class="py-3 px-2">
+                                <form method="POST" action="{{ route('settings.positions.update', $pos) }}" class="flex items-end gap-3">
+                                    @csrf @method('PUT')
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">{{ __('messages.position_code') }}</label>
+                                        <input type="text" value="{{ $pos->code }}" disabled
+                                            class="w-24 rounded-lg border border-gray-200 bg-gray-100 px-3 py-2 text-sm font-mono text-gray-400 cursor-not-allowed">
+                                    </div>
+                                    <div class="flex-1">
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">{{ __('messages.position_name') }}</label>
+                                        <input type="text" name="name" value="{{ $pos->name }}" required maxlength="100"
+                                            class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <label class="flex items-center gap-1.5 text-xs text-gray-600">
+                                            <input type="hidden" name="is_active" value="0">
+                                            <input type="checkbox" name="is_active" value="1" {{ $pos->is_active ? 'checked' : '' }}
+                                                class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                            {{ __('messages.active') }}
+                                        </label>
+                                    </div>
+                                    <button type="submit" class="rounded-lg bg-indigo-600 px-3 py-2 text-xs font-medium text-white hover:bg-indigo-700 transition">{{ __('messages.update') }}</button>
+                                    <button type="button" onclick="document.getElementById('pos-edit-{{ $pos->id }}').classList.add('hidden')"
+                                        class="rounded-lg bg-gray-200 px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-300 transition">{{ __('messages.cancel') }}</button>
                                 </form>
                             </td>
                         </tr>

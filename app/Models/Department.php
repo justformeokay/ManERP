@@ -17,4 +17,12 @@ class Department extends Model
     {
         return $query->where('is_active', true);
     }
+
+    /**
+     * Count employees using this department name.
+     */
+    public function employeeCount(): int
+    {
+        return Employee::where('department', $this->name)->count();
+    }
 }

@@ -50,7 +50,7 @@
                     class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                     <option value="">— {{ __('messages.select_position') }} —</option>
                     @foreach($positions as $pos)
-                        <option value="{{ $pos->name }}" @selected(old('position', $e?->position) === $pos->name)>{{ $pos->name }}</option>
+                        <option value="{{ $pos->name }}" @selected(old('position', $e?->position) === $pos->name)>[{{ $pos->code }}] - {{ $pos->name }}</option>
                     @endforeach
                 </select>
                 @else
@@ -65,7 +65,7 @@
                     class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                     <option value="">— {{ __('messages.select_department') }} —</option>
                     @foreach($departments as $dept)
-                        <option value="{{ $dept->name }}" @selected(old('department', $e?->department) === $dept->name)>{{ $dept->name }}</option>
+                        <option value="{{ $dept->name }}" @selected(old('department', $e?->department) === $dept->name)>[{{ $dept->code }}] - {{ $dept->name }}</option>
                     @endforeach
                 </select>
                 @else
