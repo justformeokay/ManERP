@@ -285,6 +285,8 @@ class AccountingService
 
         return [
             'date'                        => $date,
+            'assets'                      => $currentAssets->merge($nonCurrentAssets),
+            'liabilities'                 => $currentLiabilities->merge($nonCurrentLiabilities),
             'current_assets'              => $currentAssets,
             'non_current_assets'          => $nonCurrentAssets,
             'current_liabilities'         => $currentLiabilities,

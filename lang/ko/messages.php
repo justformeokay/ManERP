@@ -1847,4 +1847,5 @@ return [
     'required_date_header' => '요구 날짜',
     'supplier' => '공급업체',
     'qty_label' => '수량',
+    'in_stock_label' => '입고됨',
 ];

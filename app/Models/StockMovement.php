@@ -58,7 +58,7 @@ class StockMovement extends Model
         ];
     }
 
-    public function reference(): string
+    public function getReferenceLabel(): string
     {
         if ($this->reference_type && $this->reference_id) {
             return $this->reference_type . ' #' . $this->reference_id;

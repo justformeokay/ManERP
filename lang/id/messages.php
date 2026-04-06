@@ -1871,4 +1871,5 @@ return [
     'required_date_header' => 'Tanggal Diperlukan',
     'supplier' => 'Pemasok',
     'qty_label' => 'Kuantitas',
+    'in_stock_label' => 'Tersedia',
 ];

@@ -1850,4 +1850,5 @@ return [
     'required_date_header' => '所需日期',
     'supplier' => '供应商',
     'qty_label' => '数量',
+    'in_stock_label' => '库存中',
 ];

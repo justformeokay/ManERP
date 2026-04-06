@@ -181,7 +181,7 @@
                                     <td class="whitespace-nowrap px-6 py-4 text-right text-sm font-semibold {{ $mv->type === 'in' ? 'text-green-700' : ($mv->type === 'out' ? 'text-red-700' : 'text-amber-700') }}">
                                         {{ $mv->type === 'in' ? '+' : ($mv->type === 'out' ? '-' : '±') }}{{ number_format($mv->quantity) }}
                                     </td>
-                                    <td class="px-6 py-4 text-sm text-gray-500">{{ $mv->reference ?? '—' }}</td>
+                                    <td class="px-6 py-4 text-sm text-gray-500">{{ $mv->getReferenceLabel() }}</td>
                                 </tr>
                             @empty
                                 <tr><td colspan="6" class="px-6 py-12 text-center text-sm text-gray-400">{{ __('messages.no_movements') }}</td></tr>

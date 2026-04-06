@@ -1894,4 +1894,5 @@ return [
     'required_date_header' => 'Required Date',
     'supplier' => 'Supplier',
     'qty_label' => 'Quantity',
+    'in_stock_label' => 'In Stock',
 ];
