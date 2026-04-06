@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\FiscalPeriod;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -15,9 +16,13 @@ use Illuminate\Support\Facades\DB;
  *
  * Account categorisation is driven by `chart_of_accounts.cash_flow_category`:
  *   operating | investing | financing | cash | none
+ *
+ * All arithmetic uses bcmath (scale 2) before rounding for final output.
  */
 class CashFlowService
 {
+    private const BC_SCALE = 2;
+
     /**
      * Default COA codes for cash/bank accounts.
      */
@@ -31,7 +36,7 @@ class CashFlowService
         $endDate   ??= now()->toDateString();
         $startDate ??= now()->startOfYear()->toDateString();
 
-        // ── Core calculations ──────────────────────────────────
+        // ── Core calculations (bcmath) ─────────────────────────
         $netIncome    = $this->getNetIncome($startDate, $endDate);
         $depreciation = $this->getDepreciationAmortization($startDate, $endDate);
 
@@ -41,33 +46,56 @@ class CashFlowService
 
         // Prepend depreciation add-back before working-capital items
         $operating = [];
-        if (abs($depreciation) > 0.01) {
+        if (bccomp($depreciation, '0', self::BC_SCALE) !== 0) {
             $operating[] = [
                 'label'  => 'depreciation_amortization',
-                'amount' => round($depreciation, 2),
+                'amount' => (float) $depreciation,
             ];
         }
         $operating = array_merge($operating, $operatingItems);
 
-        $totalOperating = round($netIncome + array_sum(array_column($operating, 'amount')), 2);
-        $totalInvesting = round(array_sum(array_column($investingItems, 'amount')), 2);
-        $totalFinancing = round(array_sum(array_column($financingItems, 'amount')), 2);
-        $netCashChange  = round($totalOperating + $totalInvesting + $totalFinancing, 2);
+        // Sum with bcmath
+        $opSum = '0';
+        foreach ($operating as $item) {
+            $opSum = bcadd($opSum, (string) $item['amount'], self::BC_SCALE);
+        }
+        $totalOperating = (float) bcadd($netIncome, $opSum, self::BC_SCALE);
+
+        $invSum = '0';
+        foreach ($investingItems as $item) {
+            $invSum = bcadd($invSum, (string) $item['amount'], self::BC_SCALE);
+        }
+        $totalInvesting = (float) $invSum;
+
+        $finSum = '0';
+        foreach ($financingItems as $item) {
+            $finSum = bcadd($finSum, (string) $item['amount'], self::BC_SCALE);
+        }
+        $totalFinancing = (float) $finSum;
+
+        $netCashChange = (float) bcadd(
+            bcadd((string) $totalOperating, (string) $totalInvesting, self::BC_SCALE),
+            (string) $totalFinancing,
+            self::BC_SCALE
+        );
 
         // ── Cash balances ──────────────────────────────────────
-        $beginningCash     = $this->getCashBalance($startDate, false);
-        $computedEndingCash = round($beginningCash + $netCashChange, 2);
+        $beginningCash      = $this->getCashBalance($startDate, false);
+        $computedEndingCash = (float) bcadd((string) $beginningCash, (string) $netCashChange, self::BC_SCALE);
 
         // ── Reconciliation (Golden Rule) ───────────────────────
         $actualEndingCash  = $this->getCashBalance($endDate, true);
-        $discrepancyAmount = round($actualEndingCash - $computedEndingCash, 2);
-        $hasDiscrepancy    = abs($discrepancyAmount) > 0.01;
+        $discrepancyAmount = (float) bcsub((string) $actualEndingCash, (string) $computedEndingCash, self::BC_SCALE);
+        $hasDiscrepancy    = bccomp((string) abs($discrepancyAmount), '0.01', self::BC_SCALE) >= 0;
+
+        // ── Fiscal period draft detection ──────────────────────
+        $isDraft = $this->isAnyPeriodOpen($startDate, $endDate);
 
         return [
             'start_date'          => $startDate,
             'end_date'            => $endDate,
-            'net_income'          => round($netIncome, 2),
-            'depreciation'        => round($depreciation, 2),
+            'net_income'          => (float) $netIncome,
+            'depreciation'        => (float) $depreciation,
             'operating'           => $operating,
             'total_operating'     => $totalOperating,
             'investing'           => $investingItems,
@@ -75,25 +103,38 @@ class CashFlowService
             'financing'           => $financingItems,
             'total_financing'     => $totalFinancing,
             'net_cash_change'     => $netCashChange,
-            'beginning_cash'      => round($beginningCash, 2),
+            'beginning_cash'      => (float) $beginningCash,
             'ending_cash'         => $computedEndingCash,
-            'actual_ending_cash'  => round($actualEndingCash, 2),
+            'actual_ending_cash'  => (float) $actualEndingCash,
             'discrepancy_amount'  => $discrepancyAmount,
             'has_discrepancy'     => $hasDiscrepancy,
+            'is_draft'            => $isDraft,
         ];
+    }
+
+    /**
+     * Detect if the reporting period overlaps any open fiscal period.
+     */
+    public function isAnyPeriodOpen(string $startDate, string $endDate): bool
+    {
+        return FiscalPeriod::where('status', 'open')
+            ->where('start_date', '<=', $endDate)
+            ->where('end_date', '>=', $startDate)
+            ->exists();
     }
 
     // ══════════════════════════════════════════════════════════
     //  Net Income
     // ══════════════════════════════════════════════════════════
 
-    private function getNetIncome(string $start, string $end): float
+    private function getNetIncome(string $start, string $end): string
     {
         $rows = DB::table('journal_items')
             ->join('journal_entries', 'journal_entries.id', '=', 'journal_items.journal_entry_id')
             ->join('chart_of_accounts', 'chart_of_accounts.id', '=', 'journal_items.account_id')
             ->where('journal_entries.is_posted', true)
-            ->whereBetween('journal_entries.date', [$start, $end])
+            ->whereDate('journal_entries.date', '>=', $start)
+            ->whereDate('journal_entries.date', '<=', $end)
             ->whereIn('chart_of_accounts.type', ['revenue', 'expense'])
             ->select(
                 'chart_of_accounts.type',
@@ -105,14 +146,14 @@ class CashFlowService
             ->keyBy('type');
 
         $revenue = isset($rows['revenue'])
-            ? (float) $rows['revenue']->total_credit - (float) $rows['revenue']->total_debit
-            : 0;
+            ? bcsub((string) $rows['revenue']->total_credit, (string) $rows['revenue']->total_debit, self::BC_SCALE)
+            : '0';
 
         $expense = isset($rows['expense'])
-            ? (float) $rows['expense']->total_debit - (float) $rows['expense']->total_credit
-            : 0;
+            ? bcsub((string) $rows['expense']->total_debit, (string) $rows['expense']->total_credit, self::BC_SCALE)
+            : '0';
 
-        return round($revenue - $expense, 2);
+        return bcsub($revenue, $expense, self::BC_SCALE);
     }
 
     // ══════════════════════════════════════════════════════════
@@ -128,14 +169,15 @@ class CashFlowService
      *
      * Returns positive value (add-back to net income).
      */
-    private function getDepreciationAmortization(string $start, string $end): float
+    private function getDepreciationAmortization(string $start, string $end): string
     {
         // Method 1: tagged depreciation journals (DEP- prefix)
         $depByRef = DB::table('journal_items')
             ->join('journal_entries', 'journal_entries.id', '=', 'journal_items.journal_entry_id')
             ->join('chart_of_accounts', 'chart_of_accounts.id', '=', 'journal_items.account_id')
             ->where('journal_entries.is_posted', true)
-            ->whereBetween('journal_entries.date', [$start, $end])
+            ->whereDate('journal_entries.date', '>=', $start)
+            ->whereDate('journal_entries.date', '<=', $end)
             ->where('journal_entries.reference', 'like', 'DEP-%')
             ->where('chart_of_accounts.type', 'expense')
             ->select(DB::raw('SUM(journal_items.debit) - SUM(journal_items.credit) as net'))
@@ -146,7 +188,8 @@ class CashFlowService
         $depByContra = DB::table('journal_items')
             ->join('journal_entries', 'journal_entries.id', '=', 'journal_items.journal_entry_id')
             ->where('journal_entries.is_posted', true)
-            ->whereBetween('journal_entries.date', [$start, $end])
+            ->whereDate('journal_entries.date', '>=', $start)
+            ->whereDate('journal_entries.date', '<=', $end)
             ->where('journal_entries.reference', 'not like', 'DEP-%')
             ->whereIn('journal_items.account_id', function ($q) {
                 $q->select('coa_depreciation_id')
@@ -156,7 +199,10 @@ class CashFlowService
             ->select(DB::raw('SUM(journal_items.credit) - SUM(journal_items.debit) as net'))
             ->value('net');
 
-        return round(abs((float) $depByRef) + abs((float) $depByContra), 2);
+        $a = bcabs((string) ($depByRef ?? '0'), self::BC_SCALE);
+        $b = bcabs((string) ($depByContra ?? '0'), self::BC_SCALE);
+
+        return bcadd($a, $b, self::BC_SCALE);
     }
 
     // ══════════════════════════════════════════════════════════
@@ -182,10 +228,10 @@ class CashFlowService
         // Current assets (AR, Inventory, Prepaid, etc.)
         // Asset increase → negative cash flow; decrease → positive cash flow
         foreach ($this->groupAccountChanges($assetAccounts, $start, $end) as $item) {
-            if (abs($item['change']) > 0.01) {
+            if (bccomp(bcabs((string) $item['change'], self::BC_SCALE), '0.01', self::BC_SCALE) >= 0) {
                 $items[] = [
                     'label'  => $this->makeLabel($item['code'], $item['name']),
-                    'amount' => round(-$item['change'], 2), // Invert for indirect method
+                    'amount' => (float) bcmul((string) $item['change'], '-1', self::BC_SCALE),
                 ];
             }
         }
@@ -193,20 +239,20 @@ class CashFlowService
         // Current liabilities (AP, Tax Payable, Accrued, etc.)
         // Liability increase → positive cash flow; decrease → negative cash flow
         foreach ($this->groupAccountChanges($liabilityAccounts, $start, $end) as $item) {
-            if (abs($item['change']) > 0.01) {
+            if (bccomp(bcabs((string) $item['change'], self::BC_SCALE), '0.01', self::BC_SCALE) >= 0) {
                 $items[] = [
                     'label'  => $this->makeLabel($item['code'], $item['name']),
-                    'amount' => round($item['change'], 2),
+                    'amount' => (float) $item['change'],
                 ];
             }
         }
 
         // Manually tagged operating entries on journal_entries.cash_flow_category
         $manualOp = $this->getTaggedCashFlowAmount('operating', $start, $end);
-        if (abs($manualOp) > 0.01) {
+        if (bccomp(bcabs($manualOp, self::BC_SCALE), '0.01', self::BC_SCALE) >= 0) {
             $items[] = [
                 'label'  => 'other_operating',
-                'amount' => round($manualOp, 2),
+                'amount' => (float) $manualOp,
             ];
         }
 
@@ -230,20 +276,20 @@ class CashFlowService
 
         // For investing accounts: net increase in assets = cash outflow (negative)
         foreach ($this->groupAccountChanges($accounts, $start, $end) as $item) {
-            if (abs($item['change']) > 0.01) {
+            if (bccomp(bcabs((string) $item['change'], self::BC_SCALE), '0.01', self::BC_SCALE) >= 0) {
                 $items[] = [
                     'label'  => $this->makeLabel($item['code'], $item['name']),
-                    'amount' => round(-$item['change'], 2),
+                    'amount' => (float) bcmul((string) $item['change'], '-1', self::BC_SCALE),
                 ];
             }
         }
 
         // Manually tagged investing entries
         $manualInv = $this->getTaggedCashFlowAmount('investing', $start, $end);
-        if (abs($manualInv) > 0.01) {
+        if (bccomp(bcabs($manualInv, self::BC_SCALE), '0.01', self::BC_SCALE) >= 0) {
             $items[] = [
                 'label'  => 'other_investing',
-                'amount' => round($manualInv, 2),
+                'amount' => (float) $manualInv,
             ];
         }
 
@@ -267,24 +313,24 @@ class CashFlowService
 
         // Liability/equity increase = cash inflow; decrease = cash outflow
         foreach ($this->groupAccountChanges($accounts, $start, $end) as $item) {
-            if (abs($item['change']) > 0.01) {
+            if (bccomp(bcabs((string) $item['change'], self::BC_SCALE), '0.01', self::BC_SCALE) >= 0) {
                 $change = $item['type'] === 'asset'
-                    ? -$item['change']  // Asset-type financing (rare)
-                    : $item['change'];  // Liability & equity: natural sign
+                    ? bcmul((string) $item['change'], '-1', self::BC_SCALE)
+                    : (string) $item['change'];
 
                 $items[] = [
                     'label'  => $this->makeLabel($item['code'], $item['name']),
-                    'amount' => round($change, 2),
+                    'amount' => (float) $change,
                 ];
             }
         }
 
         // Manually tagged financing entries
         $manualFin = $this->getTaggedCashFlowAmount('financing', $start, $end);
-        if (abs($manualFin) > 0.01) {
+        if (bccomp(bcabs($manualFin, self::BC_SCALE), '0.01', self::BC_SCALE) >= 0) {
             $items[] = [
                 'label'  => 'other_financing',
-                'amount' => round($manualFin, 2),
+                'amount' => (float) $manualFin,
             ];
         }
 
@@ -312,7 +358,8 @@ class CashFlowService
         $rows = DB::table('journal_items')
             ->join('journal_entries', 'journal_entries.id', '=', 'journal_items.journal_entry_id')
             ->where('journal_entries.is_posted', true)
-            ->whereBetween('journal_entries.date', [$start, $end])
+            ->whereDate('journal_entries.date', '>=', $start)
+            ->whereDate('journal_entries.date', '<=', $end)
             ->whereIn('journal_items.account_id', $accountIds)
             ->select(
                 'journal_items.account_id',
@@ -328,7 +375,7 @@ class CashFlowService
             $row = $rows->get($acct->id);
             if (!$row) continue;
 
-            $change = round((float) $row->total_debit - (float) $row->total_credit, 2);
+            $change = bcsub((string) ($row->total_debit ?? '0'), (string) ($row->total_credit ?? '0'), self::BC_SCALE);
             $results[] = [
                 'code'   => $acct->code,
                 'name'   => $acct->name,
@@ -343,14 +390,15 @@ class CashFlowService
     /**
      * Get the sum of cash movements from manually tagged journal entries.
      */
-    private function getTaggedCashFlowAmount(string $category, string $start, string $end): float
+    private function getTaggedCashFlowAmount(string $category, string $start, string $end): string
     {
         $row = DB::table('journal_items')
             ->join('journal_entries', 'journal_entries.id', '=', 'journal_items.journal_entry_id')
             ->join('chart_of_accounts', 'chart_of_accounts.id', '=', 'journal_items.account_id')
             ->where('journal_entries.is_posted', true)
             ->where('journal_entries.cash_flow_category', $category)
-            ->whereBetween('journal_entries.date', [$start, $end])
+            ->whereDate('journal_entries.date', '>=', $start)
+            ->whereDate('journal_entries.date', '<=', $end)
             ->where(function ($q) {
                 foreach (self::CASH_CODES as $code) {
                     $q->orWhere('chart_of_accounts.code', $code);
@@ -362,9 +410,9 @@ class CashFlowService
             )
             ->first();
 
-        if (!$row) return 0;
+        if (!$row) return '0';
 
-        return round((float) $row->total_debit - (float) $row->total_credit, 2);
+        return bcsub((string) ($row->total_debit ?? '0'), (string) ($row->total_credit ?? '0'), self::BC_SCALE);
     }
 
     // ══════════════════════════════════════════════════════════
@@ -375,7 +423,7 @@ class CashFlowService
      * Get the cash/bank balance as of a date.
      * Uses cash_flow_category='cash' with fallback to CASH_CODES.
      */
-    private function getCashBalance(string $date, bool $inclusive = true): float
+    private function getCashBalance(string $date, bool $inclusive = true): string
     {
         $operator = $inclusive ? '<=' : '<';
 
@@ -383,7 +431,7 @@ class CashFlowService
             ->join('journal_entries', 'journal_entries.id', '=', 'journal_items.journal_entry_id')
             ->join('chart_of_accounts', 'chart_of_accounts.id', '=', 'journal_items.account_id')
             ->where('journal_entries.is_posted', true)
-            ->where('journal_entries.date', $operator, $date)
+            ->whereDate('journal_entries.date', $operator, $date)
             ->where(function ($q) {
                 $q->where('chart_of_accounts.cash_flow_category', 'cash')
                   ->orWhere(function ($q2) {
@@ -398,13 +446,13 @@ class CashFlowService
             )
             ->first();
 
-        if (!$row) return 0;
+        if (!$row) return '0';
 
-        return round((float) $row->total_debit - (float) $row->total_credit, 2);
+        return bcsub((string) ($row->total_debit ?? '0'), (string) ($row->total_credit ?? '0'), self::BC_SCALE);
     }
 
     // ══════════════════════════════════════════════════════════
-    //  Label Helper
+    //  Helpers
     // ══════════════════════════════════════════════════════════
 
     /**
@@ -425,4 +473,15 @@ class CashFlowService
         // Fallback: return a descriptive label
         return "change_in_{$code}_{$name}";
     }
+}
+
+/**
+ * bcmath absolute value (not provided by ext-bcmath).
+ */
+function bcabs(string $value, int $scale = 2): string
+{
+    if (bccomp($value, '0', $scale) < 0) {
+        return bcmul($value, '-1', $scale);
+    }
+    return bcadd($value, '0', $scale); // normalise
 }

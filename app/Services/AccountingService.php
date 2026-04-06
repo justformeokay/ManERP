@@ -119,10 +119,10 @@ class AccountingService
             ->orderBy('journal_entries.id');
 
         if ($from) {
-            $query->where('journal_entries.date', '>=', $from);
+            $query->whereDate('journal_entries.date', '>=', $from);
         }
         if ($to) {
-            $query->where('journal_entries.date', '<=', $to);
+            $query->whereDate('journal_entries.date', '<=', $to);
         }
 
         $rows = $query->get();
@@ -179,10 +179,10 @@ class AccountingService
                 ->orderBy('chart_of_accounts.code');
 
             if ($from) {
-                $query->where('journal_entries.date', '>=', $from);
+                $query->whereDate('journal_entries.date', '>=', $from);
             }
             if ($to) {
-                $query->where('journal_entries.date', '<=', $to);
+                $query->whereDate('journal_entries.date', '<=', $to);
             }
 
             $rows = $query->get();
@@ -217,7 +217,7 @@ class AccountingService
             ->join('journal_entries', 'journal_entries.id', '=', 'journal_items.journal_entry_id')
             ->join('chart_of_accounts', 'chart_of_accounts.id', '=', 'journal_items.account_id')
             ->where('journal_entries.is_posted', true)
-            ->where('journal_entries.date', '<=', $date)
+            ->whereDate('journal_entries.date', '<=', $date)
             ->whereIn('chart_of_accounts.type', ['asset', 'liability', 'equity', 'revenue', 'expense'])
             ->select(
                 'chart_of_accounts.id',
@@ -317,8 +317,8 @@ class AccountingService
             ->join('journal_entries', 'journal_entries.id', '=', 'journal_items.journal_entry_id')
             ->join('chart_of_accounts', 'chart_of_accounts.id', '=', 'journal_items.account_id')
             ->where('journal_entries.is_posted', true)
-            ->where('journal_entries.date', '>=', $startDate)
-            ->where('journal_entries.date', '<=', $endDate)
+            ->whereDate('journal_entries.date', '>=', $startDate)
+            ->whereDate('journal_entries.date', '<=', $endDate)
             ->whereIn('chart_of_accounts.type', ['revenue', 'expense'])
             ->select(
                 'chart_of_accounts.id',

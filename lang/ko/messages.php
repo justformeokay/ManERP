@@ -1848,4 +1848,13 @@ return [
     'supplier' => '공급업체',
     'qty_label' => '수량',
     'in_stock_label' => '입고됨',
+    'from' => '시작',
+    'to' => '종료',
+    'no_activity' => '활동을 찾을 수 없습니다.',
+
+    // ── Cash Flow PDF Redesign ──────────────────────────────────
+    'cf_non_cash_adjustments' => '비현금 조정',
+    'cf_working_capital_changes' => '운전자본 변동',
+    'cf_net_increase_decrease' => '현금 순증가(감소)',
+    'cf_draft_notice' => '회계기간 미마감 — 미감사',
 ];

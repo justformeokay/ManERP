@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Client;
 use App\Models\CompanySetting;
 use App\Services\AccountingService;
+use App\Services\AuditLogService;
 use App\Services\CashFlowService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -58,6 +59,13 @@ class FinancialReportController extends Controller
             $request->input('to', now()->toDateString())
         );
         $company = CompanySetting::getSettings();
+
+        // Audit trail — log every PDF export
+        AuditLogService::log(
+            'accounting',
+            'export_pdf',
+            "Cash Flow PDF exported for period {$data['start_date']} to {$data['end_date']}",
+        );
 
         $pdf = Pdf::loadView('pdf.cash-flow', compact('data', 'company'))
             ->setPaper('A4', 'portrait')

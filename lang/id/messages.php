@@ -1872,4 +1872,13 @@ return [
     'supplier' => 'Pemasok',
     'qty_label' => 'Kuantitas',
     'in_stock_label' => 'Tersedia',
+    'from' => 'Dari',
+    'to' => 'Ke',
+    'no_activity' => 'Tidak ada aktivitas yang ditemukan.',
+
+    // ── Cash Flow PDF Redesign ──────────────────────────────────
+    'cf_non_cash_adjustments' => 'Penyesuaian Non-Kas',
+    'cf_working_capital_changes' => 'Perubahan Modal Kerja',
+    'cf_net_increase_decrease' => 'Kenaikan (Penurunan) Bersih Kas',
+    'cf_draft_notice' => 'Periode Fiskal Belum Ditutup — Belum Diaudit',
 ];

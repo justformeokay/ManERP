@@ -1895,4 +1895,13 @@ return [
     'supplier' => 'Supplier',
     'qty_label' => 'Quantity',
     'in_stock_label' => 'In Stock',
+    'from' => 'From',
+    'to' => 'To',
+    'no_activity' => 'No activity found.',
+
+    // ── Cash Flow PDF Redesign ──────────────────────────────────
+    'cf_non_cash_adjustments' => 'Non-Cash Adjustments',
+    'cf_working_capital_changes' => 'Changes in Working Capital',
+    'cf_net_increase_decrease' => 'Net Increase (Decrease) in Cash',
+    'cf_draft_notice' => 'Fiscal Period Not Closed — Unaudited',
 ];

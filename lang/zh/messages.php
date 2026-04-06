@@ -1851,4 +1851,13 @@ return [
     'supplier' => '供应商',
     'qty_label' => '数量',
     'in_stock_label' => '库存中',
+    'from' => '从',
+    'to' => '至',
+    'no_activity' => '未找到活动。',
+
+    // ── Cash Flow PDF Redesign ──────────────────────────────────
+    'cf_non_cash_adjustments' => '非现金调整',
+    'cf_working_capital_changes' => '营运资金变动',
+    'cf_net_increase_decrease' => '现金净增加（减少）',
+    'cf_draft_notice' => '会计期间未关闭 — 未审计',
 ];
