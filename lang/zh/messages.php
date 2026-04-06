@@ -49,7 +49,10 @@ return [
     // 财务
     'finance' => '财务',
     'invoices' => '发票',
+    'bills' => '账单',
     'payments' => '付款',
+    'invoice_number' => '发票号码',
+    'bill_number' => '账单号码',
 
     // 会计
     'accounting' => '会计',
@@ -1449,6 +1452,7 @@ return [
     'bank_account_name' => '账户持有人',
     'personal_data' => '个人信息',
     'tax_bpjs_data' => '税务与BPJS',
+    'tax_bpjs_info' => '税务与BPJS信息',
     'bank_info' => '银行信息',
     'salary_structures' => '薪资结构',
     'add_salary_structure' => '添加薪资结构',

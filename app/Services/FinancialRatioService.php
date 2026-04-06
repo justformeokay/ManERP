@@ -18,11 +18,10 @@ class FinancialRatioService
         $balances = $this->getAccountBalances($date);
 
         return [
-            'liquidity'    => $this->getLiquidityRatios($balances),
+            'liquidity'     => $this->getLiquidityRatios($balances),
             'profitability' => $this->getProfitabilityRatios($date),
-            'leverage'     => $this->getLeverageRatios($balances),
-            'efficiency'   => $this->getEfficiencyRatios($balances, $date),
-            'date'         => $date,
+            'leverage'      => $this->getLeverageRatios($balances),
+            'efficiency'    => $this->getEfficiencyRatios($balances, $date),
         ];
     }
 
@@ -35,13 +34,13 @@ class FinancialRatioService
             $debit = DB::table('journal_items')
                 ->join('journal_entries', 'journal_entries.id', '=', 'journal_items.journal_entry_id')
                 ->where('journal_items.account_id', $account->id)
-                ->where('journal_entries.date', '<=', $date)
+                ->whereDate('journal_entries.date', '<=', $date)
                 ->sum('journal_items.debit');
 
             $credit = DB::table('journal_items')
                 ->join('journal_entries', 'journal_entries.id', '=', 'journal_items.journal_entry_id')
                 ->where('journal_items.account_id', $account->id)
-                ->where('journal_entries.date', '<=', $date)
+                ->whereDate('journal_entries.date', '<=', $date)
                 ->sum('journal_items.credit');
 
             $balance = in_array($account->type, ['asset', 'expense'])
@@ -88,9 +87,6 @@ class FinancialRatioService
             'current_ratio'   => ['value' => round($currentRatio, 2), 'label' => 'Current Ratio', 'benchmark' => '> 1.5'],
             'quick_ratio'     => ['value' => round($quickRatio, 2), 'label' => 'Quick Ratio', 'benchmark' => '> 1.0'],
             'working_capital' => ['value' => round($workingCapital, 2), 'label' => 'Working Capital', 'benchmark' => '> 0'],
-            'current_assets'      => $currentAssets,
-            'current_liabilities' => $currentLiabilities,
-            'inventory'           => $inventory,
         ];
     }
 
@@ -105,7 +101,8 @@ class FinancialRatioService
             ->join('journal_entries', 'journal_entries.id', '=', 'journal_items.journal_entry_id')
             ->join('chart_of_accounts', 'chart_of_accounts.id', '=', 'journal_items.account_id')
             ->where('chart_of_accounts.type', 'revenue')
-            ->whereBetween('journal_entries.date', [$yearStart, $date])
+            ->whereDate('journal_entries.date', '>=', $yearStart)
+            ->whereDate('journal_entries.date', '<=', $date)
             ->selectRaw('COALESCE(SUM(credit) - SUM(debit), 0) as total')
             ->value('total');
 
@@ -113,7 +110,8 @@ class FinancialRatioService
             ->join('journal_entries', 'journal_entries.id', '=', 'journal_items.journal_entry_id')
             ->join('chart_of_accounts', 'chart_of_accounts.id', '=', 'journal_items.account_id')
             ->where('chart_of_accounts.code', 'like', '50%')
-            ->whereBetween('journal_entries.date', [$yearStart, $date])
+            ->whereDate('journal_entries.date', '>=', $yearStart)
+            ->whereDate('journal_entries.date', '<=', $date)
             ->selectRaw('COALESCE(SUM(debit) - SUM(credit), 0) as total')
             ->value('total');
 
@@ -121,7 +119,8 @@ class FinancialRatioService
             ->join('journal_entries', 'journal_entries.id', '=', 'journal_items.journal_entry_id')
             ->join('chart_of_accounts', 'chart_of_accounts.id', '=', 'journal_items.account_id')
             ->where('chart_of_accounts.type', 'expense')
-            ->whereBetween('journal_entries.date', [$yearStart, $date])
+            ->whereDate('journal_entries.date', '>=', $yearStart)
+            ->whereDate('journal_entries.date', '<=', $date)
             ->selectRaw('COALESCE(SUM(debit) - SUM(credit), 0) as total')
             ->value('total');
 
@@ -132,7 +131,7 @@ class FinancialRatioService
             ->join('journal_entries', 'journal_entries.id', '=', 'journal_items.journal_entry_id')
             ->join('chart_of_accounts', 'chart_of_accounts.id', '=', 'journal_items.account_id')
             ->where('chart_of_accounts.type', 'asset')
-            ->where('journal_entries.date', '<=', $date)
+            ->whereDate('journal_entries.date', '<=', $date)
             ->selectRaw('COALESCE(SUM(debit) - SUM(credit), 0) as total')
             ->value('total');
 
@@ -140,7 +139,7 @@ class FinancialRatioService
             ->join('journal_entries', 'journal_entries.id', '=', 'journal_items.journal_entry_id')
             ->join('chart_of_accounts', 'chart_of_accounts.id', '=', 'journal_items.account_id')
             ->where('chart_of_accounts.type', 'equity')
-            ->where('journal_entries.date', '<=', $date)
+            ->whereDate('journal_entries.date', '<=', $date)
             ->selectRaw('COALESCE(SUM(credit) - SUM(debit), 0) as total')
             ->value('total');
 
@@ -154,9 +153,6 @@ class FinancialRatioService
             'net_margin'   => ['value' => round($netMargin, 1), 'label' => 'Net Margin (%)', 'benchmark' => '> 10%'],
             'roa'          => ['value' => round($roa, 1), 'label' => 'Return on Assets (%)', 'benchmark' => '> 5%'],
             'roe'          => ['value' => round($roe, 1), 'label' => 'Return on Equity (%)', 'benchmark' => '> 15%'],
-            'revenue'      => $revenue,
-            'net_income'   => $netIncome,
-            'gross_profit' => $grossProfit,
         ];
     }
 
@@ -175,9 +171,6 @@ class FinancialRatioService
         return [
             'debt_to_equity' => ['value' => round($debtToEquity, 2), 'label' => 'Debt to Equity', 'benchmark' => '< 2.0'],
             'debt_to_assets' => ['value' => round($debtToAssets, 2), 'label' => 'Debt to Assets', 'benchmark' => '< 0.5'],
-            'total_liabilities' => $totalLiabilities,
-            'total_equity'      => $totalEquity,
-            'total_assets'      => $totalAssets,
         ];
     }
 
@@ -192,7 +185,8 @@ class FinancialRatioService
             ->join('journal_entries', 'journal_entries.id', '=', 'journal_items.journal_entry_id')
             ->join('chart_of_accounts', 'chart_of_accounts.id', '=', 'journal_items.account_id')
             ->where('chart_of_accounts.type', 'revenue')
-            ->whereBetween('journal_entries.date', [$yearStart, $date])
+            ->whereDate('journal_entries.date', '>=', $yearStart)
+            ->whereDate('journal_entries.date', '<=', $date)
             ->selectRaw('COALESCE(SUM(credit) - SUM(debit), 0) as total')
             ->value('total');
 
@@ -200,7 +194,8 @@ class FinancialRatioService
             ->join('journal_entries', 'journal_entries.id', '=', 'journal_items.journal_entry_id')
             ->join('chart_of_accounts', 'chart_of_accounts.id', '=', 'journal_items.account_id')
             ->where('chart_of_accounts.code', 'like', '50%')
-            ->whereBetween('journal_entries.date', [$yearStart, $date])
+            ->whereDate('journal_entries.date', '>=', $yearStart)
+            ->whereDate('journal_entries.date', '<=', $date)
             ->selectRaw('COALESCE(SUM(debit) - SUM(credit), 0) as total')
             ->value('total');
 

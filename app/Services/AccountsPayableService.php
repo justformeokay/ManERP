@@ -437,6 +437,7 @@ class AccountsPayableService
             $row = [
                 'supplier_id'   => $supplierId,
                 'supplier_name' => $supplier->name ?? 'Unknown',
+                'bill_count'    => $supplierBills->count(),
                 'current'       => 0,
                 '1-30'          => 0,
                 '31-60'         => 0,

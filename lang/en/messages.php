@@ -49,7 +49,10 @@ return [
     // Finance
     'finance' => 'Finance',
     'invoices' => 'Invoices',
+    'bills' => 'Bills',
     'payments' => 'Payments',
+    'invoice_number' => 'Invoice Number',
+    'bill_number' => 'Bill Number',
 
     // Accounting
     'accounting' => 'Accounting',
@@ -1493,6 +1496,7 @@ return [
     'bank_account_name' => 'Account Holder',
     'personal_data' => 'Personal Data',
     'tax_bpjs_data' => 'Tax & BPJS',
+    'tax_bpjs_info' => 'Tax & BPJS Information',
     'bank_info' => 'Bank Information',
     'salary_structures' => 'Salary Structures',
     'add_salary_structure' => 'Add Salary Structure',

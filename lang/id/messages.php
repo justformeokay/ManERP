@@ -49,7 +49,10 @@ return [
     // Keuangan
     'finance' => 'Keuangan',
     'invoices' => 'Faktur',
+    'bills' => 'Tagihan',
     'payments' => 'Pembayaran',
+    'invoice_number' => 'Nomor Faktur',
+    'bill_number' => 'Nomor Tagihan',
 
     // Akuntansi
     'accounting' => 'Akuntansi',
@@ -1470,6 +1473,7 @@ return [
     'bank_account_name' => 'Nama Pemilik Rekening',
     'personal_data' => 'Data Pribadi',
     'tax_bpjs_data' => 'Pajak & BPJS',
+    'tax_bpjs_info' => 'Informasi Pajak & BPJS',
     'bank_info' => 'Informasi Bank',
     'salary_structures' => 'Struktur Gaji',
     'add_salary_structure' => 'Tambah Struktur Gaji',

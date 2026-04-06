@@ -299,9 +299,20 @@ class AccountsPayableController extends Controller
      */
     public function agingReport(Request $request): View
     {
-        $report = $this->apService->getAgingReport($request->supplier_id);
+        $report    = $this->apService->getAgingReport($request->supplier_id);
         $suppliers = Supplier::orderBy('name')->get();
 
-        return view('ap.reports.aging', compact('report', 'suppliers'));
+        $overdueBills = SupplierBill::with('supplier')
+            ->whereIn('status', ['posted', 'partial'])
+            ->when($request->supplier_id, fn ($q) => $q->where('supplier_id', $request->supplier_id))
+            ->orderBy('due_date')
+            ->get();
+
+        return view('ap.reports.aging', [
+            'agingReport'  => $report['data'],
+            'totals'       => $report['totals'],
+            'overdueBills' => $overdueBills,
+            'suppliers'    => $suppliers,
+        ]);
     }
 }

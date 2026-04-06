@@ -49,7 +49,10 @@ return [
     // Finance
     'finance' => '재무',
     'invoices' => '송장',
+    'bills' => '청구서',
     'payments' => '결제',
+    'invoice_number' => '송장 번호',
+    'bill_number' => '청구서 번호',
 
     // Accounting
     'accounting' => '회계',
@@ -1446,6 +1449,7 @@ return [
     'bank_account_name' => '예금주',
     'personal_data' => '개인 정보',
     'tax_bpjs_data' => '세금 & BPJS',
+    'tax_bpjs_info' => '세금 & BPJS 정보',
     'bank_info' => '은행 정보',
     'salary_structures' => '급여 구조',
     'add_salary_structure' => '급여 구조 추가',
