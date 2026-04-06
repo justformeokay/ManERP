@@ -49,7 +49,11 @@ class EmployeeController extends Controller
 
     public function store(EmployeeRequest $request)
     {
-        $employee = Employee::create($request->validated());
+        $data = $request->validated();
+        if (!empty($data['bank_id']) && empty($data['bank_name'])) {
+            $data['bank_name'] = Bank::find($data['bank_id'])?->name;
+        }
+        $employee = Employee::create($data);
 
         $this->logCreate($employee, 'hr');
 
@@ -59,7 +63,7 @@ class EmployeeController extends Controller
 
     public function show(Employee $employee)
     {
-        $employee->load(['salaryStructures' => fn($q) => $q->latest('effective_date'), 'payslips.payrollPeriod']);
+        $employee->load(['salaryStructures' => fn($q) => $q->latest('effective_date'), 'payslips.payrollPeriod', 'bank']);
 
         return view('hr.employees.show', compact('employee'));
     }
@@ -76,8 +80,12 @@ class EmployeeController extends Controller
 
     public function update(EmployeeRequest $request, Employee $employee)
     {
+        $data = $request->validated();
+        if (!empty($data['bank_id']) && empty($data['bank_name'])) {
+            $data['bank_name'] = Bank::find($data['bank_id'])?->name;
+        }
         $oldData = $employee->toArray();
-        $employee->update($request->validated());
+        $employee->update($data);
         $this->logUpdate($employee, $oldData, 'hr');
 
         return redirect()->route('hr.employees.show', $employee)

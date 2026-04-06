@@ -50,7 +50,7 @@
         <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
             <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">{{ __('messages.bank_info') }}</h3>
             <dl class="space-y-2 text-sm">
-                <div class="flex justify-between"><dt class="text-gray-500">{{ __('messages.bank_name') }}</dt><dd class="font-medium text-gray-900">{{ $employee->bank_name ?? '—' }}</dd></div>
+                <div class="flex justify-between"><dt class="text-gray-500">{{ __('messages.bank_name') }}</dt><dd class="font-medium text-gray-900">{{ $employee->bank?->name ?? $employee->bank_name ?? '—' }}</dd></div>
                 <div class="flex justify-between"><dt class="text-gray-500">{{ __('messages.account_number') }}</dt><dd class="font-medium text-gray-900">{{ $employee->bank_account_number ?? '—' }}</dd></div>
                 <div class="flex justify-between"><dt class="text-gray-500">{{ __('messages.account_name') }}</dt><dd class="font-medium text-gray-900">{{ $employee->bank_account_name ?? '—' }}</dd></div>
             </dl>

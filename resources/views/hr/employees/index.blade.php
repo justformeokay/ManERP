@@ -26,13 +26,13 @@
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('messages.search_employees') }}"
                     class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 placeholder-gray-400 focus:border-primary-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary-500">
             </div>
-            <select name="department" class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+            <select name="department" class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 pr-10 text-sm text-gray-700 appearance-none focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                 <option value="">{{ __('messages.all_departments') }}</option>
                 @foreach($departments as $dept)
                     <option value="{{ $dept }}" @selected(request('department') === $dept)>{{ $dept }}</option>
                 @endforeach
             </select>
-            <select name="status" class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+            <select name="status" class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 pr-10 text-sm text-gray-700 appearance-none focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                 <option value="">{{ __('messages.all_status') }}</option>
                 <option value="active" @selected(request('status') === 'active')>Active</option>
                 <option value="inactive" @selected(request('status') === 'inactive')>Inactive</option>
