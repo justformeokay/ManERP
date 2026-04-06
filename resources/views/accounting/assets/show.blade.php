@@ -14,7 +14,7 @@
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-2xl font-bold text-gray-900">{{ $asset->name }}</h1>
-            <p class="mt-1 text-sm text-gray-500">{{ $asset->code }} &mdash; {{ ucfirst($asset->category) }}</p>
+            <p class=\"mt-1 text-sm text-gray-500\">{{ $asset->code }} &mdash; {{ __('messages.category_' . $asset->category) }}</p>
         </div>
         @if($asset->isActive())
             <div x-data="{ open: false }" class="relative">
@@ -54,7 +54,7 @@
                 <div class="flex justify-between"><dt class="text-gray-500">{{ __('messages.purchase_cost') }}</dt><dd class="font-medium">{{ format_currency($asset->purchase_cost) }}</dd></div>
                 <div class="flex justify-between"><dt class="text-gray-500">{{ __('messages.salvage_value') }}</dt><dd class="font-medium">{{ format_currency($asset->salvage_value) }}</dd></div>
                 <div class="flex justify-between"><dt class="text-gray-500">{{ __('messages.useful_life_months') }}</dt><dd class="font-medium">{{ $asset->useful_life_months }} {{ __('messages.months') }}</dd></div>
-                <div class="flex justify-between"><dt class="text-gray-500">{{ __('messages.depreciation_method') }}</dt><dd class="font-medium">{{ str_replace('_', ' ', ucfirst($asset->depreciation_method)) }}</dd></div>
+                <div class=\"flex justify-between\"><dt class=\"text-gray-500\">{{ __('messages.depreciation_method') }}</dt><dd class=\"font-medium\">{{ __('messages.method_' . $asset->depreciation_method) }}</dd></div>
                 <div class="flex justify-between"><dt class="text-gray-500">{{ __('messages.location') }}</dt><dd class="font-medium">{{ $asset->location ?: '-' }}</dd></div>
             </dl>
         </div>

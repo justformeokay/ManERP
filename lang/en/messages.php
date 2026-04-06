@@ -1217,6 +1217,8 @@ return [
     'ar_aging_subtitle' => 'Accounts receivable aging analysis by client',
     'all_clients' => 'All Clients',
     'no_outstanding_receivables' => 'No outstanding receivables found',
+    'total_outstanding' => 'Total Outstanding',
+    'current' => 'Current',
 
     // D: Fiscal Period / Closing
     'fiscal_periods_title' => 'Fiscal Periods',
@@ -1408,6 +1410,17 @@ return [
     'asset_account' => 'Asset Account',
     'depreciation_account' => 'Accumulated Depr. Account',
     'expense_account' => 'Depreciation Expense Account',
+    
+    // Asset Categories
+    'category_building' => 'Building',
+    'category_vehicle' => 'Vehicle',
+    'category_equipment' => 'Equipment',
+    'category_furniture' => 'Furniture',
+    'category_other' => 'Other',
+    
+    // Depreciation Methods
+    'method_straight_line' => 'Straight Line',
+    'method_declining_balance' => 'Declining Balance',
 
     // F: Credit Notes & Debit Notes
     'credit_notes_title' => 'Credit Notes',

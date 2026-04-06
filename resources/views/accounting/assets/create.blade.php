@@ -41,7 +41,7 @@
                     <select name="category" id="category" required
                         class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm">
                         @foreach($categories as $cat)
-                            <option value="{{ $cat }}" {{ old('category') === $cat ? 'selected' : '' }}>{{ ucfirst($cat) }}</option>
+                            <option value="{{ $cat }}" {{ old('category') === $cat ? 'selected' : '' }}>{{ __('messages.category_' . $cat) }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -79,7 +79,7 @@
                     class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm max-w-xs">
                     @foreach($methods as $method)
                         <option value="{{ $method }}" {{ old('depreciation_method', 'straight_line') === $method ? 'selected' : '' }}>
-                            {{ str_replace('_', ' ', ucfirst($method)) }}
+                            {{ __('messages.method_' . $method) }}
                         </option>
                     @endforeach
                 </select>

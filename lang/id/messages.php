@@ -1194,6 +1194,8 @@ return [
     'ar_aging_subtitle' => 'Analisis umur piutang per klien',
     'all_clients' => 'Semua Klien',
     'no_outstanding_receivables' => 'Tidak ada piutang yang tertunggak',
+    'total_outstanding' => 'Total Piutang Tertunggak',
+    'current' => 'Lancar',
 
     // D: Periode Fiskal / Tutup Buku
     'fiscal_periods_title' => 'Periode Fiskal',
@@ -1385,6 +1387,17 @@ return [
     'asset_account' => 'Akun Aset',
     'depreciation_account' => 'Akun Akumulasi Penyusutan',
     'expense_account' => 'Akun Beban Penyusutan',
+    
+    // Kategori Aset
+    'category_building' => 'Bangunan',
+    'category_vehicle' => 'Kendaraan',
+    'category_equipment' => 'Peralatan',
+    'category_furniture' => 'Furnitur',
+    'category_other' => 'Lainnya',
+    
+    // Metode Penyusutan
+    'method_straight_line' => 'Garis Lurus',
+    'method_declining_balance' => 'Saldo Menurun',
 
     // F: Nota Kredit & Nota Debit
     'credit_notes_title' => 'Nota Kredit',

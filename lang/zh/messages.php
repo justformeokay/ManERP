@@ -1173,6 +1173,8 @@ return [
     'ar_aging_subtitle' => '按客户分析应收账款账龄',
     'all_clients' => '所有客户',
     'no_outstanding_receivables' => '没有未收回的应收账款',
+    'total_outstanding' => '应收账款合计',
+    'current' => '未逾期',
 
     // D: 会计期间 / 结账
     'fiscal_periods_title' => '会计期间',
@@ -1364,6 +1366,17 @@ return [
     'asset_account' => '资产账户',
     'depreciation_account' => '累计折旧账户',
     'expense_account' => '折旧费用账户',
+    
+    // 资产类别
+    'category_building' => '建筑物',
+    'category_vehicle' => '车辆',
+    'category_equipment' => '设备',
+    'category_furniture' => '家具',
+    'category_other' => '其他',
+    
+    // 折旧方法
+    'method_straight_line' => '直线法',
+    'method_declining_balance' => '余额递减法',
 
     // F: 贷项通知单与借项通知单
     'credit_notes_title' => '贷项通知单',

@@ -73,7 +73,7 @@
                     <tr class="hover:bg-gray-50/50">
                         <td class="px-6 py-3 text-sm font-mono text-gray-700">{{ $asset->code }}</td>
                         <td class="px-6 py-3 text-sm font-medium text-gray-900">{{ $asset->name }}</td>
-                        <td class="px-6 py-3 text-sm text-gray-600">{{ ucfirst($asset->category) }}</td>
+                        <td class=\"px-6 py-3 text-sm text-gray-600\">{{ __('messages.category_' . $asset->category) }}</td>
                         <td class="px-6 py-3 text-sm text-gray-600">{{ $asset->purchase_date->format('d M Y') }}</td>
                         <td class="px-6 py-3 text-sm text-right text-gray-700">{{ format_currency($asset->purchase_cost) }}</td>
                         <td class="px-6 py-3 text-sm text-right font-semibold text-gray-700">{{ format_currency($asset->book_value) }}</td>

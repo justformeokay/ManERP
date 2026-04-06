@@ -1170,6 +1170,8 @@ return [
     'ar_aging_subtitle' => '고객별 매출채권 연령 분석',
     'all_clients' => '모든 고객',
     'no_outstanding_receivables' => '미수금이 없습니다',
+    'total_outstanding' => '총 미수금',
+    'current' => '기한내',
 
     // D: 회계기간 / 결산
     'fiscal_periods_title' => '회계기간',
@@ -1361,6 +1363,17 @@ return [
     'asset_account' => '자산 계정',
     'depreciation_account' => '감가상각누계액 계정',
     'expense_account' => '감가상각비 계정',
+    
+    // 자산 범주
+    'category_building' => '건물',
+    'category_vehicle' => '차량',
+    'category_equipment' => '장비',
+    'category_furniture' => '가구',
+    'category_other' => '기타',
+    
+    // 감가상각 방법
+    'method_straight_line' => '직선법',
+    'method_declining_balance' => '정률법',
 
     // F: 대변표 및 차변표
     'credit_notes_title' => '대변표',
