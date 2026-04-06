@@ -129,7 +129,7 @@ class EssController extends Controller
 
         $validated = $request->validate([
             'phone'               => ['nullable', 'string', 'max:20'],
-            'bank_name'           => ['nullable', 'string', 'max:100'],
+            'bank_id'             => ['nullable', 'integer', 'exists:banks,id'],
             'bank_account_number' => ['nullable', 'string', 'max:30', 'regex:/^[0-9]+$/'],
             'bank_account_name'   => ['nullable', 'string', 'max:255'],
             'bpjs_tk_number'      => ['nullable', 'string', 'max:30'],

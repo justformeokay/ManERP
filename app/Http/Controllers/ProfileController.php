@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Models\ActivityLog;
+use App\Models\Bank;
 use App\Models\EmployeeDataChange;
 use App\Services\AuditLogService;
 use Illuminate\Http\RedirectResponse;
@@ -35,11 +36,14 @@ class ProfileController extends Controller
                 ->get();
         }
 
+        $banks = Bank::active()->orderBy('name')->get();
+
         return view('profile.edit', [
             'user'           => $user,
             'recentActivity' => $recentActivity,
             'pendingChange'  => $pendingChange,
             'changeHistory'  => $changeHistory,
+            'banks'          => $banks,
         ]);
     }
 

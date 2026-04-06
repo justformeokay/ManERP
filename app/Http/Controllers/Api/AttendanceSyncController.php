@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
 use App\Models\Employee;
-use Carbon\Carbon;
+use App\Services\AttendanceService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -13,11 +13,13 @@ use Illuminate\Support\Facades\Validator;
 
 class AttendanceSyncController extends Controller
 {
+    public function __construct(private AttendanceService $attendanceService) {}
+
     /**
      * POST /api/v1/attendance/sync
      *
      * Bulk-import attendance records from fingerprint machines / mobile apps.
-     * Uses upsert to handle duplicates gracefully (employee_id + date unique).
+     * Uses AttendanceService for shift-aware late detection & overtime calculation.
      */
     public function sync(Request $request): JsonResponse
     {
@@ -49,33 +51,23 @@ class AttendanceSyncController extends Controller
 
         DB::transaction(function () use ($records, $source, &$synced, &$failed) {
             foreach ($records as $record) {
-                // Determine status: default 'present' if clock_in provided
-                $status = $record['status'] ?? ($record['clock_in'] ? 'present' : 'absent');
-
                 try {
-                    $existing = Attendance::where('employee_id', $record['employee_id'])
-                        ->whereDate('date', $record['date'])
-                        ->first();
+                    $employee = Employee::find($record['employee_id']);
 
-                    $data = [
-                        'clock_in'       => $record['clock_in'] ?? null,
-                        'clock_out'      => $record['clock_out'] ?? null,
-                        'latitude'       => $record['latitude'] ?? null,
-                        'longitude'      => $record['longitude'] ?? null,
-                        'status'         => $status,
-                        'overtime_hours' => $record['overtime_hours'] ?? 0,
-                        'notes'          => $record['notes'] ?? null,
-                        'source'         => $source,
-                    ];
-
-                    if ($existing) {
-                        $existing->update($data);
-                    } else {
-                        Attendance::create(array_merge($data, [
-                            'employee_id' => $record['employee_id'],
-                            'date'        => $record['date'],
-                        ]));
-                    }
+                    $this->attendanceService->processCheckIn(
+                        $employee,
+                        $record['date'],
+                        $record['clock_in'] ?? null,
+                        [
+                            'clock_out'      => $record['clock_out'] ?? null,
+                            'latitude'       => $record['latitude'] ?? null,
+                            'longitude'      => $record['longitude'] ?? null,
+                            'status'         => $record['status'] ?? null,
+                            'overtime_hours' => $record['overtime_hours'] ?? 0,
+                            'notes'          => $record['notes'] ?? null,
+                            'source'         => $source,
+                        ]
+                    );
                     $synced++;
                 } catch (\Throwable $e) {
                     $failed++;

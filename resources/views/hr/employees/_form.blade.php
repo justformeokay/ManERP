@@ -68,6 +68,21 @@
                     @endforeach
                 </select>
             </div>
+            @if(isset($shifts) && $shifts->isNotEmpty())
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.default_shift') }}</label>
+                <select name="shift_id"
+                    class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                    <option value="">— {{ __('messages.no_shift') }} —</option>
+                    @foreach($shifts as $shift)
+                        <option value="{{ $shift->id }}" @selected(old('shift_id', $e?->shift_id) == $shift->id)>
+                            {{ $shift->name }} ({{ $shift->start_time }}–{{ $shift->end_time }})
+                        </option>
+                    @endforeach
+                </select>
+                @error('shift_id') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+            </div>
+            @endif
         </div>
     </div>
 
@@ -117,10 +132,41 @@
     <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
         <h3 class="text-lg font-semibold text-gray-900 mb-4">{{ __('messages.bank_info') }}</h3>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
+            <div x-data="{
+                open: false,
+                search: '',
+                selectedId: {{ old('bank_id', $e?->bank_id) ?? 'null' }},
+                selectedLabel: '{{ old('bank_id', $e?->bank_id) ? ($banks->firstWhere('id', old('bank_id', $e?->bank_id))?->name . ' (' . $banks->firstWhere('id', old('bank_id', $e?->bank_id))?->code . ')') : '' }}',
+                get filtered() {
+                    if (this.search === '') return {{ Js::from($banks->map(fn($b) => ['id' => $b->id, 'label' => $b->name . ' (' . $b->code . ')'])) }};
+                    const q = this.search.toLowerCase();
+                    return {{ Js::from($banks->map(fn($b) => ['id' => $b->id, 'label' => $b->name . ' (' . $b->code . ')'])) }}.filter(b => b.label.toLowerCase().includes(q));
+                },
+                select(bank) { this.selectedId = bank.id; this.selectedLabel = bank.label; this.open = false; this.search = ''; },
+                clear() { this.selectedId = null; this.selectedLabel = ''; this.search = ''; }
+            }" @click.away="open = false" class="relative">
                 <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.bank_name') }}</label>
-                <input type="text" name="bank_name" value="{{ old('bank_name', $e?->bank_name) }}"
-                    class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary-500">
+                <input type="hidden" name="bank_id" :value="selectedId">
+                <div class="relative">
+                    <input type="text" readonly :value="selectedLabel" @click="open = !open"
+                        placeholder="{{ __('messages.select_bank') }}"
+                        class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm cursor-pointer focus:border-primary-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary-500">
+                    <button type="button" x-show="selectedId" @click.stop="clear()" class="absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">&times;</button>
+                    <svg class="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+                <div x-show="open" x-transition class="absolute z-50 mt-1 w-full rounded-xl bg-white shadow-lg ring-1 ring-gray-200 max-h-60 overflow-hidden">
+                    <div class="p-2 border-b border-gray-100">
+                        <input type="text" x-model="search" placeholder="{{ __('messages.search_bank') }}" @click.stop
+                            class="w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                    </div>
+                    <ul class="overflow-y-auto max-h-48">
+                        <template x-for="bank in filtered" :key="bank.id">
+                            <li @click="select(bank)" :class="{'bg-primary-50 text-primary-700': selectedId === bank.id}"
+                                class="cursor-pointer px-3 py-2 text-sm hover:bg-gray-50" x-text="bank.label"></li>
+                        </template>
+                        <li x-show="filtered.length === 0" class="px-3 py-2 text-sm text-gray-400">{{ __('messages.no_bank_found') }}</li>
+                    </ul>
+                </div>
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.account_number') }}</label>

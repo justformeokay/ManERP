@@ -19,7 +19,7 @@ class Employee extends Model
         'npwp', 'bpjs_tk_number', 'bpjs_kes_number',
         'ptkp_status', 'ter_category',
         'bank_name', 'bank_account_number', 'bank_account_name',
-        'status', 'user_id',
+        'status', 'user_id', 'shift_id', 'bank_id',
     ];
 
     protected function casts(): array
@@ -131,6 +131,34 @@ class Employee extends Model
     public function attendances(): HasMany
     {
         return $this->hasMany(Attendance::class);
+    }
+
+    public function shift(): BelongsTo
+    {
+        return $this->belongsTo(Shift::class);
+    }
+
+    public function bank(): BelongsTo
+    {
+        return $this->belongsTo(Bank::class);
+    }
+
+    public function shiftSchedules(): HasMany
+    {
+        return $this->hasMany(ShiftSchedule::class);
+    }
+
+    /**
+     * Resolve the effective shift for a given date.
+     * Priority: shift_schedules (rotation) > employee.shift_id (default).
+     */
+    public function getShiftForDate(string $date): ?Shift
+    {
+        $schedule = ShiftSchedule::forDate($this->id, $date)->first();
+        if ($schedule) {
+            return $schedule->shift;
+        }
+        return $this->shift;
     }
 
     public function leaveRequests(): HasMany

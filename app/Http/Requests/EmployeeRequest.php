@@ -29,11 +29,13 @@ class EmployeeRequest extends FormRequest
             'bpjs_kes_number'     => ['nullable', 'string', 'max:30'],
             'ptkp_status'         => ['required', Rule::in(Employee::ptkpOptions())],
             'ter_category'        => ['nullable', Rule::in(Employee::TER_CATEGORIES)],
+            'bank_id'             => ['nullable', 'integer', Rule::exists('banks', 'id')],
             'bank_name'           => ['nullable', 'string', 'max:255'],
             'bank_account_number' => ['nullable', 'string', 'max:30'],
             'bank_account_name'   => ['nullable', 'string', 'max:255'],
             'status'              => ['required', Rule::in(Employee::statusOptions())],
             'user_id'             => ['nullable', 'integer', Rule::exists('users', 'id'), Rule::unique('employees', 'user_id')->ignore($employeeId)],
+            'shift_id'            => ['nullable', 'integer', Rule::exists('shifts', 'id')],
         ];
     }
 }

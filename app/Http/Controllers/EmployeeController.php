@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\EmployeeRequest;
+use App\Models\Bank;
 use App\Models\Employee;
+use App\Models\Shift;
 use App\Models\User;
 use App\Traits\Auditable;
 use Illuminate\Http\Request;
@@ -36,7 +38,9 @@ class EmployeeController extends Controller
     public function create()
     {
         $availableUsers = $this->getAvailableUsers();
-        return view('hr.employees.create', compact('availableUsers'));
+        $shifts = Shift::active()->orderBy('name')->get();
+        $banks = Bank::active()->orderBy('name')->get();
+        return view('hr.employees.create', compact('availableUsers', 'shifts', 'banks'));
     }
 
     public function store(EmployeeRequest $request)
@@ -59,7 +63,9 @@ class EmployeeController extends Controller
     public function edit(Employee $employee)
     {
         $availableUsers = $this->getAvailableUsers($employee->user_id);
-        return view('hr.employees.edit', compact('employee', 'availableUsers'));
+        $shifts = Shift::active()->orderBy('name')->get();
+        $banks = Bank::active()->orderBy('name')->get();
+        return view('hr.employees.edit', compact('employee', 'availableUsers', 'shifts', 'banks'));
     }
 
     public function update(EmployeeRequest $request, Employee $employee)

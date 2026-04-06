@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Bank;
 use App\Models\Employee;
 use App\Models\EmployeeDataChange;
 use App\Models\EmployeeDocument;
@@ -35,8 +36,13 @@ class EmployeeSelfServiceTest extends TestCase
 
         // UserObserver auto-creates an Employee; update it with test-specific fields
         $this->employee = $this->employeeUser->employee;
+
+        // Seed banks for bank_id reference
+        $this->seed(\Database\Seeders\BankSeeder::class);
+        $bcaBank = Bank::where('code', '014')->first();
+
         $this->employee->update([
-            'bank_name'           => 'BCA',
+            'bank_id'             => $bcaBank->id,
             'bank_account_number' => '1234567890',
             'bank_account_name'   => 'Test Employee',
             'bpjs_tk_number'      => 'TK1234567890',
@@ -358,8 +364,8 @@ class EmployeeSelfServiceTest extends TestCase
     {
         $response = $this->actingAs($this->employeeUser)
             ->post(route('profile.ess.data-change'), [
-                'phone'     => $this->employeeUser->phone,     // same value
-                'bank_name' => $this->employee->bank_name,     // same value
+                'phone'   => $this->employeeUser->phone,      // same value
+                'bank_id' => $this->employee->bank_id,         // same value
             ]);
 
         $response->assertSessionHas('status', 'no-changes');
@@ -377,9 +383,10 @@ class EmployeeSelfServiceTest extends TestCase
             ]);
 
         // Attempt second one
+        $mandiriBank = Bank::where('code', '008')->first();
         $response = $this->actingAs($this->employeeUser)
             ->post(route('profile.ess.data-change'), [
-                'bank_name' => 'Mandiri',
+                'bank_id' => $mandiriBank->id,
             ]);
 
         $response->assertSessionHasErrors('ess');
@@ -417,12 +424,15 @@ class EmployeeSelfServiceTest extends TestCase
 
     public function test_hr_can_approve_data_change(): void
     {
+        $mandiriBank = Bank::where('code', '008')->first();
+        $bcaBank = Bank::where('code', '014')->first();
+
         // Create pending change
         EmployeeDataChange::create([
             'employee_id'       => $this->employee->id,
             'requested_by'      => $this->employeeUser->id,
-            'requested_changes' => ['phone' => '08999999999', 'bank_name' => 'Mandiri'],
-            'original_data'     => ['phone' => '08111111111', 'bank_name' => 'BCA'],
+            'requested_changes' => ['phone' => '08999999999', 'bank_id' => $mandiriBank->id],
+            'original_data'     => ['phone' => '08111111111', 'bank_id' => $bcaBank->id],
             'status'            => 'pending',
         ]);
 
@@ -439,7 +449,7 @@ class EmployeeSelfServiceTest extends TestCase
         $this->assertEquals('08999999999', $this->employeeUser->phone);
 
         $this->employee->refresh();
-        $this->assertEquals('Mandiri', $this->employee->bank_name);
+        $this->assertEquals($mandiriBank->id, $this->employee->bank_id);
 
         $change->refresh();
         $this->assertEquals('approved', $change->status);

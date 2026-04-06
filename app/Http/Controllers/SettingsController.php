@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CompanySetting;
 use App\Models\Setting;
+use App\Models\Shift;
 use App\Services\AuditLogService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -143,7 +144,9 @@ class SettingsController extends Controller
                 'bpjs_kes_company', 'bpjs_kes_employee',
                 'bpjs_kes_min_salary', 'bpjs_kes_max_salary',
                 'standard_work_hours', 'late_tolerance_minutes',
+                'late_deduction_per_minute',
             ]),
+            'shifts' => Shift::orderBy('name')->get(),
         ];
     }
 
@@ -163,6 +166,7 @@ class SettingsController extends Controller
             'bpjs_kes_max_salary'    => 'required|numeric|min:0',
             'standard_work_hours'    => 'required|integer|min:1|max:24',
             'late_tolerance_minutes' => 'required|integer|min:0|max:120',
+            'late_deduction_per_minute' => 'required|numeric|min:0',
         ]);
 
         return $this->saveSettings($validated, 'Updated HR & payroll settings', 'payroll');
@@ -283,5 +287,68 @@ class SettingsController extends Controller
     {
         // Delegate to financial tab for legacy POST
         return $this->updateFinancial($request);
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // SHIFT CRUD (under Payroll tab)
+    // ════════════════════════════════════════════════════════════════
+
+    public function storeShift(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name'              => 'required|string|max:50',
+            'start_time'        => 'required|date_format:H:i',
+            'end_time'          => 'required|date_format:H:i',
+            'grace_period'      => 'required|integer|min:0|max:120',
+            'is_night_shift'    => 'nullable|boolean',
+            'night_shift_bonus' => 'required|numeric|min:0',
+        ]);
+
+        $validated['is_night_shift'] = $request->boolean('is_night_shift');
+
+        $shift = Shift::create($validated);
+
+        AuditLogService::log('settings', 'create', "Created shift: {$shift->name}", [], $shift->toArray());
+
+        return redirect()
+            ->route('settings.index', ['tab' => 'payroll'])
+            ->with('success', __('messages.shift_created'));
+    }
+
+    public function updateShift(Request $request, Shift $shift): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name'              => 'required|string|max:50',
+            'start_time'        => 'required|date_format:H:i',
+            'end_time'          => 'required|date_format:H:i',
+            'grace_period'      => 'required|integer|min:0|max:120',
+            'is_night_shift'    => 'nullable|boolean',
+            'night_shift_bonus' => 'required|numeric|min:0',
+            'is_active'         => 'nullable|boolean',
+        ]);
+
+        $validated['is_night_shift'] = $request->boolean('is_night_shift');
+        $validated['is_active']      = $request->boolean('is_active');
+
+        $oldData = $shift->toArray();
+        $shift->update($validated);
+
+        AuditLogService::log('settings', 'update', "Updated shift: {$shift->name}", $oldData, $shift->fresh()->toArray());
+
+        return redirect()
+            ->route('settings.index', ['tab' => 'payroll'])
+            ->with('success', __('messages.shift_updated'));
+    }
+
+    public function destroyShift(Shift $shift): RedirectResponse
+    {
+        $oldData = $shift->toArray();
+        $shift->delete();
+
+        AuditLogService::log('settings', 'delete', "Deleted shift: {$oldData['name']}", $oldData, []);
+
+        return redirect()
+            ->route('settings.index', ['tab' => 'payroll'])
+            ->with('success', __('messages.shift_deleted'));
     }
 }

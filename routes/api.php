@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AttendanceSyncController;
+use App\Http\Controllers\Api\BankController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -16,4 +17,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::post('attendance/sync', [AttendanceSyncController::class, 'sync'])
         ->name('api.attendance.sync');
+
+    Route::get('banks', [BankController::class, 'index'])
+        ->name('api.banks.index');
 });

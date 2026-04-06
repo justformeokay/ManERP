@@ -12,13 +12,13 @@ class EmployeeDataChange extends Model
     public const STATUS_REJECTED = 'rejected';
 
     public const EDITABLE_FIELDS = [
-        'phone', 'bank_name', 'bank_account_number', 'bank_account_name',
+        'phone', 'bank_id', 'bank_account_number', 'bank_account_name',
         'bpjs_tk_number', 'bpjs_kes_number',
     ];
 
     public const FIELD_LABELS = [
         'phone'               => 'Phone Number',
-        'bank_name'           => 'Bank Name',
+        'bank_id'             => 'Bank Name',
         'bank_account_number' => 'Bank Account Number',
         'bank_account_name'   => 'Bank Account Name',
         'bpjs_tk_number'      => 'BPJS TK Number',

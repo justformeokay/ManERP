@@ -19,34 +19,44 @@ class MarkAbsentEmployees extends Command
             ? Carbon::parse($this->option('date'))
             : Carbon::yesterday();
 
-        // Skip weekends
-        if ($date->isWeekend()) {
-            $this->info("Skipped — {$date->toDateString()} is a weekend.");
-            return self::SUCCESS;
-        }
-
-        $activeEmployeeIds = Employee::active()->pluck('id');
+        $activeEmployees = Employee::active()->get();
 
         // Employees who already have an attendance record for this date
         $presentIds = Attendance::whereDate('date', $date->toDateString())
             ->pluck('employee_id');
 
-        $absentIds = $activeEmployeeIds->diff($presentIds);
+        $records = [];
 
-        if ($absentIds->isEmpty()) {
+        foreach ($activeEmployees as $employee) {
+            // Skip if already has attendance
+            if ($presentIds->contains($employee->id)) {
+                continue;
+            }
+
+            // If employee has a shift, they work on the shift schedule (including weekends).
+            // If no shift, skip weekends.
+            $shift = $employee->getShiftForDate($date->toDateString());
+            if (!$shift && $date->isWeekend()) {
+                continue;
+            }
+
+            $records[] = [
+                'employee_id' => $employee->id,
+                'date'        => $date->toDateString(),
+                'status'      => 'absent',
+                'late_minutes' => 0,
+                'shift_id'    => $shift?->id,
+                'source'      => 'system',
+                'notes'       => 'Auto-marked absent by system',
+                'created_at'  => now(),
+                'updated_at'  => now(),
+            ];
+        }
+
+        if (empty($records)) {
             $this->info("No absent employees on {$date->toDateString()}.");
             return self::SUCCESS;
         }
-
-        $records = $absentIds->map(fn ($id) => [
-            'employee_id' => $id,
-            'date'        => $date->toDateString(),
-            'status'      => 'absent',
-            'source'      => 'system',
-            'notes'       => 'Auto-marked absent by system',
-            'created_at'  => now(),
-            'updated_at'  => now(),
-        ])->values()->all();
 
         Attendance::insertOrIgnore($records);
 

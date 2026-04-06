@@ -180,6 +180,7 @@ class SettingsOverhaulTest extends TestCase
             'bpjs_kes_max_salary'    => 12000000,
             'standard_work_hours'    => 8,
             'late_tolerance_minutes' => 15,
+            'late_deduction_per_minute' => 5000,
         ]);
 
         $response->assertRedirect(route('settings.index', ['tab' => 'payroll']));
@@ -202,6 +203,7 @@ class SettingsOverhaulTest extends TestCase
             'bpjs_kes_max_salary'    => 12000000,
             'standard_work_hours'    => 8,
             'late_tolerance_minutes' => 15,
+            'late_deduction_per_minute' => 5000,
         ]);
 
         $response->assertSessionHasErrors(['bpjs_jht_company', 'bpjs_jht_employee']);
@@ -316,6 +318,7 @@ class SettingsOverhaulTest extends TestCase
             'bpjs_kes_max_salary'    => 12000000,
             'standard_work_hours'    => 8,
             'late_tolerance_minutes' => 15,
+            'late_deduction_per_minute' => 5000,
         ]);
 
         $this->assertTrue(

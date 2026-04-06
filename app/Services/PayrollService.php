@@ -282,9 +282,12 @@ class PayrollService
         $overtimeAmount = round($overtimeHours * (float) $salary->overtime_rate, 2);
         $otherEarnings  = (float) ($override['other_earnings'] ?? 0);
 
+        // Night shift bonus: sum of per-day bonuses from attendance-linked shifts (bcmath)
+        $nightShiftBonus = (float) ($override['night_shift_bonus'] ?? $attendanceData['night_shift_bonus']);
+
         $grossSalary = round(
             $basicSalary + $fixedAllowance + $mealAllowance + $transportAllow
-            + $overtimeAmount + $otherEarnings,
+            + $overtimeAmount + $otherEarnings + $nightShiftBonus,
             2
         );
 
@@ -347,11 +350,20 @@ class PayrollService
 
         $otherDeductions  = (float) ($override['other_deductions'] ?? 0);
 
+        // Late deduction: late minutes × per-minute rate from Settings (bcmath)
+        $totalLateMinutes = $attendanceData['total_late_minutes'] ?? 0;
+        if ($totalLateMinutes > 0 && !isset($override['late_deduction'])) {
+            $lateDeductionPerMinute = Setting::get('late_deduction_per_minute', '0');
+            $lateDeduction = (float) bcmul((string) $totalLateMinutes, $lateDeductionPerMinute, 2);
+        } else {
+            $lateDeduction = (float) ($override['late_deduction'] ?? 0);
+        }
+
         // ── Total Deductions (employee portions only) ──
         $totalDeductions = round(
             $bpjs['jht_employee'] + $bpjs['jp_employee'] + $bpjs['kes_employee']
             + $pph21
-            + $loanDeduction + $absenceDeduction + $otherDeductions,
+            + $loanDeduction + $absenceDeduction + $lateDeduction + $otherDeductions,
             2
         );
 
@@ -371,6 +383,7 @@ class PayrollService
                 'overtime_hours'      => $overtimeHours,
                 'overtime_amount'     => $overtimeAmount,
                 'other_earnings'      => $otherEarnings,
+                'night_shift_bonus'   => $nightShiftBonus,
                 'gross_salary'        => $grossSalary,
                 // BPJS Company
                 'bpjs_jht_company'    => $bpjs['jht_company'],
@@ -387,6 +400,7 @@ class PayrollService
                 // Deductions
                 'loan_deduction'      => $loanDeduction,
                 'absence_deduction'   => $absenceDeduction,
+                'late_deduction'      => $lateDeduction,
                 'other_deductions'    => $otherDeductions,
                 'total_deductions'    => $totalDeductions,
                 'net_salary'          => $netSalary,
@@ -417,6 +431,7 @@ class PayrollService
             'Tunjangan Makan'       => $payslip->meal_allowance,
             'Tunjangan Transport'   => $payslip->transport_allowance,
             'Lembur'                => $payslip->overtime_amount,
+            'Premi Shift Malam'     => $payslip->night_shift_bonus,
             'Pendapatan Lainnya'    => $payslip->other_earnings,
         ];
 
@@ -443,6 +458,7 @@ class PayrollService
             'PPh 21'                => $pph21,
             'Potongan Kasbon'       => (float) ($override['loan_deduction'] ?? 0),
             'Potongan Absensi'      => (float) $payslip->absence_deduction,
+            'Potongan Keterlambatan' => (float) $payslip->late_deduction,
             'Potongan Lainnya'      => (float) ($override['other_deductions'] ?? 0),
         ];
 
@@ -616,13 +632,30 @@ class PayrollService
 
         $overtimeHours = $attendances->sum('overtime_hours');
         $absentDays = $attendances->where('status', 'absent')->count();
+        $totalLateMinutes = (int) $attendances->sum('late_minutes');
+
+        // Night shift days: count attendance records linked to a night shift
+        $nightShiftDays = $attendances->filter(function ($a) {
+            return $a->shift_id && $a->shift && $a->shift->is_night_shift;
+        })->count();
+
+        // Average night shift bonus (from the shifts themselves)
+        $nightShiftBonus = '0';
+        $attendances->filter(function ($a) {
+            return $a->shift_id && $a->shift && $a->shift->is_night_shift;
+        })->each(function ($a) use (&$nightShiftBonus) {
+            $nightShiftBonus = bcadd($nightShiftBonus, (string) $a->shift->night_shift_bonus, 2);
+        });
 
         return [
-            'overtime_hours' => (float) $overtimeHours,
-            'absent_days'    => $absentDays,
-            'present_days'   => $attendances->whereIn('status', ['present', 'late'])->count(),
-            'late_days'      => $attendances->where('status', 'late')->count(),
-            'leave_days'     => $attendances->where('status', 'leave')->count(),
+            'overtime_hours'      => (float) $overtimeHours,
+            'absent_days'         => $absentDays,
+            'present_days'        => $attendances->whereIn('status', ['present', 'late'])->count(),
+            'late_days'           => $attendances->where('status', 'late')->count(),
+            'leave_days'          => $attendances->where('status', 'leave')->count(),
+            'total_late_minutes'  => $totalLateMinutes,
+            'night_shift_days'    => $nightShiftDays,
+            'night_shift_bonus'   => $nightShiftBonus,
         ];
     }
 

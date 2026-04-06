@@ -545,6 +545,11 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/payroll', [SettingsController::class, 'updatePayroll'])->name('update.payroll');
             Route::post('/security', [SettingsController::class, 'updateSecurity'])->name('update.security');
             Route::post('/localization', [SettingsController::class, 'updateLocalization'])->name('update.localization');
+
+            // Shift Management (under payroll tab)
+            Route::post('/shifts', [SettingsController::class, 'storeShift'])->name('shifts.store');
+            Route::put('/shifts/{shift}', [SettingsController::class, 'updateShift'])->name('shifts.update');
+            Route::delete('/shifts/{shift}', [SettingsController::class, 'destroyShift'])->name('shifts.destroy');
             
             // User Management
             Route::resource('users', UserController::class)->except(['show'])->middleware('permission:admin.manage_users');

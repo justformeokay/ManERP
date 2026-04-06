@@ -14,7 +14,7 @@ class Payslip extends Model
         'basic_salary', 'fixed_allowance',
         'meal_allowance', 'transport_allowance',
         'overtime_hours', 'overtime_amount',
-        'other_earnings', 'gross_salary',
+        'other_earnings', 'night_shift_bonus', 'gross_salary',
         // BPJS Company
         'bpjs_jht_company', 'bpjs_jkk_company', 'bpjs_jkm_company',
         'bpjs_jp_company', 'bpjs_kes_company',
@@ -23,7 +23,7 @@ class Payslip extends Model
         // PPh 21
         'pph21_amount',
         // Other Deductions
-        'loan_deduction', 'absence_deduction', 'other_deductions',
+        'loan_deduction', 'absence_deduction', 'late_deduction', 'other_deductions',
         // Totals
         'total_deductions', 'net_salary',
         'notes',
@@ -39,6 +39,7 @@ class Payslip extends Model
             'overtime_hours'     => 'decimal:2',
             'overtime_amount'    => 'decimal:2',
             'other_earnings'     => 'decimal:2',
+            'night_shift_bonus'  => 'decimal:2',
             'gross_salary'       => 'decimal:2',
             'bpjs_jht_company'   => 'decimal:2',
             'bpjs_jkk_company'   => 'decimal:2',
@@ -51,6 +52,7 @@ class Payslip extends Model
             'pph21_amount'       => 'decimal:2',
             'loan_deduction'     => 'decimal:2',
             'absence_deduction'  => 'decimal:2',
+            'late_deduction'     => 'decimal:2',
             'other_deductions'   => 'decimal:2',
             'total_deductions'   => 'decimal:2',
             'net_salary'         => 'decimal:2',

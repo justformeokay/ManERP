@@ -244,10 +244,116 @@
                     @include('settings._field', ['name' => 'standard_work_hours', 'label' => __('messages.stab_standard_hours'), 'type' => 'number', 'value' => $settings['standard_work_hours'], 'suffix' => __('messages.stab_hours'), 'tooltip' => __('messages.tip_work_hours')])
                     @include('settings._field', ['name' => 'late_tolerance_minutes', 'label' => __('messages.stab_late_tolerance'), 'type' => 'number', 'value' => $settings['late_tolerance_minutes'], 'suffix' => __('messages.stab_minutes'), 'tooltip' => __('messages.tip_late_tolerance')])
                 </div>
+                <div class="mt-4">
+                    @include('settings._field', ['name' => 'late_deduction_per_minute', 'label' => __('messages.stab_late_deduction_rate'), 'type' => 'number', 'value' => $settings['late_deduction_per_minute'], 'step' => '100', 'tooltip' => __('messages.tip_late_deduction_rate')])
+                </div>
             </div>
 
             @include('settings._save_button')
         </form>
+
+        {{-- Shift Management --}}
+        <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+            <div class="flex items-center justify-between mb-5">
+                <div>
+                    <h3 class="text-base font-semibold text-gray-900">{{ __('messages.shift_management') }}</h3>
+                    <p class="text-xs text-gray-500 mt-0.5">{{ __('messages.shift_management_desc') }}</p>
+                </div>
+                <button type="button" onclick="document.getElementById('shift-form-new').classList.toggle('hidden')"
+                    class="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 transition">
+                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                    {{ __('messages.add_shift') }}
+                </button>
+            </div>
+
+            {{-- New Shift Form --}}
+            <form id="shift-form-new" method="POST" action="{{ route('settings.shifts.store') }}" class="hidden mb-6 rounded-xl bg-gray-50 p-4 ring-1 ring-gray-200">
+                @csrf
+                <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">{{ __('messages.shift_name') }}</label>
+                        <input type="text" name="name" required maxlength="50" class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">{{ __('messages.shift_start') }}</label>
+                        <input type="time" name="start_time" required class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">{{ __('messages.shift_end') }}</label>
+                        <input type="time" name="end_time" required class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">{{ __('messages.shift_grace') }}</label>
+                        <input type="number" name="grace_period" value="15" min="0" max="120" class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">{{ __('messages.night_shift_bonus') }}</label>
+                        <input type="number" name="night_shift_bonus" value="0" min="0" step="1000" class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                    </div>
+                    <div class="flex items-end gap-2">
+                        <label class="flex items-center gap-1.5 text-xs">
+                            <input type="hidden" name="is_night_shift" value="0">
+                            <input type="checkbox" name="is_night_shift" value="1" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                            {{ __('messages.is_night_shift') }}
+                        </label>
+                    </div>
+                </div>
+                <div class="mt-3 flex justify-end">
+                    <button type="submit" class="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-medium text-white hover:bg-indigo-700 transition">{{ __('messages.save') }}</button>
+                </div>
+            </form>
+
+            {{-- Existing Shifts Table --}}
+            @if(isset($shifts) && $shifts->isNotEmpty())
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-gray-100 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                            <th class="pb-2">{{ __('messages.shift_name') }}</th>
+                            <th class="pb-2">{{ __('messages.shift_start') }}</th>
+                            <th class="pb-2">{{ __('messages.shift_end') }}</th>
+                            <th class="pb-2">{{ __('messages.shift_grace') }}</th>
+                            <th class="pb-2">{{ __('messages.is_night_shift') }}</th>
+                            <th class="pb-2">{{ __('messages.night_shift_bonus') }}</th>
+                            <th class="pb-2">Status</th>
+                            <th class="pb-2"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-50">
+                        @foreach($shifts as $shift)
+                        <tr class="group">
+                            <td class="py-2.5 font-medium text-gray-900">{{ $shift->name }}</td>
+                            <td class="py-2.5 text-gray-600">{{ $shift->start_time }}</td>
+                            <td class="py-2.5 text-gray-600">{{ $shift->end_time }}</td>
+                            <td class="py-2.5 text-gray-600">{{ $shift->grace_period }} {{ __('messages.stab_minutes') }}</td>
+                            <td class="py-2.5">
+                                @if($shift->is_night_shift)
+                                    <span class="inline-flex items-center rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700">{{ __('messages.yes') }}</span>
+                                @else
+                                    <span class="text-gray-400">—</span>
+                                @endif
+                            </td>
+                            <td class="py-2.5 text-gray-600">{{ number_format($shift->night_shift_bonus, 0, ',', '.') }}</td>
+                            <td class="py-2.5">
+                                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {{ $shift->is_active ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700' }}">
+                                    {{ $shift->is_active ? __('messages.active') : __('messages.inactive') }}
+                                </span>
+                            </td>
+                            <td class="py-2.5 text-right">
+                                <form method="POST" action="{{ route('settings.shifts.destroy', $shift) }}" class="inline" onsubmit="return confirm('{{ __('messages.confirm_delete') }}')">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="text-xs text-red-600 hover:text-red-800 opacity-0 group-hover:opacity-100 transition">{{ __('messages.delete') }}</button>
+                                </form>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            @else
+                <p class="text-sm text-gray-400 italic">{{ __('messages.no_shifts_configured') }}</p>
+            @endif
+        </div>
         @endif
 
         {{-- ── TAB: System & Security ───────────────────────────── --}}
