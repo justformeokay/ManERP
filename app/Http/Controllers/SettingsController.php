@@ -17,6 +17,22 @@ class SettingsController extends Controller
 {
     private const TABS = ['company', 'financial', 'payroll', 'security', 'localization'];
 
+    /**
+     * Maps currency codes to localization defaults (auto-synced when default_currency changes).
+     */
+    private const CURRENCY_LOCALE_MAP = [
+        'IDR' => ['currency_symbol' => 'Rp',  'thousand_separator' => '.', 'decimal_separator' => ',', 'decimal_places' => '0'],
+        'USD' => ['currency_symbol' => '$',   'thousand_separator' => ',', 'decimal_separator' => '.', 'decimal_places' => '2'],
+        'CNY' => ['currency_symbol' => '¥',   'thousand_separator' => ',', 'decimal_separator' => '.', 'decimal_places' => '2'],
+        'KRW' => ['currency_symbol' => '₩',   'thousand_separator' => ',', 'decimal_separator' => '.', 'decimal_places' => '0'],
+        'EUR' => ['currency_symbol' => '€',   'thousand_separator' => '.', 'decimal_separator' => ',', 'decimal_places' => '2'],
+        'GBP' => ['currency_symbol' => '£',   'thousand_separator' => ',', 'decimal_separator' => '.', 'decimal_places' => '2'],
+        'JPY' => ['currency_symbol' => '¥',   'thousand_separator' => ',', 'decimal_separator' => '.', 'decimal_places' => '0'],
+        'SGD' => ['currency_symbol' => 'S$',  'thousand_separator' => ',', 'decimal_separator' => '.', 'decimal_places' => '2'],
+        'MYR' => ['currency_symbol' => 'RM',  'thousand_separator' => ',', 'decimal_separator' => '.', 'decimal_places' => '2'],
+        'AUD' => ['currency_symbol' => 'A$',  'thousand_separator' => ',', 'decimal_separator' => '.', 'decimal_places' => '2'],
+    ];
+
     // ════════════════════════════════════════════════════════════════
     // INDEX — Tabbed Interface
     // ════════════════════════════════════════════════════════════════
@@ -128,6 +144,15 @@ class SettingsController extends Controller
             'default_currency'        => 'required|string|max:10',
             'timezone'                => 'required|string|timezone',
         ]);
+
+        // Auto-sync localization settings when default_currency changes
+        $oldCurrency = Setting::get('default_currency', '');
+        if ($validated['default_currency'] !== $oldCurrency) {
+            $localeDefaults = self::CURRENCY_LOCALE_MAP[$validated['default_currency']] ?? null;
+            if ($localeDefaults) {
+                Setting::setMany($localeDefaults);
+            }
+        }
 
         return $this->saveSettings($validated, 'Updated accounting & financial settings', 'financial');
     }

@@ -220,7 +220,7 @@
                     @include('settings._field', ['name' => 'bpjs_jp_employee', 'label' => __('messages.stab_jp_employee'), 'type' => 'number', 'value' => $settings['bpjs_jp_employee'], 'suffix' => '%', 'step' => '0.01', 'tooltip' => __('messages.tip_jp_employee')])
                 </div>
                 <div class="mt-4">
-                    @include('settings._field', ['name' => 'bpjs_jp_max_salary', 'label' => __('messages.stab_jp_max_salary'), 'type' => 'number', 'value' => $settings['bpjs_jp_max_salary'], 'tooltip' => __('messages.tip_jp_max')])
+                    @include('settings._field', ['name' => 'bpjs_jp_max_salary', 'label' => __('messages.stab_jp_max_salary'), 'type' => 'number', 'value' => $settings['bpjs_jp_max_salary'], 'tooltip' => __('messages.tip_jp_max'), 'currency' => true])
                 </div>
             </div>
 
@@ -231,8 +231,8 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     @include('settings._field', ['name' => 'bpjs_kes_company', 'label' => __('messages.stab_kes_company'), 'type' => 'number', 'value' => $settings['bpjs_kes_company'], 'suffix' => '%', 'step' => '0.01', 'tooltip' => __('messages.tip_kes_company')])
                     @include('settings._field', ['name' => 'bpjs_kes_employee', 'label' => __('messages.stab_kes_employee'), 'type' => 'number', 'value' => $settings['bpjs_kes_employee'], 'suffix' => '%', 'step' => '0.01', 'tooltip' => __('messages.tip_kes_employee')])
-                    @include('settings._field', ['name' => 'bpjs_kes_min_salary', 'label' => __('messages.stab_kes_min'), 'type' => 'number', 'value' => $settings['bpjs_kes_min_salary'], 'tooltip' => __('messages.tip_kes_min')])
-                    @include('settings._field', ['name' => 'bpjs_kes_max_salary', 'label' => __('messages.stab_kes_max'), 'type' => 'number', 'value' => $settings['bpjs_kes_max_salary'], 'tooltip' => __('messages.tip_kes_max')])
+                    @include('settings._field', ['name' => 'bpjs_kes_min_salary', 'label' => __('messages.stab_kes_min'), 'type' => 'number', 'value' => $settings['bpjs_kes_min_salary'], 'tooltip' => __('messages.tip_kes_min'), 'currency' => true])
+                    @include('settings._field', ['name' => 'bpjs_kes_max_salary', 'label' => __('messages.stab_kes_max'), 'type' => 'number', 'value' => $settings['bpjs_kes_max_salary'], 'tooltip' => __('messages.tip_kes_max'), 'currency' => true])
                 </div>
             </div>
 
@@ -245,7 +245,7 @@
                     @include('settings._field', ['name' => 'late_tolerance_minutes', 'label' => __('messages.stab_late_tolerance'), 'type' => 'number', 'value' => $settings['late_tolerance_minutes'], 'suffix' => __('messages.stab_minutes'), 'tooltip' => __('messages.tip_late_tolerance')])
                 </div>
                 <div class="mt-4">
-                    @include('settings._field', ['name' => 'late_deduction_per_minute', 'label' => __('messages.stab_late_deduction_rate'), 'type' => 'number', 'value' => $settings['late_deduction_per_minute'], 'step' => '100', 'tooltip' => __('messages.tip_late_deduction_rate')])
+                    @include('settings._field', ['name' => 'late_deduction_per_minute', 'label' => __('messages.stab_late_deduction_rate'), 'type' => 'number', 'value' => $settings['late_deduction_per_minute'], 'tooltip' => __('messages.tip_late_deduction_rate'), 'currency' => true])
                 </div>
             </div>
 
@@ -300,7 +300,7 @@
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">{{ __('messages.night_shift_bonus') }}</label>
-                        <input type="number" name="night_shift_bonus" value="0" min="0" step="1000" class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                        <input type="text" name="night_shift_bonus" value="0" x-currency class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
                     </div>
                     <div class="flex items-end gap-2">
                         <label class="flex items-center gap-1.5 text-xs">
@@ -345,7 +345,7 @@
                                     <span class="text-gray-400">—</span>
                                 @endif
                             </td>
-                            <td class="py-2.5 text-gray-600">{{ number_format($shift->night_shift_bonus, 0, ',', '.') }}</td>
+                            <td class="py-2.5 text-gray-600">{{ format_currency($shift->night_shift_bonus) }}</td>
                             <td class="py-2.5">
                                 <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {{ $shift->is_active ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700' }}">
                                     {{ $shift->is_active ? __('messages.active') : __('messages.inactive') }}

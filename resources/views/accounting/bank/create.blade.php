@@ -44,7 +44,7 @@
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label for="opening_balance" class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.opening_balance') }}</label>
-                    <input type="number" name="opening_balance" id="opening_balance" value="{{ old('opening_balance', 0) }}" step="0.01" min="0" required
+                    <input type="text" name="opening_balance" id="opening_balance" value="{{ old('opening_balance', 0) }}" x-currency required
                         class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                     @error('opening_balance') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                 </div>

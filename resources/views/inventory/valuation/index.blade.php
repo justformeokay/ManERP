@@ -25,7 +25,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm font-medium text-gray-600">Total Inventory Value</p>
-                <p class="text-3xl font-bold text-gray-900">Rp {{ number_format($grandTotal, 2, ',', '.') }}</p>
+                <p class="text-3xl font-bold text-gray-900">{{ format_currency($grandTotal) }}</p>
             </div>
             <div class="text-sm text-gray-500">
                 {{ count($report) }} product(s) in stock
@@ -64,8 +64,8 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4 text-sm text-right text-gray-700">{{ number_format($row['total_qty'], 2) }} {{ $row['unit'] }}</td>
-                            <td class="px-6 py-4 text-sm text-right font-mono text-gray-700">Rp {{ number_format($row['avg_cost'], 4, ',', '.') }}</td>
-                            <td class="px-6 py-4 text-sm text-right font-semibold text-gray-900">Rp {{ number_format($row['total_value'], 2, ',', '.') }}</td>
+                            <td class="px-6 py-4 text-sm text-right font-mono text-gray-700">{{ format_currency($row['avg_cost']) }}</td>
+                            <td class="px-6 py-4 text-sm text-right font-semibold text-gray-900">{{ format_currency($row['total_value']) }}</td>
                             <td class="px-6 py-4 text-center">
                                 <a href="{{ route('inventory.valuation.show', $row['product_id']) }}"
                                    class="text-primary-600 hover:text-primary-800 text-sm font-medium">
@@ -85,7 +85,7 @@
                     <tfoot class="bg-gray-50">
                         <tr>
                             <td colspan="6" class="px-6 py-4 text-sm font-bold text-gray-700 text-right">Grand Total:</td>
-                            <td class="px-6 py-4 text-sm font-bold text-right text-gray-900">Rp {{ number_format($grandTotal, 2, ',', '.') }}</td>
+                            <td class="px-6 py-4 text-sm font-bold text-right text-gray-900">{{ format_currency($grandTotal) }}</td>
                             <td></td>
                         </tr>
                     </tfoot>

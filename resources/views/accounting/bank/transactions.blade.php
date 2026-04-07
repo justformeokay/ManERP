@@ -45,7 +45,7 @@
             </div>
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-1">{{ __('messages.amount') }}</label>
-                <input type="number" name="amount" step="0.01" min="0.01" required
+                <input type="text" name="amount" x-currency required
                     class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm w-32">
             </div>
             <div class="flex-1">

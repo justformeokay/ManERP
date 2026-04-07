@@ -4,6 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    @php $__cc = currency_config(); @endphp
+    <meta name="currency-config" content='{!! json_encode(["symbol" => $__cc["symbol"], "thousandSep" => $__cc["thousand_separator"], "decimalSep" => $__cc["decimal_separator"], "decimals" => $__cc["decimal_places"]]) !!}'>>
 
     <title>@yield('title', config('app.name', 'ManERP')) — {{ config('app.name', 'ManERP') }}</title>
 

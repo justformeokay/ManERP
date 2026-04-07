@@ -42,12 +42,12 @@
                 </div>
                 <div>
                     <label for="amount" class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.amount') }}</label>
-                    <input type="number" name="amount" id="amount" value="{{ old('amount') }}" step="0.01" min="0.01" required
+                    <input type="text" name="amount" id="amount" value="{{ old('amount') }}" x-currency required
                         class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm">
                 </div>
                 <div>
                     <label for="tax_amount" class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.tax_amount') }}</label>
-                    <input type="number" name="tax_amount" id="tax_amount" value="{{ old('tax_amount', 0) }}" step="0.01" min="0"
+                    <input type="text" name="tax_amount" id="tax_amount" value="{{ old('tax_amount', 0) }}" x-currency
                         class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm">
                 </div>
             </div>

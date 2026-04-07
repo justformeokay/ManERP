@@ -123,7 +123,7 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                     <label for="credit_limit" class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.credit_limit') }}</label>
-                    <input type="number" id="credit_limit" name="credit_limit" step="0.01" min="0"
+                    <input type="text" id="credit_limit" name="credit_limit" x-currency
                         value="{{ old('credit_limit', $client->credit_limit ?? 0) }}"
                         class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary-500 transition"
                         placeholder="0 = {{ __('messages.unlimited') }}">

@@ -106,7 +106,7 @@
                                 @if($client->is_credit_blocked)
                                     <span class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium bg-red-50 text-red-700 ring-1 ring-red-600/20">{{ __('messages.blocked') }}</span>
                                 @elseif((float) $client->credit_limit > 0)
-                                    <span class="text-sm font-medium text-gray-900">{{ number_format((float) $client->credit_limit, 0, ',', '.') }}</span>
+                                    <span class="text-sm font-medium text-gray-900">{{ format_currency((float) $client->credit_limit) }}</span>
                                 @else
                                     <span class="text-xs text-gray-400">{{ __('messages.unlimited') }}</span>
                                 @endif

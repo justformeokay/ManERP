@@ -59,12 +59,12 @@
             <div class="grid grid-cols-3 gap-4">
                 <div>
                     <label for="purchase_cost" class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.purchase_cost') }}</label>
-                    <input type="number" name="purchase_cost" id="purchase_cost" value="{{ old('purchase_cost') }}" step="0.01" min="0" required
+                    <input type="text" name="purchase_cost" id="purchase_cost" value="{{ old('purchase_cost') }}" x-currency required
                         class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm">
                 </div>
                 <div>
                     <label for="salvage_value" class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.salvage_value') }}</label>
-                    <input type="number" name="salvage_value" id="salvage_value" value="{{ old('salvage_value', 0) }}" step="0.01" min="0" required
+                    <input type="text" name="salvage_value" id="salvage_value" value="{{ old('salvage_value', 0) }}" x-currency required
                         class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm">
                 </div>
                 <div>

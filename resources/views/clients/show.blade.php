@@ -38,7 +38,7 @@
                     <p class="text-xs font-medium text-gray-500 uppercase">{{ __('messages.credit_limit') }}</p>
                     <p class="mt-1 text-xl font-bold text-gray-900">
                         @if((float) $client->credit_limit > 0)
-                            {{ number_format((float) $client->credit_limit, 0, ',', '.') }}
+                            {{ format_currency((float) $client->credit_limit) }}
                         @else
                             {{ __('messages.unlimited') }}
                         @endif
@@ -49,7 +49,7 @@
                 <div class="rounded-xl bg-gray-50 p-4">
                     <p class="text-xs font-medium text-gray-500 uppercase">{{ __('messages.current_exposure') }}</p>
                     <p class="mt-1 text-xl font-bold {{ (float) $exposure > 0 ? 'text-amber-600' : 'text-gray-900' }}">
-                        {{ number_format((float) $exposure, 0, ',', '.') }}
+                        {{ format_currency((float) $exposure) }}
                     </p>
                 </div>
 
@@ -59,7 +59,7 @@
                     @if((float) $client->credit_limit > 0)
                         @php $available = bcsub((string) $client->credit_limit, $exposure, 2); @endphp
                         <p class="mt-1 text-xl font-bold {{ (float) $available < 0 ? 'text-red-600' : 'text-green-600' }}">
-                            {{ number_format((float) $available, 0, ',', '.') }}
+                            {{ format_currency((float) $available) }}
                         </p>
                     @else
                         <p class="mt-1 text-xl font-bold text-green-600">{{ __('messages.unlimited') }}</p>

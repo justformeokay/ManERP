@@ -257,7 +257,7 @@
                 return this.subtotal() + (parseFloat(this.taxAmount) || 0);
             },
             formatNumber(val) {
-                return parseFloat(val || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                return ManERP.formatCurrency(val);
             }
         }
     }

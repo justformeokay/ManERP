@@ -97,7 +97,7 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                     <label for="cost_price" class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.cost_price') }}</label>
-                    <input type="number" id="cost_price" name="cost_price" step="0.01" min="0"
+                    <input type="text" id="cost_price" name="cost_price" x-currency
                         value="{{ old('cost_price', $product->cost_price) }}"
                         class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary-500 transition"
                         placeholder="0.00">
@@ -105,7 +105,7 @@
 
                 <div>
                     <label for="sell_price" class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.sell_price') }}</label>
-                    <input type="number" id="sell_price" name="sell_price" step="0.01" min="0"
+                    <input type="text" id="sell_price" name="sell_price" x-currency
                         value="{{ old('sell_price', $product->sell_price) }}"
                         class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary-500 transition"
                         placeholder="0.00">

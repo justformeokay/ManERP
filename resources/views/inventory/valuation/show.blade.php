@@ -15,7 +15,7 @@
         <div>
             <h1 class="text-2xl font-bold text-gray-900">{{ $product->name }}</h1>
             <p class="mt-1 text-sm text-gray-500">
-                SKU: {{ $product->sku }} — Current Avg Cost: <strong>Rp {{ number_format($product->avg_cost, 4, ',', '.') }}</strong>
+                SKU: {{ $product->sku }} — Current Avg Cost: <strong>{{ format_currency($product->avg_cost) }}</strong>
             </p>
         </div>
         <a href="{{ route('inventory.valuation.index') }}"
@@ -77,9 +77,9 @@
                             </td>
                             <td class="px-4 py-3 text-sm text-gray-600">{{ $layer['warehouse']['name'] ?? '—' }}</td>
                             <td class="px-4 py-3 text-sm text-right text-gray-700">{{ number_format($layer['quantity'], 2) }}</td>
-                            <td class="px-4 py-3 text-sm text-right font-mono text-gray-700">Rp {{ number_format($layer['unit_cost'], 4, ',', '.') }}</td>
-                            <td class="px-4 py-3 text-sm text-right font-mono text-gray-700">Rp {{ number_format($layer['total_value'], 2, ',', '.') }}</td>
-                            <td class="px-4 py-3 text-sm text-right font-mono font-semibold text-gray-900">Rp {{ number_format($layer['avg_cost_after'], 4, ',', '.') }}</td>
+                            <td class="px-4 py-3 text-sm text-right font-mono text-gray-700">{{ format_currency($layer['unit_cost']) }}</td>
+                            <td class="px-4 py-3 text-sm text-right font-mono text-gray-700">{{ format_currency($layer['total_value']) }}</td>
+                            <td class="px-4 py-3 text-sm text-right font-mono font-semibold text-gray-900">{{ format_currency($layer['avg_cost_after']) }}</td>
                             <td class="px-4 py-3 text-sm text-gray-600">
                                 {{ $layer['reference_type'] ? $layer['reference_type'] . ' #' . $layer['reference_id'] : '—' }}
                             </td>

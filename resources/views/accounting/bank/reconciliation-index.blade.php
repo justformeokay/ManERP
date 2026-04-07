@@ -39,7 +39,7 @@
             </div>
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-1">{{ __('messages.statement_balance') }}</label>
-                <input type="number" name="statement_balance" step="0.01" required
+                <input type="text" name="statement_balance" x-currency required
                     class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm w-40">
             </div>
             @include('components.button', ['label' => __('messages.start'), 'type' => 'primary', 'buttonType' => 'submit'])

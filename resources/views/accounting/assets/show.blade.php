@@ -31,7 +31,7 @@
                             </div>
                             <div>
                                 <label class="block text-xs font-medium text-gray-500 mb-1">{{ __('messages.disposal_amount') }}</label>
-                                <input type="number" name="disposal_amount" value="0" step="0.01" min="0" required class="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm">
+                                <input type="text" name="disposal_amount" value="0" x-currency required class="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm">
                             </div>
                             <button type="submit" class="w-full rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700">
                                 {{ __('messages.confirm_dispose') }}

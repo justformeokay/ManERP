@@ -869,7 +869,7 @@ function dashboardApp() {
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    return context.dataset.label + ': {{ currency_symbol() }} ' + context.parsed.y.toLocaleString();
+                                    return context.dataset.label + ': ' + ManERP.formatCurrency(context.parsed.y);
                                 }
                             }
                         }
@@ -957,7 +957,7 @@ function dashboardApp() {
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    return context.label + ': {{ currency_symbol() }} ' + context.parsed.toLocaleString();
+                                    return context.label + ': ' + ManERP.formatCurrency(context.parsed);
                                 }
                             }
                         }

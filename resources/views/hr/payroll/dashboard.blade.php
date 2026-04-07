@@ -25,11 +25,11 @@
         </div>
         <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
             <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ __('messages.ytd_gross') }}</p>
-            <p class="mt-2 text-2xl font-bold text-gray-900">Rp {{ number_format($monthlySummary->sum('total_gross'), 0, ',', '.') }}</p>
+            <p class="mt-2 text-2xl font-bold text-gray-900">{{ format_currency($monthlySummary->sum('total_gross')) }}</p>
         </div>
         <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
             <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ __('messages.ytd_net') }}</p>
-            <p class="mt-2 text-2xl font-bold text-green-700">Rp {{ number_format($monthlySummary->sum('total_net'), 0, ',', '.') }}</p>
+            <p class="mt-2 text-2xl font-bold text-green-700">{{ format_currency($monthlySummary->sum('total_net')) }}</p>
         </div>
     </div>
 
@@ -50,8 +50,8 @@
                 @forelse($monthlySummary as $m)
                     <tr class="hover:bg-gray-50/50">
                         <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ $m['label'] }}</td>
-                        <td class="px-4 py-3 text-sm text-right text-gray-900">Rp {{ number_format($m['total_gross'], 0, ',', '.') }}</td>
-                        <td class="px-4 py-3 text-sm text-right text-green-700 font-medium">Rp {{ number_format($m['total_net'], 0, ',', '.') }}</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-900">{{ format_currency($m['total_gross']) }}</td>
+                        <td class="px-4 py-3 text-sm text-right text-green-700 font-medium">{{ format_currency($m['total_net']) }}</td>
                         <td class="px-4 py-3">
                             @php $colors = \App\Models\PayrollPeriod::statusColors(); @endphp
                             <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset {{ $colors[$m['status']] ?? '' }}">{{ ucfirst($m['status']) }}</span>

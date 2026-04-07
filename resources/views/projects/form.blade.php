@@ -113,8 +113,8 @@
                 </div>
 
                 <div>
-                    <label for="budget" class="block text-sm font-medium text-gray-700 mb-1">Budget ($)</label>
-                    <input type="number" id="budget" name="budget" step="0.01" min="0"
+                    <label for="budget" class="block text-sm font-medium text-gray-700 mb-1">Budget ({{ currency_symbol() }})</label>
+                    <input type="text" id="budget" name="budget" x-currency
                         value="{{ old('budget', $project->budget) }}"
                         class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary-500 transition"
                         placeholder="0.00">

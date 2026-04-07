@@ -159,7 +159,7 @@
                         </div>
                         <div class="flex justify-between">
                             <dt class="text-gray-500">{{ __('messages.estimated_total_header') }}</dt>
-                            <dd class="font-medium text-gray-900" x-text="'Rp ' + items.reduce((sum, i) => sum + ((parseFloat(i.quantity) || 0) * (parseFloat(i.estimated_price) || 0)), 0).toLocaleString()">Rp 0</dd>
+                            <dd class="font-medium text-gray-900" x-text="ManERP.formatCurrency(items.reduce((sum, i) => sum + ((parseFloat(i.quantity) || 0) * (parseFloat(i.estimated_price) || 0)), 0))">{{ currency_symbol() }} 0</dd>
                         </div>
                     </dl>
                 </div>

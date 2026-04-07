@@ -106,7 +106,7 @@
                         .reduce((sum, m) => sum + (parseFloat(line[m]) || 0), 0);
                 },
                 formatCurrency(val) {
-                    return new Intl.NumberFormat('id-ID', { style: 'decimal', minimumFractionDigits: 0 }).format(val);
+                    return ManERP.formatCurrency(val);
                 }
             };
         }

@@ -8,6 +8,7 @@ use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\CheckPermission;
 use App\Http\Middleware\ForcePasswordChange;
+use App\Http\Middleware\SanitizeCurrencyInput;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
@@ -33,6 +34,7 @@ return Application::configure(basePath: dirname(__DIR__))
             ForcePasswordChange::class,
             EnsureTwoFactorVerified::class,
             EnsureLicenseValid::class,
+            SanitizeCurrencyInput::class,
         ]);
         
         // Register middleware aliases

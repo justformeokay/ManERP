@@ -86,11 +86,11 @@
                 @forelse($employee->salaryStructures as $sal)
                     <tr class="{{ $sal->is_active ? 'bg-green-50/30' : '' }}">
                         <td class="px-4 py-3 text-sm text-gray-700">{{ $sal->effective_date->format('d M Y') }}</td>
-                        <td class="px-4 py-3 text-sm text-right text-gray-900 font-medium">{{ number_format($sal->basic_salary, 0, ',', '.') }}</td>
-                        <td class="px-4 py-3 text-sm text-right text-gray-700">{{ number_format($sal->fixed_allowance, 0, ',', '.') }}</td>
-                        <td class="px-4 py-3 text-sm text-right text-gray-700">{{ number_format($sal->meal_allowance, 0, ',', '.') }}</td>
-                        <td class="px-4 py-3 text-sm text-right text-gray-700">{{ number_format($sal->transport_allowance, 0, ',', '.') }}</td>
-                        <td class="px-4 py-3 text-sm text-right text-gray-700">{{ number_format($sal->overtime_rate, 0, ',', '.') }}</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-900 font-medium">{{ format_currency($sal->basic_salary) }}</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-700">{{ format_currency($sal->fixed_allowance) }}</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-700">{{ format_currency($sal->meal_allowance) }}</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-700">{{ format_currency($sal->transport_allowance) }}</td>
+                        <td class="px-4 py-3 text-sm text-right text-gray-700">{{ format_currency($sal->overtime_rate) }}</td>
                         <td class="px-4 py-3 text-center">
                             @if($sal->is_active)
                                 <span class="inline-flex items-center rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700">Active</span>
@@ -118,27 +118,27 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.basic_salary') }} <span class="text-red-500">*</span></label>
-                        <input type="number" name="basic_salary" step="0.01" min="1" required
+                        <input type="text" name="basic_salary" x-currency required
                             class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary-500">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.fixed_allowance') }}</label>
-                        <input type="number" name="fixed_allowance" step="0.01" min="0" value="0"
+                        <input type="text" name="fixed_allowance" x-currency value="0"
                             class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary-500">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.meal_allowance') }}</label>
-                        <input type="number" name="meal_allowance" step="0.01" min="0" value="0"
+                        <input type="text" name="meal_allowance" x-currency value="0"
                             class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary-500">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.transport_allowance') }}</label>
-                        <input type="number" name="transport_allowance" step="0.01" min="0" value="0"
+                        <input type="text" name="transport_allowance" x-currency value="0"
                             class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary-500">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.overtime_rate') }}</label>
-                        <input type="number" name="overtime_rate" step="0.01" min="0" value="0"
+                        <input type="text" name="overtime_rate" x-currency value="0"
                             class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary-500">
                     </div>
                     <div>

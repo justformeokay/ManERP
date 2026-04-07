@@ -40,6 +40,7 @@ return new class extends Migration
             'decimal_separator'         => ',',
             'decimal_places'            => '0',
             'default_locale'            => 'id',
+            'default_currency'          => 'IDR',
         ];
 
         $now = now();

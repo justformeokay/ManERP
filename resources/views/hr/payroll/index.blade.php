@@ -70,9 +70,9 @@
                                     {{ ucfirst($period->status) }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-sm text-right font-medium text-gray-900">Rp {{ number_format($period->total_gross, 0, ',', '.') }}</td>
-                            <td class="px-6 py-4 text-sm text-right text-red-600">Rp {{ number_format($period->total_deductions, 0, ',', '.') }}</td>
-                            <td class="px-6 py-4 text-sm text-right font-semibold text-gray-900">Rp {{ number_format($period->total_net, 0, ',', '.') }}</td>
+                            <td class="px-6 py-4 text-sm text-right font-medium text-gray-900">{{ format_currency($period->total_gross) }}</td>
+                            <td class="px-6 py-4 text-sm text-right text-red-600">{{ format_currency($period->total_deductions) }}</td>
+                            <td class="px-6 py-4 text-sm text-right font-semibold text-gray-900">{{ format_currency($period->total_net) }}</td>
                             <td class="px-6 py-4 text-right">
                                 <a href="{{ route('hr.payroll.show', $period) }}" class="text-sm text-primary-600 hover:text-primary-800">{{ __('messages.view') }}</a>
                             </td>

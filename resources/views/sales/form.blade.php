@@ -327,7 +327,7 @@
                 return this.items.some(item => item.product_id && this.getStock(item.product_id) < (parseFloat(item.quantity) || 0));
             },
             formatNumber(val) {
-                return parseFloat(val || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                return ManERP.formatCurrency(val);
             }
         }
     }
