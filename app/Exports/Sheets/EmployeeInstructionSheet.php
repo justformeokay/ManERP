@@ -2,12 +2,8 @@
 
 namespace App\Exports\Sheets;
 
-use App\Models\Bank;
-use App\Models\Department;
 use App\Models\Employee;
-use App\Models\Position;
 use App\Models\Setting;
-use App\Models\Shift;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
@@ -31,37 +27,39 @@ class EmployeeInstructionSheet implements FromArray, WithStyles, WithTitle
         $terOptions = implode(', ', Employee::TER_CATEGORIES);
         $statusOptions = implode(', ', Employee::statusOptions());
 
-        $departments = Department::active()->pluck('name')->implode(', ') ?: '(Belum ada departemen)';
-        $positions = Position::active()->pluck('name')->implode(', ') ?: '(Belum ada jabatan)';
-        $shifts = Shift::active()->pluck('name')->implode(', ') ?: '(Belum ada shift)';
-        $banks = Bank::active()->pluck('name')->implode(', ') ?: '(Belum ada bank)';
-
         $rows = [
             ['PETUNJUK PENGISIAN TEMPLATE IMPORT KARYAWAN'],
             [''],
             ['Kolom', 'Wajib?', 'Format / Aturan', 'Contoh'],
-            ['NIK', 'Ya', "Teks, {$nikMin}–{$nikMax} karakter, harus unik", '1234567890123456'],
+            ['NIK', 'Ya', "Teks, {$nikMin}–{$nikMax} karakter, harus unik. Awalan nol dipertahankan.", '0812345678901234'],
             ['Nama', 'Ya', 'Teks, maks 255 karakter', 'Budi Santoso'],
-            ['Jabatan', 'Tidak', "Nama jabatan yang tersedia: {$positions}", 'Staff IT'],
-            ['Departemen', 'Tidak', "Nama departemen yang tersedia: {$departments}", 'IT'],
-            ['Shift', 'Tidak', "Nama shift yang tersedia: {$shifts}", 'Shift Pagi'],
-            ['Tanggal Bergabung', 'Ya', 'Format: YYYY-MM-DD', '2024-01-15'],
-            ['Status', 'Ya', "Pilihan: {$statusOptions}", 'active'],
-            ['NPWP', 'Tidak', 'Teks, maks 30 karakter', '12.345.678.9-012.345'],
-            ['PTKP', 'Ya', "Pilihan: {$ptkpOptions}", 'TK/0'],
-            ['Kategori TER', 'Tidak', "Otomatis dari PTKP. Pilihan: {$terOptions}", 'A'],
-            ['No. BPJS TK', 'Tidak', 'Teks, maks 30 karakter', '0001234567890'],
-            ['No. BPJS Kesehatan', 'Tidak', 'Teks, maks 30 karakter', '0009876543210'],
-            ['Nama Bank', 'Tidak', "Nama bank yang tersedia: {$banks}", 'BCA'],
-            ['Nomor Rekening', 'Tidak', "Teks, {$bankMin}–{$bankMax} karakter", '1234567890'],
+            ['Jabatan', 'Tidak', '🔽 DROPDOWN — Pilih dari daftar [KODE] - Nama', '[STF] - Staff'],
+            ['Departemen', 'Tidak', '🔽 DROPDOWN — Pilih dari daftar [KODE] - Nama', '[PROD] - Produksi'],
+            ['Shift', 'Tidak', '🔽 DROPDOWN — Pilih dari daftar shift aktif', 'Shift Pagi'],
+            ['Tanggal Bergabung', 'Ya', '📅 DATE PICKER — Format: YYYY-MM-DD', '2024-01-15'],
+            ['Status', 'Ya', "🔽 DROPDOWN — Pilihan: {$statusOptions}", 'active'],
+            ['NPWP', 'Tidak', 'Teks, maks 30 karakter. Awalan nol dipertahankan.', '12.345.678.9-012.345'],
+            ['PTKP', 'Ya', "🔽 DROPDOWN — Pilihan: {$ptkpOptions}", 'TK/0'],
+            ['Kategori TER', 'Tidak', "🔽 DROPDOWN — Otomatis dari PTKP. Pilihan: {$terOptions}", 'A'],
+            ['No. BPJS TK', 'Tidak', 'Teks, maks 30 karakter. Awalan nol dipertahankan.', '0001234567890'],
+            ['No. BPJS Kesehatan', 'Tidak', 'Teks, maks 30 karakter. Awalan nol dipertahankan.', '0009876543210'],
+            ['Nama Bank', 'Tidak', '🔽 DROPDOWN — Pilih dari daftar bank yang terdaftar', 'BCA'],
+            ['Nomor Rekening', 'Tidak', "Teks, {$bankMin}–{$bankMax} karakter. Awalan nol dipertahankan.", '1234567890'],
             ['Nama Akun', 'Tidak', 'Teks, maks 255 karakter', 'Budi Santoso'],
+            [''],
+            ['KETERANGAN WARNA HEADER:'],
+            ['🔵 Biru Muda = Kolom dengan dropdown (pilih dari daftar)'],
+            ['🟡 Kuning = Kolom tanggal (gunakan date picker atau ketik YYYY-MM-DD)'],
+            ['🟣 Ungu Tua = Kolom isian bebas (ketik manual)'],
             [''],
             ['CATATAN PENTING:'],
             ['1. Hapus baris contoh (baris 2) pada sheet "Template" sebelum mengisi data Anda.'],
-            ['2. Nama Departemen, Jabatan, Shift, dan Bank harus sesuai dengan data master (tidak case-sensitive).'],
-            ['3. Jika Departemen/Jabatan/Shift/Bank tidak ditemukan, import akan gagal.'],
-            ['4. Seluruh proses import bersifat transaksional: jika satu baris gagal, semua dibatalkan.'],
-            ['5. NIK harus unik — tidak boleh sama dengan karyawan yang sudah ada di database.'],
+            ['2. Kolom dengan dropdown akan menampilkan daftar pilihan saat diklik — WAJIB dipilih dari situ.'],
+            ['3. Nama yang diimport berasal dari pilihan dropdown: Jabatan & Departemen otomatis sesuai master data.'],
+            ['4. Format NIK dan Nomor Rekening sudah diatur sebagai TEKS agar awalan 0 tidak hilang.'],
+            ['5. Seluruh proses import bersifat transaksional: jika satu baris gagal, semua dibatalkan.'],
+            ['6. NIK harus unik — tidak boleh sama dengan karyawan yang sudah ada di database.'],
+            ['7. Template mendukung hingga 500 baris data karyawan.'],
         ];
 
         return $rows;
@@ -83,8 +81,13 @@ class EmployeeInstructionSheet implements FromArray, WithStyles, WithTitle
             ],
         ]);
 
-        // "CATATAN PENTING" bold
+        // Color legend header
         $sheet->getStyle('A21')->applyFromArray([
+            'font' => ['bold' => true, 'size' => 11, 'color' => ['rgb' => '4338CA']],
+        ]);
+
+        // "CATATAN PENTING" bold red
+        $sheet->getStyle('A26')->applyFromArray([
             'font' => ['bold' => true, 'size' => 11, 'color' => ['rgb' => 'DC2626']],
         ]);
 

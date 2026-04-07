@@ -36,10 +36,19 @@ class EmployeeImport
     public function __construct()
     {
         // Build case-insensitive lookup maps: lowercase name → model
-        $this->departmentMap = Department::active()->get()->keyBy(fn ($d) => mb_strtolower($d->name));
-        $this->positionMap   = Position::active()->get()->keyBy(fn ($p) => mb_strtolower($p->name));
-        $this->shiftMap      = Shift::active()->get()->keyBy(fn ($s) => mb_strtolower($s->name));
-        $this->bankMap       = Bank::active()->get()->keyBy(fn ($b) => mb_strtolower($b->name));
+        // Also map "[CODE] - Name" format for dropdown selections
+        $departments = Department::active()->get();
+        $this->departmentMap = collect()
+            ->merge($departments->keyBy(fn ($d) => mb_strtolower($d->name)))
+            ->merge($departments->keyBy(fn ($d) => mb_strtolower("[{$d->code}] - {$d->name}")));
+
+        $positions = Position::active()->get();
+        $this->positionMap = collect()
+            ->merge($positions->keyBy(fn ($p) => mb_strtolower($p->name)))
+            ->merge($positions->keyBy(fn ($p) => mb_strtolower("[{$p->code}] - {$p->name}")));
+
+        $this->shiftMap = Shift::active()->get()->keyBy(fn ($s) => mb_strtolower($s->name));
+        $this->bankMap  = Bank::active()->get()->keyBy(fn ($b) => mb_strtolower($b->name));
 
         $this->nikMin     = (int) Setting::get('nik_min_length', 1);
         $this->nikMax     = (int) Setting::get('nik_max_length', 20);
