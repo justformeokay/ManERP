@@ -30,6 +30,7 @@
                     'payroll'      => ['icon' => 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z', 'label' => __('messages.stab_payroll')],
                     'security'     => ['icon' => 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z', 'label' => __('messages.stab_security')],
                     'localization' => ['icon' => 'M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z', 'label' => __('messages.stab_localization')],
+                    'crm'          => ['icon' => 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z', 'label' => __('messages.stab_crm')],
                 ];
             @endphp
             @foreach($tabMeta as $key => $meta)
@@ -709,6 +710,60 @@
                     <div class="rounded-xl bg-gray-50 p-3 ring-1 ring-gray-100 text-sm text-gray-700 font-mono">
                         {{ $settings['currency_symbol'] }} 1{{ $settings['thousand_separator'] }}234{{ $settings['thousand_separator'] }}567{{ $settings['decimal_places'] > 0 ? $settings['decimal_separator'] . str_repeat('0', (int)$settings['decimal_places']) : '' }}
                     </div>
+                </div>
+            </div>
+
+            @include('settings._save_button')
+        </form>
+        @endif
+
+        {{-- ── TAB: CRM ────────────────────────────────────────── --}}
+        @if($currentTab === 'crm')
+        <form method="POST" action="{{ route('settings.update.crm') }}" class="space-y-6">
+            @csrf
+
+            <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100 space-y-6">
+                <div>
+                    <h3 class="text-base font-semibold text-gray-900 mb-1">{{ __('messages.stab_crm') }}</h3>
+                    <p class="text-xs text-gray-500 mb-5">{{ __('messages.stab_crm_desc') }}</p>
+                </div>
+
+                {{-- Lead Follow-up Grace Period --}}
+                <div>
+                    @include('settings._field', [
+                        'name'    => 'lead_followup_days',
+                        'label'   => __('messages.lead_followup_days_label'),
+                        'type'    => 'number',
+                        'value'   => old('lead_followup_days', $settings['lead_followup_days'] ?: '7'),
+                        'suffix'  => __('messages.stab_days'),
+                        'tooltip' => __('messages.lead_followup_days_tooltip'),
+                    ])
+                </div>
+
+                {{-- Escalation Period --}}
+                <div>
+                    @include('settings._field', [
+                        'name'    => 'lead_escalation_days',
+                        'label'   => __('messages.lead_escalation_days_label'),
+                        'type'    => 'number',
+                        'value'   => old('lead_escalation_days', $settings['lead_escalation_days'] ?: '14'),
+                        'suffix'  => __('messages.stab_days'),
+                        'tooltip' => __('messages.lead_escalation_days_tooltip'),
+                    ])
+                </div>
+
+                {{-- Email Digest Toggle --}}
+                <div class="flex items-center justify-between rounded-xl bg-amber-50 p-4 ring-1 ring-amber-200">
+                    <div>
+                        <p class="text-sm font-semibold text-gray-900">{{ __('messages.lead_followup_email_label') }}</p>
+                        <p class="text-xs text-gray-500 mt-0.5">{{ __('messages.lead_followup_email_desc') }}</p>
+                    </div>
+                    <label class="relative inline-flex cursor-pointer items-center">
+                        <input type="hidden" name="lead_followup_email_enabled" value="0">
+                        <input type="checkbox" name="lead_followup_email_enabled" value="1" class="peer sr-only"
+                               @checked(old('lead_followup_email_enabled', $settings['lead_followup_email_enabled']))>
+                        <div class="h-6 w-11 rounded-full bg-gray-200 peer-checked:bg-amber-500 peer-focus:ring-2 peer-focus:ring-amber-300 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow after:transition-all peer-checked:after:translate-x-5"></div>
+                    </label>
                 </div>
             </div>
 

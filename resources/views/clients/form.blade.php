@@ -29,6 +29,7 @@
         method="POST"
         action="{{ $isEdit ? route('clients.update', $client) : route('clients.store') }}"
         class="space-y-6"
+        x-data="{ clientType: '{{ old('type', $client->type ?? 'customer') }}' }"
     >
         @csrf
         @if($isEdit) @method('PUT') @endif
@@ -80,13 +81,39 @@
                 </div>
 
                 {{-- Type --}}
-                <div>
-                    <label for="type" class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.type') }} <span class="text-red-500">*</span></label>
-                    <select id="type" name="type"
+                <div x-data="{ showTooltip: false }">
+                    <div class="flex items-center gap-1.5 mb-1">
+                        <label for="type" class="block text-sm font-medium text-gray-700">{{ __('messages.type') }} <span class="text-red-500">*</span></label>
+                        <div class="relative">
+                            <button type="button" @mouseenter="showTooltip = true" @mouseleave="showTooltip = false" @focus="showTooltip = true" @blur="showTooltip = false"
+                                class="inline-flex items-center justify-center h-4 w-4 rounded-full bg-gray-200 text-gray-500 hover:bg-gray-300 transition text-xs font-bold leading-none" aria-label="Info">
+                                i
+                            </button>
+                            <div x-show="showTooltip" x-transition:enter="transition ease-out duration-150" x-transition:leave="transition ease-in duration-100"
+                                 class="absolute z-20 bottom-full left-1/2 -translate-x-1/2 mb-2 w-72 rounded-xl bg-gray-900 p-3 text-xs text-white shadow-lg" x-cloak>
+                                <div class="space-y-2">
+                                    <div class="flex items-start gap-2">
+                                        <span class="mt-0.5 inline-block h-2 w-2 rounded-full bg-amber-400 shrink-0"></span>
+                                        <div><span class="font-semibold text-amber-300">Lead:</span> {{ __('messages.tooltip_lead') }}</div>
+                                    </div>
+                                    <div class="flex items-start gap-2">
+                                        <span class="mt-0.5 inline-block h-2 w-2 rounded-full bg-purple-400 shrink-0"></span>
+                                        <div><span class="font-semibold text-purple-300">{{ __('messages.prospect') }}:</span> {{ __('messages.tooltip_prospect') }}</div>
+                                    </div>
+                                    <div class="flex items-start gap-2">
+                                        <span class="mt-0.5 inline-block h-2 w-2 rounded-full bg-primary-400 shrink-0"></span>
+                                        <div><span class="font-semibold text-primary-300">{{ __('messages.customer') }}:</span> {{ __('messages.tooltip_customer') }}</div>
+                                    </div>
+                                </div>
+                                <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-px border-4 border-transparent border-t-gray-900"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <select id="type" name="type" x-model="clientType"
                         class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition">
-                        <option value="customer" @selected(old('type', $client->type) === 'customer')>{{ __('messages.customer') }}</option>
-                        <option value="lead" @selected(old('type', $client->type) === 'lead')>{{ __('messages.lead') }}</option>
-                        <option value="prospect" @selected(old('type', $client->type) === 'prospect')>{{ __('messages.prospect') }}</option>
+                        <option value="lead" @selected(old('type', $client->type) === 'lead') class="text-amber-700 bg-amber-50">🟡 {{ __('messages.lead') }}</option>
+                        <option value="prospect" @selected(old('type', $client->type) === 'prospect') class="text-purple-700 bg-purple-50">🟣 {{ __('messages.prospect') }}</option>
+                        <option value="customer" @selected(old('type', $client->type) === 'customer') class="text-primary-700 bg-primary-50">🔵 {{ __('messages.customer') }}</option>
                     </select>
                 </div>
             </div>
@@ -117,8 +144,9 @@
             </div>
         </div>
 
-        {{-- Status & Notes --}}
-        <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+        {{-- Credit & Risk Management (hidden for Lead type) --}}
+        <div x-show="clientType !== 'lead'" x-transition:enter="transition ease-out duration-200" x-transition:leave="transition ease-in duration-150" x-cloak
+             class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
             <h3 class="text-base font-semibold text-gray-900 mb-4">{{ __('messages.credit_risk_management') }}</h3>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>

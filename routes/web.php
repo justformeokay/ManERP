@@ -131,6 +131,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [ClientController::class, 'index'])->name('index')->middleware('permission:clients.view');
         Route::get('/create', [ClientController::class, 'create'])->name('create')->middleware('permission:clients.create');
         Route::post('/', [ClientController::class, 'store'])->name('store')->middleware('permission:clients.create');
+        Route::patch('/{client}/type', [ClientController::class, 'updateType'])->name('updateType')->middleware('permission:clients.edit');
+        Route::post('/{client}/snooze', [ClientController::class, 'snooze'])->name('snooze')->middleware('permission:clients.edit');
         Route::get('/{client}', [ClientController::class, 'show'])->name('show')->middleware('permission:clients.view');
         Route::get('/{client}/edit', [ClientController::class, 'edit'])->name('edit')->middleware('permission:clients.edit');
         Route::put('/{client}', [ClientController::class, 'update'])->name('update')->middleware('permission:clients.edit');
@@ -547,6 +549,7 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/payroll', [SettingsController::class, 'updatePayroll'])->name('update.payroll');
             Route::post('/security', [SettingsController::class, 'updateSecurity'])->name('update.security');
             Route::post('/localization', [SettingsController::class, 'updateLocalization'])->name('update.localization');
+            Route::post('/crm', [SettingsController::class, 'updateCrm'])->name('update.crm');
 
             // Shift Management (under payroll tab)
             Route::post('/shifts', [SettingsController::class, 'storeShift'])->name('shifts.store');

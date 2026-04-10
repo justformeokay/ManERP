@@ -15,7 +15,7 @@ use Illuminate\View\View;
 
 class SettingsController extends Controller
 {
-    private const TABS = ['company', 'financial', 'payroll', 'security', 'localization'];
+    private const TABS = ['company', 'financial', 'payroll', 'security', 'localization', 'crm'];
 
     /**
      * Maps currency codes to localization defaults (auto-synced when default_currency changes).
@@ -51,6 +51,7 @@ class SettingsController extends Controller
             'payroll'      => $this->payrollData(),
             'security'     => $this->securityData(),
             'localization' => $this->localizationData(),
+            'crm'          => $this->crmData(),
         };
 
         // Configuration version history (last 20 settings changes)
@@ -263,6 +264,36 @@ class SettingsController extends Controller
         ]);
 
         return $this->saveSettings($validated, 'Updated localization settings', 'localization');
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // TAB: CRM
+    // ════════════════════════════════════════════════════════════════
+
+    private function crmData(): array
+    {
+        return [
+            'settings' => $this->getSettingsArray([
+                'lead_followup_days',
+                'lead_escalation_days',
+                'lead_followup_email_enabled',
+            ]),
+        ];
+    }
+
+    public function updateCrm(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'lead_followup_days'          => 'required|integer|min:1|max:90',
+            'lead_escalation_days'        => 'required|integer|min:2|max:180',
+            'lead_followup_email_enabled' => 'required|boolean',
+        ]);
+
+        if ((int) $validated['lead_escalation_days'] <= (int) $validated['lead_followup_days']) {
+            return back()->withErrors(['lead_escalation_days' => __('messages.escalation_must_exceed_followup')])->withInput();
+        }
+
+        return $this->saveSettings($validated, 'Updated CRM settings', 'crm');
     }
 
     // ════════════════════════════════════════════════════════════════

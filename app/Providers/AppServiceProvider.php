@@ -3,7 +3,9 @@
 namespace App\Providers;
 
 use App\Listeners\AuthEventSubscriber;
+use App\Models\Invoice;
 use App\Models\User;
+use App\Observers\InvoiceObserver;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -36,6 +38,9 @@ class AppServiceProvider extends ServiceProvider
 
         // ── Auth Event Subscriber (login/logout/failed login audit) ──
         Event::subscribe(AuthEventSubscriber::class);
+
+        // ── Invoice Observer (auto-convert prospect → customer on payment) ──
+        Invoice::observe(InvoiceObserver::class);
 
         // ── Permission Gates (Phase 7: Industrial RBAC) ──
         // Register all standard and special permissions as Gates so @can() works in Blade

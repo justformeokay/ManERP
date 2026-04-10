@@ -52,7 +52,7 @@
             <p class="mt-2 text-xl font-bold text-green-700">{{ format_currency($summary['total_net']) }}</p>
         </div>
         <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
-            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">PPh 21</p>
+            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ __('messages.pph21') }}</p>
             <p class="mt-2 text-xl font-bold text-amber-700">{{ format_currency($summary['total_pph21']) }}</p>
         </div>
         <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
@@ -70,7 +70,7 @@
                         <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.employee') }}</th>
                         <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.gross_salary') }}</th>
                         <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">BPJS ({{ __('messages.employee_short') }})</th>
-                        <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">PPh 21</th>
+                        <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.pph21') }}</th>
                         <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.other_deductions') }}</th>
                         <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.net_salary') }}</th>
                         <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.actions') }}</th>
@@ -89,14 +89,14 @@
                             <td class="px-6 py-4 text-sm text-right text-gray-600">{{ format_currency((float)$slip->loan_deduction + (float)$slip->absence_deduction + (float)$slip->other_deductions) }}</td>
                             <td class="px-6 py-4 text-sm text-right font-semibold text-gray-900">{{ format_currency($slip->net_salary) }}</td>
                             <td class="px-6 py-4 text-right">
-                                <a href="{{ route('hr.payroll.payslip', $slip) }}" class="text-sm text-primary-600 hover:text-primary-800">Detail</a>
+                                <a href="{{ route('hr.payroll.payslip', $slip) }}" class="text-sm text-primary-600 hover:text-primary-800">{{ __('messages.detail') }}</a>
                             </td>
                         </tr>
                     @endforeach
                 </tbody>
                 <tfoot class="bg-gray-50/50">
                     <tr class="font-semibold">
-                        <td class="px-6 py-3 text-sm text-gray-900">Total</td>
+                        <td class="px-6 py-3 text-sm text-gray-900">{{ __('messages.total') }}</td>
                         <td class="px-6 py-3 text-sm text-right text-gray-900">{{ format_currency($summary['total_gross']) }}</td>
                         <td class="px-6 py-3 text-sm text-right text-red-600">{{ format_currency($summary['total_bpjs_emp']) }}</td>
                         <td class="px-6 py-3 text-sm text-right text-amber-700">{{ format_currency($summary['total_pph21']) }}</td>

@@ -16,6 +16,7 @@ class Client extends Model
         'npwp', 'tax_address', 'is_pkp',
         'address', 'city', 'country', 'type', 'status', 'notes',
         'credit_limit', 'payment_terms', 'is_credit_blocked',
+        'reminder_email_sent_at',
     ];
 
     protected function casts(): array
@@ -25,6 +26,7 @@ class Client extends Model
             'credit_limit' => 'decimal:2',
             'payment_terms' => 'integer',
             'is_credit_blocked' => 'boolean',
+            'reminder_email_sent_at' => 'datetime',
         ];
     }
 

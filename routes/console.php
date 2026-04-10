@@ -41,3 +41,9 @@ Schedule::command('log:archive')->weeklyOn(0, '04:00')
 Schedule::command('attendance:mark-absent')->dailyAt('00:05')
     ->withoutOverlapping()
     ->appendOutputTo(storage_path('logs/attendance.log'));
+
+// ── CRM: Lead Follow-up Reminders ────────────────────────────────────
+// Sends in-app reminders for stale leads (idle > grace period) daily at 08:00
+Schedule::command('leads:send-reminders')->dailyAt('08:00')
+    ->withoutOverlapping()
+    ->appendOutputTo(storage_path('logs/lead-reminders.log'));
