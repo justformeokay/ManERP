@@ -38,9 +38,15 @@
                     <option value="{{ $s }}" @selected(request('status') === $s)>{{ ucfirst($s) }}</option>
                 @endforeach
             </select>
+            <select name="purchase_type" class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                <option value="">{{ __('messages.po_all_types_filter') }}</option>
+                @foreach(\App\Models\PurchaseOrder::purchaseTypeOptions() as $pt)
+                    <option value="{{ $pt }}" @selected(request('purchase_type') === $pt)>{{ __('messages.po_purchase_type_' . $pt) }}</option>
+                @endforeach
+            </select>
             <div class="flex gap-2">
                 @include('components.button', ['label' => 'Filter', 'type' => 'secondary', 'buttonType' => 'submit'])
-                @if(request()->hasAny(['search', 'status']))
+                @if(request()->hasAny(['search', 'status', 'purchase_type']))
                     @include('components.button', ['label' => 'Clear', 'type' => 'ghost', 'href' => route('purchasing.index')])
                 @endif
             </div>
@@ -54,6 +60,7 @@
                 <thead class="bg-gray-50/50">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.po_number_header') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.po_purchase_type_label') }}</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.supplier_header') }}</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.warehouse_header') }}</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.date_header') }}</th>
@@ -64,12 +71,20 @@
                 </thead>
                 <tbody class="divide-y divide-gray-50">
                     @forelse($orders as $order)
-                        @php $statusColors = \App\Models\PurchaseOrder::statusColors(); @endphp
+                        @php
+                            $statusColors = \App\Models\PurchaseOrder::statusColors();
+                            $purchaseTypeColors = \App\Models\PurchaseOrder::purchaseTypeColors();
+                        @endphp
                         <tr class="hover:bg-gray-50/50 transition-colors">
                             <td class="px-6 py-4">
                                 <a href="{{ route('purchasing.show', $order) }}" class="text-sm font-semibold text-primary-700 hover:text-primary-800">
                                     {{ $order->number }}
                                 </a>
+                            </td>
+                            <td class="whitespace-nowrap px-6 py-4">
+                                <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset {{ $purchaseTypeColors[$order->purchase_type] ?? $purchaseTypeColors['operational'] }}">
+                                    {{ $order->purchaseTypeLabel() }}
+                                </span>
                             </td>
                             <td class="px-6 py-4">
                                 <p class="text-sm font-medium text-gray-900">{{ $order->supplier->name ?? '—' }}</p>
@@ -126,7 +141,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-12 text-center">
+                            <td colspan="8" class="px-6 py-12 text-center">
                                 <div class="flex flex-col items-center">
                                     <svg class="h-12 w-12 text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />

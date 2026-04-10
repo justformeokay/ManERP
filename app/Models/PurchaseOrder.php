@@ -14,8 +14,9 @@ class PurchaseOrder extends Model
     use HasFactory, SoftDeletes, HasStateMachine;
 
     protected $fillable = [
-        'supplier_id', 'warehouse_id', 'project_id', 'purchase_request_id', 'status',
-        'order_date', 'expected_date', 'subtotal', 'tax_amount',
+        'supplier_id', 'warehouse_id', 'project_id', 'purchase_request_id',
+        'purchase_type', 'department_id', 'priority', 'justification',
+        'status', 'order_date', 'expected_date', 'subtotal', 'tax_amount',
         'total', 'notes', 'created_by',
     ];
 
@@ -44,6 +45,11 @@ class PurchaseOrder extends Model
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
+    }
+
+    public function department(): BelongsTo
+    {
+        return $this->belongsTo(Department::class);
     }
 
     public function creator(): BelongsTo
@@ -116,5 +122,47 @@ class PurchaseOrder extends Model
     public function isFullyReceived(): bool
     {
         return $this->items->every(fn($item) => $item->received_quantity >= $item->quantity);
+    }
+
+    // Purchase Type
+    public static function purchaseTypeOptions(): array
+    {
+        return ['operational', 'project_sales', 'project_capex'];
+    }
+
+    public static function purchaseTypeColors(): array
+    {
+        return [
+            'operational'   => 'bg-gray-50 text-gray-700 ring-gray-500/20',
+            'project_sales' => 'bg-blue-50 text-blue-700 ring-blue-600/20',
+            'project_capex' => 'bg-violet-50 text-violet-700 ring-violet-600/20',
+        ];
+    }
+
+    public function purchaseTypeLabel(): string
+    {
+        return __('messages.po_purchase_type_' . $this->purchase_type);
+    }
+
+    public static function priorityOptions(): array
+    {
+        return ['low', 'normal', 'urgent'];
+    }
+
+    public static function priorityColors(): array
+    {
+        return [
+            'low'    => 'bg-gray-50 text-gray-600 ring-gray-500/20',
+            'normal' => 'bg-blue-50 text-blue-600 ring-blue-500/20',
+            'urgent' => 'bg-red-50 text-red-700 ring-red-600/20',
+        ];
+    }
+
+    /**
+     * Generate HMAC signature for project ID (F-14 audit compliance).
+     */
+    public static function projectHmac(int $projectId): string
+    {
+        return hash_hmac('sha256', 'po-project:' . $projectId, config('app.key'));
     }
 }

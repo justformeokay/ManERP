@@ -19,6 +19,7 @@ class ProjectController extends Controller
         $projects = Project::with('client')
             ->search($request->input('search'))
             ->when($request->input('status'), fn($q, $s) => $q->where('status', $s))
+            ->when($request->input('type'), fn($q, $t) => $q->where('type', $t))
             ->when($request->input('client_id'), fn($q, $c) => $q->where('client_id', $c))
             ->latest()
             ->paginate(10)
@@ -50,7 +51,14 @@ class ProjectController extends Controller
     {
         $project->load('client', 'manager');
 
-        return view('projects.show', compact('project'));
+        $purchaseOrders = $project->purchaseOrders()
+            ->with('supplier')
+            ->latest('order_date')
+            ->get();
+
+        $totalPurchased = $purchaseOrders->whereNotIn('status', ['cancelled'])->sum('total');
+
+        return view('projects.show', compact('project', 'purchaseOrders', 'totalPurchased'));
     }
 
     public function edit(Project $project)

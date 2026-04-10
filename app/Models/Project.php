@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Project extends Model
@@ -12,16 +13,17 @@ class Project extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'code', 'name', 'description', 'client_id', 'manager_id',
-        'status', 'start_date', 'end_date', 'budget', 'notes',
+        'code', 'name', 'type', 'description', 'client_id', 'manager_id',
+        'status', 'start_date', 'end_date', 'budget', 'estimated_budget', 'notes',
     ];
 
     protected function casts(): array
     {
         return [
-            'start_date' => 'date',
-            'end_date'   => 'date',
-            'budget'     => 'decimal:2',
+            'start_date'       => 'date',
+            'end_date'         => 'date',
+            'budget'           => 'decimal:2',
+            'estimated_budget' => 'decimal:2',
         ];
     }
 
@@ -34,6 +36,11 @@ class Project extends Model
     public function manager(): BelongsTo
     {
         return $this->belongsTo(User::class, 'manager_id');
+    }
+
+    public function purchaseOrders(): HasMany
+    {
+        return $this->hasMany(PurchaseOrder::class);
     }
 
     // Scopes
@@ -79,5 +86,34 @@ class Project extends Model
             'completed' => 'bg-green-50 text-green-700 ring-green-600/20',
             'cancelled' => 'bg-red-50 text-red-700 ring-red-600/20',
         ];
+    }
+
+    // Project Type
+    public static function typeOptions(): array
+    {
+        return ['sales', 'internal_capex'];
+    }
+
+    public static function typeColors(): array
+    {
+        return [
+            'sales'          => 'bg-blue-50 text-blue-700 ring-blue-600/20',
+            'internal_capex' => 'bg-violet-50 text-violet-700 ring-violet-600/20',
+        ];
+    }
+
+    public function typeLabel(): string
+    {
+        return __('messages.project_type_' . $this->type);
+    }
+
+    public function isSales(): bool
+    {
+        return $this->type === 'sales';
+    }
+
+    public function isCapex(): bool
+    {
+        return $this->type === 'internal_capex';
     }
 }

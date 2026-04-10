@@ -4,6 +4,8 @@
 
 @php
     $statusColors = \App\Models\PurchaseOrder::statusColors();
+    $purchaseTypeColors = \App\Models\PurchaseOrder::purchaseTypeColors();
+    $priorityColors = \App\Models\PurchaseOrder::priorityColors();
     $canReceive = in_array($order->status, ['confirmed', 'partial']);
 @endphp
 
@@ -23,6 +25,14 @@
                 <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 {{ $statusColors[$order->status] ?? '' }}">
                     {{ ucfirst($order->status) }}
                 </span>
+                <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset {{ $purchaseTypeColors[$order->purchase_type] ?? $purchaseTypeColors['operational'] }}">
+                    {{ $order->purchaseTypeLabel() }}
+                </span>
+                @if($order->priority !== 'normal')
+                    <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset {{ $priorityColors[$order->priority] ?? $priorityColors['normal'] }}">
+                        {{ __('messages.po_priority_' . $order->priority) }}
+                    </span>
+                @endif
             </div>
             <p class="mt-1 text-sm text-gray-500">{{ $order->supplier->name ?? '—' }} {{ $order->supplier->company ? '— ' . $order->supplier->company : '' }}</p>
         </div>
@@ -80,6 +90,20 @@
                             <dd class="font-medium text-gray-900">{{ $order->project->name }}</dd>
                         </div>
                     @endif
+                    @if($order->department)
+                        <div class="flex justify-between">
+                            <dt class="text-gray-500">{{ __('messages.po_requesting_dept') }}</dt>
+                            <dd class="font-medium text-gray-900">{{ $order->department->name }}</dd>
+                        </div>
+                    @endif
+                    <div class="flex justify-between">
+                        <dt class="text-gray-500">{{ __('messages.po_priority') }}</dt>
+                        <dd>
+                            <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset {{ $priorityColors[$order->priority] ?? $priorityColors['normal'] }}">
+                                {{ __('messages.po_priority_' . $order->priority) }}
+                            </span>
+                        </dd>
+                    </div>
                     <div class="flex justify-between">
                         <dt class="text-gray-500">Order Date</dt>
                         <dd class="font-medium text-gray-900">{{ $order->order_date->format('M d, Y') }}</dd>
@@ -118,6 +142,13 @@
                 <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
                     <h3 class="text-sm font-semibold text-gray-900 mb-2">Notes</h3>
                     <p class="text-sm text-gray-600 whitespace-pre-line">{{ $order->notes }}</p>
+                </div>
+            @endif
+
+            @if($order->justification)
+                <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+                    <h3 class="text-sm font-semibold text-gray-900 mb-2">{{ __('messages.po_justification') }}</h3>
+                    <p class="text-sm text-gray-600 whitespace-pre-line">{{ $order->justification }}</p>
                 </div>
             @endif
         </div>

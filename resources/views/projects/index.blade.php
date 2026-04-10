@@ -38,6 +38,12 @@
                     <option value="{{ $status }}" @selected(request('status') === $status)>{{ ucwords(str_replace('_', ' ', $status)) }}</option>
                 @endforeach
             </select>
+            <select name="type" class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                <option value="">{{ __('messages.all_types') }}</option>
+                @foreach(\App\Models\Project::typeOptions() as $type)
+                    <option value="{{ $type }}" @selected(request('type') === $type)>{{ __('messages.project_type_' . $type) }}</option>
+                @endforeach
+            </select>
             <select name="client_id" class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
                 <option value="">{{ __('messages.all_clients') }}</option>
                 @foreach($clients as $client)
@@ -46,7 +52,7 @@
             </select>
             <div class="flex gap-2">
                 @include('components.button', ['label' => __('messages.filter'), 'type' => 'secondary', 'buttonType' => 'submit'])
-                @if(request()->hasAny(['search', 'status', 'client_id']))
+                @if(request()->hasAny(['search', 'status', 'type', 'client_id']))
                     @include('components.button', ['label' => __('messages.clear'), 'type' => 'ghost', 'href' => route('projects.index')])
                 @endif
             </div>
@@ -60,6 +66,7 @@
                 <thead class="bg-gray-50/50">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.project_column') }}</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.type_column') }}</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.client_column') }}</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.status') }}</th>
                         <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{{ __('messages.timeline') }}</th>
@@ -76,6 +83,12 @@
                                     <p class="text-xs text-gray-500">{{ $project->code }}</p>
                                 </a>
                             </td>
+                            <td class="whitespace-nowrap px-6 py-4">
+                                @php $typeColors = \App\Models\Project::typeColors(); @endphp
+                                <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset {{ $typeColors[$project->type] ?? $typeColors['sales'] }}">
+                                    {{ $project->typeLabel() }}
+                                </span>
+                            </td>
                             <td class="px-6 py-4">
                                 @if($project->client)
                                     <div class="flex items-center gap-2">
@@ -84,6 +97,8 @@
                                         </div>
                                         <span class="text-sm text-gray-700">{{ $project->client->name }}</span>
                                     </div>
+                                @elseif($project->isCapex())
+                                    <span class="text-sm text-gray-500 italic">{{ __('messages.internal_project') }}</span>
                                 @else
                                     <span class="text-sm text-gray-400">—</span>
                                 @endif
@@ -118,7 +133,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-12 text-center">
+                            <td colspan="7" class="px-6 py-12 text-center">
                                 <div class="flex flex-col items-center">
                                     <svg class="h-12 w-12 text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />

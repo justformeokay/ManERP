@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\PurchaseOrderRequest;
+use App\Models\Department;
 use App\Models\Product;
 use App\Models\Project;
 use App\Models\PurchaseOrder;
@@ -33,6 +34,7 @@ class PurchaseOrderController extends Controller
             ->with(['supplier', 'warehouse'])
             ->search($request->input('search'))
             ->when($request->input('status'), fn($q, $s) => $q->where('status', $s))
+            ->when($request->input('purchase_type'), fn($q, $t) => $q->where('purchase_type', $t))
             ->latest()
             ->paginate(15)
             ->withQueryString();
@@ -42,12 +44,17 @@ class PurchaseOrderController extends Controller
 
     public function create()
     {
+        $salesProjects = Project::where('status', 'active')->where('type', 'sales')->orderBy('name')->get();
+        $capexProjects = Project::where('status', 'active')->where('type', 'internal_capex')->orderBy('name')->get();
+
         return view('purchasing.form', [
-            'order'      => new PurchaseOrder(['status' => 'draft', 'order_date' => now()]),
-            'suppliers'  => Supplier::active()->orderBy('name')->get(),
-            'warehouses' => Warehouse::active()->orderBy('name')->get(),
-            'projects'   => Project::where('status', 'active')->orderBy('name')->get(),
-            'products'   => Product::active()->orderBy('name')->get(),
+            'order'         => new PurchaseOrder(['status' => 'draft', 'order_date' => now(), 'purchase_type' => 'operational', 'priority' => 'normal']),
+            'suppliers'     => Supplier::active()->orderBy('name')->get(),
+            'warehouses'    => Warehouse::active()->orderBy('name')->get(),
+            'salesProjects' => $salesProjects,
+            'capexProjects' => $capexProjects,
+            'departments'   => Department::active()->orderBy('name')->get(),
+            'products'      => Product::active()->orderBy('name')->get(),
         ]);
     }
 
@@ -55,16 +62,28 @@ class PurchaseOrderController extends Controller
     {
         $data = $request->validated();
 
+        // F-14 HMAC verification for project_id
+        if (!empty($data['project_id']) && !empty($data['project_sig'])) {
+            $expected = PurchaseOrder::projectHmac((int) $data['project_id']);
+            if (! hash_equals($expected, $data['project_sig'])) {
+                abort(403, 'Financial data integrity check failed (F-14).');
+            }
+        }
+
         $order = PurchaseOrder::create([
-            'supplier_id'  => $data['supplier_id'],
-            'warehouse_id' => $data['warehouse_id'],
-            'project_id'   => $data['project_id'] ?? null,
-            'order_date'   => $data['order_date'],
-            'expected_date'=> $data['expected_date'] ?? null,
-            'tax_amount'   => $data['tax_amount'] ?? 0,
-            'notes'        => $data['notes'] ?? null,
-            'status'       => 'draft',
-            'created_by'   => auth()->id(),
+            'purchase_type' => $data['purchase_type'],
+            'supplier_id'   => $data['supplier_id'],
+            'warehouse_id'  => $data['warehouse_id'],
+            'department_id' => $data['department_id'],
+            'project_id'    => $data['project_id'] ?? null,
+            'priority'      => $data['priority'],
+            'order_date'    => $data['order_date'],
+            'expected_date' => $data['expected_date'] ?? null,
+            'tax_amount'    => $data['tax_amount'] ?? 0,
+            'justification' => $data['justification'] ?? null,
+            'notes'         => $data['notes'] ?? null,
+            'status'        => 'draft',
+            'created_by'    => auth()->id(),
         ]);
 
         foreach ($data['items'] as $item) {
@@ -85,7 +104,7 @@ class PurchaseOrderController extends Controller
 
     public function show(PurchaseOrder $order)
     {
-        $order->load(['supplier', 'warehouse', 'project', 'creator', 'items.product']);
+        $order->load(['supplier', 'warehouse', 'project', 'department', 'creator', 'items.product']);
 
         return view('purchasing.show', compact('order'));
     }
@@ -99,12 +118,17 @@ class PurchaseOrderController extends Controller
 
         $order->load('items');
 
+        $salesProjects = Project::where('status', 'active')->where('type', 'sales')->orderBy('name')->get();
+        $capexProjects = Project::where('status', 'active')->where('type', 'internal_capex')->orderBy('name')->get();
+
         return view('purchasing.form', [
-            'order'      => $order,
-            'suppliers'  => Supplier::active()->orderBy('name')->get(),
-            'warehouses' => Warehouse::active()->orderBy('name')->get(),
-            'projects'   => Project::where('status', 'active')->orderBy('name')->get(),
-            'products'   => Product::active()->orderBy('name')->get(),
+            'order'         => $order,
+            'suppliers'     => Supplier::active()->orderBy('name')->get(),
+            'warehouses'    => Warehouse::active()->orderBy('name')->get(),
+            'salesProjects' => $salesProjects,
+            'capexProjects' => $capexProjects,
+            'departments'   => Department::active()->orderBy('name')->get(),
+            'products'      => Product::active()->orderBy('name')->get(),
         ]);
     }
 
@@ -118,14 +142,26 @@ class PurchaseOrderController extends Controller
         $data = $request->validated();
         $oldData = $order->getOriginal();
 
+        // F-14 HMAC verification for project_id
+        if (!empty($data['project_id']) && !empty($data['project_sig'])) {
+            $expected = PurchaseOrder::projectHmac((int) $data['project_id']);
+            if (! hash_equals($expected, $data['project_sig'])) {
+                abort(403, 'Financial data integrity check failed (F-14).');
+            }
+        }
+
         $order->update([
-            'supplier_id'  => $data['supplier_id'],
-            'warehouse_id' => $data['warehouse_id'],
-            'project_id'   => $data['project_id'] ?? null,
-            'order_date'   => $data['order_date'],
-            'expected_date'=> $data['expected_date'] ?? null,
-            'tax_amount'   => $data['tax_amount'] ?? 0,
-            'notes'        => $data['notes'] ?? null,
+            'purchase_type' => $data['purchase_type'],
+            'supplier_id'   => $data['supplier_id'],
+            'warehouse_id'  => $data['warehouse_id'],
+            'department_id' => $data['department_id'],
+            'project_id'    => $data['project_id'] ?? null,
+            'priority'      => $data['priority'],
+            'order_date'    => $data['order_date'],
+            'expected_date' => $data['expected_date'] ?? null,
+            'tax_amount'    => $data['tax_amount'] ?? 0,
+            'justification' => $data['justification'] ?? null,
+            'notes'         => $data['notes'] ?? null,
         ]);
 
         $order->items()->delete();
