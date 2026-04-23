@@ -390,6 +390,7 @@
         }
 
         .status-draft { background: #f1f5f9; color: #475569; }
+        .status-sent { background: #dbeafe; color: #1e40af; }
         .status-posted { background: #dbeafe; color: #1e40af; }
         .status-confirmed { background: #dbeafe; color: #1e40af; }
         .status-partial { background: #fef3c7; color: #92400e; }

@@ -87,6 +87,7 @@ class DatabaseSeeder extends Seeder
             BankSeeder::class,
             DepartmentSeeder::class,
             PositionSeeder::class,
+            EducationArticleSeeder::class,
         ]);
     }
 }

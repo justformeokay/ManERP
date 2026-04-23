@@ -48,10 +48,89 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {{-- Left: Request Details --}}
             <div class="lg:col-span-2 space-y-6">
+
+                {{-- Purchase Type Selector (TUGAS 2) --}}
+                <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+                    <h3 class="text-base font-semibold text-gray-900 mb-1">{{ __('messages.pr_purchase_type_label') }} <span class="text-red-500">*</span></h3>
+                    <p class="text-sm text-gray-500 mb-4">{{ __('messages.pr_purchase_type_hint') }}</p>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        {{-- Operational --}}
+                        <label class="relative cursor-pointer rounded-xl border-2 p-4 transition-all"
+                               :class="purchaseType === 'operational' ? 'border-gray-600 bg-gray-50 ring-1 ring-gray-300' : 'border-gray-200 bg-gray-50/50 hover:border-gray-300'">
+                            <input type="radio" name="purchase_type" value="operational" class="sr-only" x-model="purchaseType">
+                            <div class="flex items-center gap-3">
+                                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+                                     :class="purchaseType === 'operational' ? 'bg-gray-200 text-gray-700' : 'bg-gray-100 text-gray-400'">
+                                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-semibold" :class="purchaseType === 'operational' ? 'text-gray-900' : 'text-gray-600'">{{ __('messages.po_purchase_type_operational') }}</p>
+                                    <p class="text-xs" :class="purchaseType === 'operational' ? 'text-gray-600' : 'text-gray-400'">{{ __('messages.po_type_operational_desc') }}</p>
+                                </div>
+                            </div>
+                            <div x-show="purchaseType === 'operational'" class="absolute top-3 right-3">
+                                <svg class="h-5 w-5 text-gray-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd"/></svg>
+                            </div>
+                        </label>
+
+                        {{-- Project Sales --}}
+                        <label class="relative cursor-pointer rounded-xl border-2 p-4 transition-all"
+                               :class="purchaseType === 'project_sales' ? 'border-blue-500 bg-blue-50/50 ring-1 ring-blue-200' : 'border-gray-200 bg-gray-50/50 hover:border-gray-300'">
+                            <input type="radio" name="purchase_type" value="project_sales" class="sr-only" x-model="purchaseType">
+                            <div class="flex items-center gap-3">
+                                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+                                     :class="purchaseType === 'project_sales' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-400'">
+                                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-semibold" :class="purchaseType === 'project_sales' ? 'text-blue-900' : 'text-gray-600'">{{ __('messages.po_purchase_type_project_sales') }}</p>
+                                    <p class="text-xs" :class="purchaseType === 'project_sales' ? 'text-blue-600' : 'text-gray-400'">{{ __('messages.po_type_sales_desc') }}</p>
+                                </div>
+                            </div>
+                            <div x-show="purchaseType === 'project_sales'" class="absolute top-3 right-3">
+                                <svg class="h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd"/></svg>
+                            </div>
+                        </label>
+
+                        {{-- CAPEX --}}
+                        <label class="relative cursor-pointer rounded-xl border-2 p-4 transition-all"
+                               :class="purchaseType === 'project_capex' ? 'border-violet-500 bg-violet-50/50 ring-1 ring-violet-200' : 'border-gray-200 bg-gray-50/50 hover:border-gray-300'">
+                            <input type="radio" name="purchase_type" value="project_capex" class="sr-only" x-model="purchaseType">
+                            <div class="flex items-center gap-3">
+                                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+                                     :class="purchaseType === 'project_capex' ? 'bg-violet-100 text-violet-600' : 'bg-gray-100 text-gray-400'">
+                                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-semibold" :class="purchaseType === 'project_capex' ? 'text-violet-900' : 'text-gray-600'">{{ __('messages.po_purchase_type_project_capex') }}</p>
+                                    <p class="text-xs" :class="purchaseType === 'project_capex' ? 'text-violet-600' : 'text-gray-400'">{{ __('messages.po_type_capex_desc') }}</p>
+                                </div>
+                            </div>
+                            <div x-show="purchaseType === 'project_capex'" class="absolute top-3 right-3">
+                                <svg class="h-5 w-5 text-violet-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd"/></svg>
+                            </div>
+                        </label>
+                    </div>
+                    @error('purchase_type') <p class="mt-2 text-xs text-red-600">{{ $message }}</p> @enderror
+                </div>
+
                 <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100 space-y-5">
                     <h3 class="text-base font-semibold text-gray-900">{{ __('messages.pr_details_section') }}</h3>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="department_id" class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.pr_department_label') }} <span class="text-red-500">*</span></label>
+                            <select id="department_id" name="department_id" required
+                                class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                                <option value="">{{ __('messages.pr_select_department') }}</option>
+                                @foreach($departments as $dept)
+                                    <option value="{{ $dept->id }}" @selected(old('department_id', $pr->department_id) == $dept->id)>{{ $dept->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('department_id') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                        </div>
+
                         <div>
                             <label for="priority" class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.priority_header') }} <span class="text-red-500">*</span></label>
                             <select id="priority" name="priority" required
@@ -82,10 +161,11 @@
                     </div>
 
                     <div>
-                        <label for="reason" class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.pr_reason_label') }}</label>
-                        <textarea id="reason" name="reason" rows="3"
+                        <label for="reason" class="block text-sm font-medium text-gray-700 mb-1">{{ __('messages.pr_justification_label') }} <span class="text-red-500">*</span></label>
+                        <textarea id="reason" name="reason" rows="3" required
                             class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary-500"
-                            placeholder="{{ __('messages.pr_reason_placeholder') }}">{{ old('reason', $pr->reason) }}</textarea>
+                            placeholder="{{ __('messages.pr_justification_placeholder') }}">{{ old('reason', $pr->reason) }}</textarea>
+                        @error('reason') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                     </div>
                 </div>
 
@@ -182,6 +262,7 @@
         function prForm() {
             return {
                 items: @json(old('items', $initialItems)),
+                purchaseType: @json(old('purchase_type', $pr->purchase_type ?? 'operational')),
                 addItem() {
                     this.items.push({ product_id: '', quantity: '', estimated_price: '', specification: '', notes: '' });
                 },

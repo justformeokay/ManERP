@@ -17,7 +17,7 @@ class PurchaseOrder extends Model
         'supplier_id', 'warehouse_id', 'project_id', 'purchase_request_id',
         'purchase_type', 'department_id', 'priority', 'justification',
         'status', 'order_date', 'expected_date', 'subtotal', 'tax_amount',
-        'total', 'notes', 'created_by',
+        'total', 'notes', 'payment_terms', 'shipping_address', 'created_by',
     ];
 
     protected function casts(): array
@@ -60,6 +60,11 @@ class PurchaseOrder extends Model
     public function items(): HasMany
     {
         return $this->hasMany(PurchaseOrderItem::class);
+    }
+
+    public function purchaseRequest(): BelongsTo
+    {
+        return $this->belongsTo(PurchaseRequest::class);
     }
 
     // Scopes
@@ -164,5 +169,10 @@ class PurchaseOrder extends Model
     public static function projectHmac(int $projectId): string
     {
         return hash_hmac('sha256', 'po-project:' . $projectId, config('app.key'));
+    }
+
+    public static function paymentTermsOptions(): array
+    {
+        return ['cash', 'cod', 'net_15', 'net_30', 'net_60', 'net_90'];
     }
 }

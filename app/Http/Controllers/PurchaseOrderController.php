@@ -82,6 +82,8 @@ class PurchaseOrderController extends Controller
             'tax_amount'    => $data['tax_amount'] ?? 0,
             'justification' => $data['justification'] ?? null,
             'notes'         => $data['notes'] ?? null,
+            'payment_terms' => $data['payment_terms'] ?? 'net_30',
+            'shipping_address' => $data['shipping_address'] ?? null,
             'status'        => 'draft',
             'created_by'    => auth()->id(),
         ]);
@@ -104,7 +106,7 @@ class PurchaseOrderController extends Controller
 
     public function show(PurchaseOrder $order)
     {
-        $order->load(['supplier', 'warehouse', 'project', 'department', 'creator', 'items.product']);
+        $order->load(['supplier', 'warehouse', 'project', 'department', 'creator', 'items.product', 'purchaseRequest']);
 
         return view('purchasing.show', compact('order'));
     }
@@ -162,6 +164,8 @@ class PurchaseOrderController extends Controller
             'tax_amount'    => $data['tax_amount'] ?? 0,
             'justification' => $data['justification'] ?? null,
             'notes'         => $data['notes'] ?? null,
+            'payment_terms' => $data['payment_terms'] ?? 'net_30',
+            'shipping_address' => $data['shipping_address'] ?? null,
         ]);
 
         $order->items()->delete();

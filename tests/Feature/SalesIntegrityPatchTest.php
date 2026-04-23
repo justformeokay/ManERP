@@ -171,7 +171,7 @@ class SalesIntegrityPatchTest extends TestCase
      * Confirm → Deliver → Invoice a sales order through the full lifecycle.
      * Returns the created Invoice.
      */
-    private function fullLifecycle(SalesOrder $order): Invoice
+    private function fullLifecycle(SalesOrder $order, array $invoiceExtra = []): Invoice
     {
         // Confirm
         $this->actingAs($this->admin)->post(route('sales.confirm', $order));
@@ -181,8 +181,11 @@ class SalesIntegrityPatchTest extends TestCase
         $this->actingAs($this->admin)->post(route('sales.deliver', $order));
         $order->refresh();
 
-        // Create invoice via FinanceService
-        $invoice = $this->financeService->createInvoiceFromSalesOrder($order);
+        // Create invoice via FinanceService (now creates as draft)
+        $invoice = $this->financeService->createInvoiceFromSalesOrder($order, $invoiceExtra);
+
+        // Approve invoice (creates journal entry — moved from create to approve)
+        $this->financeService->approveInvoice($invoice);
 
         return $invoice;
     }
@@ -236,7 +239,7 @@ class SalesIntegrityPatchTest extends TestCase
 
         // No tax
         $order = $this->createSalesOrder($product, 5, 100000, 0);
-        $invoice = $this->fullLifecycle($order);
+        $invoice = $this->fullLifecycle($order, ['include_tax' => false]);
 
         $journal = JournalEntry::where('reference', $invoice->invoice_number)->first();
         $this->assertNotNull($journal);
@@ -420,7 +423,10 @@ class SalesIntegrityPatchTest extends TestCase
         $this->actingAs($this->admin)->post(route('sales.confirm', $order));
         $this->actingAs($this->admin)->post(route('sales.deliver', $order->fresh()));
 
-        // Rename AR account code so resolveAccount('1200') fails → RuntimeException
+        // Create invoice (now draft — no journal yet)
+        $invoice = $this->financeService->createInvoiceFromSalesOrder($order->fresh());
+
+        // Rename AR account code so resolveAccount('1200') fails → RuntimeException on approve
         \Illuminate\Support\Facades\DB::table('chart_of_accounts')
             ->where('id', $this->arAccount->id)
             ->update(['code' => '1200_DISABLED']);
@@ -428,7 +434,7 @@ class SalesIntegrityPatchTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage("Required Chart of Account '1200' not found");
 
-        $this->financeService->createInvoiceFromSalesOrder($order->fresh());
+        $this->financeService->approveInvoice($invoice);
     }
 
     public function test_exception_on_missing_ppn_account(): void
@@ -442,7 +448,10 @@ class SalesIntegrityPatchTest extends TestCase
         $this->actingAs($this->admin)->post(route('sales.confirm', $order));
         $this->actingAs($this->admin)->post(route('sales.deliver', $order->fresh()));
 
-        // Rename PPN account code so resolveAccount('2110') fails → RuntimeException
+        // Create invoice (now draft — no journal yet)
+        $invoice = $this->financeService->createInvoiceFromSalesOrder($order->fresh());
+
+        // Rename PPN account code so resolveAccount('2110') fails → RuntimeException on approve
         \Illuminate\Support\Facades\DB::table('chart_of_accounts')
             ->where('id', $this->ppnAccount->id)
             ->update(['code' => '2110_DISABLED']);
@@ -450,7 +459,7 @@ class SalesIntegrityPatchTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage("Required Chart of Account '2110' not found");
 
-        $this->financeService->createInvoiceFromSalesOrder($order->fresh());
+        $this->financeService->approveInvoice($invoice);
     }
 
     // ═══════════════════════════════════════════════════════════════

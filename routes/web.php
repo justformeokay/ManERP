@@ -53,6 +53,7 @@ use App\Http\Controllers\SystemMaintenanceController;
 use App\Http\Controllers\UserGuideController;
 use App\Http\Controllers\SupportTicketController;
 use App\Http\Controllers\AboutController;
+use App\Http\Controllers\AcademyController;
 use App\Http\Controllers\ImpersonationController;
 use App\Http\Controllers\LicenseController;
 use Illuminate\Support\Facades\Route;
@@ -317,7 +318,10 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/', [InvoiceController::class, 'index'])->name('index')->middleware('permission:finance.view');
             Route::get('/create', [InvoiceController::class, 'create'])->name('create')->middleware('permission:finance.create');
             Route::post('/', [InvoiceController::class, 'store'])->name('store')->middleware(['permission:finance.create', 'fiscal-lock:invoice_date']);
+            Route::get('/so-items', [InvoiceController::class, 'salesOrderItems'])->name('so-items')->middleware('permission:finance.view');
             Route::get('/{invoice}', [InvoiceController::class, 'show'])->name('show')->middleware('permission:finance.view');
+            Route::post('/{invoice}/approve', [InvoiceController::class, 'approve'])->name('approve')->middleware(['permission:finance.edit', 'fiscal-lock']);
+            Route::post('/{invoice}/send', [InvoiceController::class, 'send'])->name('send')->middleware('permission:finance.edit');
             Route::post('/{invoice}/cancel', [InvoiceController::class, 'cancel'])->name('cancel')->middleware(['permission:finance.delete', 'fiscal-lock']);
         });
 
@@ -596,6 +600,15 @@ Route::middleware(['auth'])->group(function () {
 
         // About
         Route::get('/about', [AboutController::class, 'index'])->name('about');
+
+        // ManERP Academy
+        Route::prefix('academy')->name('academy.')->group(function () {
+            Route::get('/', [AcademyController::class, 'index'])->name('index');
+            Route::get('/glossary', [AcademyController::class, 'glossary'])->name('glossary');
+            Route::get('/workflows', [AcademyController::class, 'workflows'])->name('workflows');
+            Route::get('/tooltip', [AcademyController::class, 'tooltip'])->name('tooltip');
+            Route::get('/articles/{article}', [AcademyController::class, 'show'])->name('show');
+        });
 
         // License Management
         Route::prefix('license')->name('license.')->middleware('permission:admin.manage_license')->group(function () {

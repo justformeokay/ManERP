@@ -34,7 +34,11 @@
 
         {{-- Project Type Selector --}}
         <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-            <h3 class="text-base font-semibold text-gray-900 mb-1">{{ __('messages.project_type_label') }} <span class="text-red-500">*</span></h3>
+            <h3 class="text-base font-semibold text-gray-900 mb-1">
+                {{ __('messages.project_type_label') }}
+                @include('components.academy-tooltip', ['slug' => 'capex'])
+                <span class="text-red-500">*</span>
+            </h3>
             <p class="text-sm text-gray-500 mb-4">{{ __('messages.project_type_hint') }}</p>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">

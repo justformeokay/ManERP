@@ -292,6 +292,12 @@ class ViewServiceProvider extends ServiceProvider
                 'icon' => $svg('M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25'),
             ],
             [
+                'label' => __('messages.academy_title'),
+                'url' => route('academy.index'),
+                'active' => 'academy.*',
+                'icon' => $svg('M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222'),
+            ],
+            [
                 'label' => __('messages.about_application'),
                 'url' => route('about'),
                 'active' => 'about',

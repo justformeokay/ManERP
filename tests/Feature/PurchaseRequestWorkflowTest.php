@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Department;
 use App\Models\Product;
 use App\Models\PurchaseRequest;
 use App\Models\Setting;
@@ -16,11 +17,13 @@ class PurchaseRequestWorkflowTest extends TestCase
     use RefreshDatabase;
 
     private User $user;
+    private Department $department;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->user = User::factory()->create(['role' => 'admin', 'status' => 'active']);
+        $this->department = Department::create(['name' => 'General', 'code' => 'GEN', 'is_active' => true]);
 
         // Ensure settings exist for format_currency helper
         if (class_exists(Setting::class) && method_exists(Setting::class, 'query')) {
@@ -54,6 +57,8 @@ class PurchaseRequestWorkflowTest extends TestCase
 
         $response = $this->actingAs($this->user)->post(route('purchase-requests.store'), [
             'priority'      => 'normal',
+            'purchase_type' => 'operational',
+            'department_id' => $this->department->id,
             'required_date' => now()->addDays(7)->format('Y-m-d'),
             'reason'        => 'Need raw materials for production',
             'items'         => [
@@ -141,10 +146,13 @@ class PurchaseRequestWorkflowTest extends TestCase
         ]);
 
         $pr = PurchaseRequest::create([
-            'number'       => 'PR-99996',
-            'requested_by' => $this->user->id,
-            'status'       => 'approved',
-            'priority'     => 'normal',
+            'number'        => 'PR-99996',
+            'requested_by'  => $this->user->id,
+            'status'        => 'approved',
+            'priority'      => 'normal',
+            'purchase_type' => 'operational',
+            'department_id' => $this->department->id,
+            'reason'        => 'Approved request',
         ]);
         $pr->items()->create([
             'product_id'      => $product->id,
@@ -153,12 +161,17 @@ class PurchaseRequestWorkflowTest extends TestCase
             'total'           => 500,
         ]);
 
+        $sig = PurchaseRequest::conversionHmac($pr->id);
+
         $response = $this->actingAs($this->user)->post(
             route('purchase-requests.store-conversion', $pr),
             [
-                'supplier_id'  => $supplier->id,
-                'warehouse_id' => $warehouse->id,
-                'expected_date' => now()->addDays(14)->format('Y-m-d'),
+                'supplier_id'    => $supplier->id,
+                'warehouse_id'   => $warehouse->id,
+                'department_id'  => $this->department->id,
+                'payment_terms'  => 'net_30',
+                'expected_date'  => now()->addDays(14)->format('Y-m-d'),
+                'conversion_sig' => $sig,
             ]
         );
 

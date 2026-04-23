@@ -12,7 +12,7 @@ class SalesOrderItem extends Model
 
     protected $fillable = [
         'sales_order_id', 'product_id', 'quantity',
-        'delivered_quantity', 'unit_price', 'discount', 'total',
+        'delivered_quantity', 'invoiced_quantity', 'unit_price', 'discount', 'total',
     ];
 
     protected function casts(): array
@@ -20,10 +20,19 @@ class SalesOrderItem extends Model
         return [
             'quantity'           => 'decimal:2',
             'delivered_quantity' => 'decimal:2',
+            'invoiced_quantity'  => 'decimal:2',
             'unit_price'        => 'decimal:2',
             'discount'          => 'decimal:2',
             'total'             => 'decimal:2',
         ];
+    }
+
+    /**
+     * Remaining quantity available to be invoiced.
+     */
+    public function getRemainingInvoiceableAttribute(): float
+    {
+        return round((float) $this->quantity - (float) $this->invoiced_quantity, 2);
     }
 
     // Relationships

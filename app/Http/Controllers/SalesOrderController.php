@@ -215,9 +215,11 @@ class SalesOrderController extends Controller
             $available = $stock ? $stock->availableQuantity() : 0;
 
             if ($available < $item->quantity) {
-                return back()->withErrors([
-                    'stock' => "Insufficient stock for {$item->product->name}. Available: {$available}, Required: {$item->quantity}",
-                ]);
+                return back()->with('error', __('messages.insufficient_stock_confirm', [
+                    'product'   => $item->product->name,
+                    'available' => $available,
+                    'required'  => $item->quantity,
+                ]));
             }
         }
 

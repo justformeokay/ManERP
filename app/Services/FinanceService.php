@@ -17,44 +17,122 @@ class FinanceService
 
     /**
      * Create an invoice from a confirmed/shipped/completed sales order.
+     * Supports partial invoicing via $extra['items'] array.
      */
     public function createInvoiceFromSalesOrder(SalesOrder $salesOrder, array $extra = []): Invoice
     {
         return DB::transaction(function () use ($salesOrder, $extra) {
             $salesOrder->load('items.product', 'client');
 
+            $items = $extra['items'] ?? [];
+            $taxRate = (float) ($extra['tax_rate'] ?? 11); // PPN 11% default
+
+            // Calculate totals from line items (partial invoicing support)
+            $subtotal = 0;
+            $invoiceItems = [];
+
+            if (!empty($items)) {
+                // Partial invoicing: use submitted quantities
+                foreach ($salesOrder->items as $soItem) {
+                    $key = (string) $soItem->id;
+                    if (!isset($items[$key]) || (float) $items[$key]['quantity'] <= 0) {
+                        continue;
+                    }
+
+                    $qty = min((float) $items[$key]['quantity'], $soItem->remaining_invoiceable);
+                    if ($qty <= 0) continue;
+
+                    $lineDiscount = round(($soItem->discount / max($soItem->quantity, 1)) * $qty, 2);
+                    $lineTotal = round(($qty * (float) $soItem->unit_price) - $lineDiscount, 2);
+                    $subtotal += $lineTotal;
+
+                    $invoiceItems[] = [
+                        'so_item' => $soItem,
+                        'quantity' => $qty,
+                        'unit_price' => $soItem->unit_price,
+                        'discount' => $lineDiscount,
+                        'total' => $lineTotal,
+                    ];
+                }
+            } else {
+                // Full invoicing: take all remaining quantities
+                foreach ($salesOrder->items as $soItem) {
+                    $qty = $soItem->remaining_invoiceable;
+                    if ($qty <= 0) continue;
+
+                    $lineDiscount = round(($soItem->discount / max($soItem->quantity, 1)) * $qty, 2);
+                    $lineTotal = round(($qty * (float) $soItem->unit_price) - $lineDiscount, 2);
+                    $subtotal += $lineTotal;
+
+                    $invoiceItems[] = [
+                        'so_item' => $soItem,
+                        'quantity' => $qty,
+                        'unit_price' => $soItem->unit_price,
+                        'discount' => $lineDiscount,
+                        'total' => $lineTotal,
+                    ];
+                }
+            }
+
+            // Calculate PPN
+            $includeTax = (bool) ($extra['include_tax'] ?? true);
+            $taxAmount = $includeTax ? round($subtotal * $taxRate / 100, 2) : 0;
+            $dpp = $subtotal;
+            $totalAmount = round($subtotal + $taxAmount - 0, 2); // discount already in line items
+
             $invoice = Invoice::create([
                 'sales_order_id' => $salesOrder->id,
                 'client_id' => $salesOrder->client_id,
-                'invoice_date' => now()->toDateString(),
+                'invoice_date' => $extra['invoice_date'] ?? now()->toDateString(),
                 'due_date' => $extra['due_date'] ?? now()->addDays(30)->toDateString(),
-                'subtotal' => $salesOrder->subtotal,
-                'tax_amount' => $salesOrder->tax_amount,
-                'discount' => $salesOrder->discount,
-                'total_amount' => $salesOrder->total,
-                'status' => 'unpaid',
+                'subtotal' => $subtotal,
+                'tax_amount' => $taxAmount,
+                'tax_rate' => $includeTax ? $taxRate : 0,
+                'dpp' => $dpp,
+                'discount' => 0,
+                'total_amount' => $totalAmount,
+                'status' => 'draft',
                 'notes' => $extra['notes'] ?? null,
             ]);
 
-            foreach ($salesOrder->items as $item) {
+            foreach ($invoiceItems as $line) {
                 $invoice->items()->create([
-                    'product_id' => $item->product_id,
-                    'description' => $item->product->name ?? null,
-                    'quantity' => $item->quantity,
-                    'unit_price' => $item->unit_price,
-                    'discount' => $item->discount,
-                    'total' => $item->total,
+                    'product_id' => $line['so_item']->product_id,
+                    'description' => $line['so_item']->product->name ?? null,
+                    'quantity' => $line['quantity'],
+                    'unit_price' => $line['unit_price'],
+                    'discount' => $line['discount'],
+                    'total' => $line['total'],
                 ]);
+
+                // Track invoiced quantity on SO items
+                $line['so_item']->increment('invoiced_quantity', $line['quantity']);
             }
-
-            // Mark sales order as completed
-            $salesOrder->update(['status' => 'completed']);
-
-            // Auto-create journal entry: Dr AR / Cr Revenue / Cr PPN Keluaran
-            $this->createInvoiceJournal($invoice);
 
             return $invoice;
         });
+    }
+
+    /**
+     * Approve (confirm) an invoice: transition to unpaid, create journal entry.
+     */
+    public function approveInvoice(Invoice $invoice): void
+    {
+        DB::transaction(function () use ($invoice) {
+            $invoice->update(['status' => 'unpaid']);
+            $this->createInvoiceJournal($invoice);
+        });
+    }
+
+    /**
+     * Mark invoice as sent to client.
+     */
+    public function sendInvoice(Invoice $invoice): void
+    {
+        $invoice->update([
+            'status' => 'sent',
+            'sent_at' => now(),
+        ]);
     }
 
     /**
@@ -136,7 +214,8 @@ class FinanceService
             "Invoice {$invoice->invoice_number} issued",
             $entries,
             Invoice::class,
-            $invoice->id
+            $invoice->id,
+            'system'
         );
     }
 
@@ -175,7 +254,8 @@ class FinanceService
             "Reversing journal — invoice {$invoice->invoice_number} cancelled",
             $entries,
             Invoice::class,
-            $invoice->id
+            $invoice->id,
+            'system'
         );
     }
 
@@ -198,7 +278,8 @@ class FinanceService
                 ['account_id' => $ar->id, 'debit' => 0, 'credit' => $payment->amount],
             ],
             Payment::class,
-            $payment->id
+            $payment->id,
+            'system'
         );
     }
 

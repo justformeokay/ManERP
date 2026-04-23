@@ -153,6 +153,7 @@ class PDFService
 
         return match ($status) {
             'draft'     => 'DRAFT',
+            'sent'      => 'SENT',
             'cancelled' => 'CANCELLED',
             'paid'      => 'PAID',
             default     => null,

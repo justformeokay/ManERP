@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Department;
 use App\Models\Product;
 use App\Models\Project;
 use App\Models\PurchaseOrder;
@@ -36,9 +37,10 @@ class PurchaseRequestController extends Controller
     public function create()
     {
         return view('purchasing.requests.form', [
-            'pr'       => new PurchaseRequest(['priority' => 'normal', 'status' => 'draft']),
-            'products' => Product::active()->orderBy('name')->get(),
-            'projects' => Project::orderBy('name')->get(),
+            'pr'          => new PurchaseRequest(['priority' => 'normal', 'status' => 'draft', 'purchase_type' => 'operational']),
+            'products'    => Product::active()->orderBy('name')->get(),
+            'projects'    => Project::orderBy('name')->get(),
+            'departments' => Department::active()->orderBy('name')->get(),
         ]);
     }
 
@@ -46,9 +48,11 @@ class PurchaseRequestController extends Controller
     {
         $request->validate([
             'priority'                  => 'required|in:low,normal,high,urgent',
+            'purchase_type'             => 'required|in:operational,project_sales,project_capex',
+            'department_id'             => 'required|exists:departments,id',
             'required_date'             => 'nullable|date|after_or_equal:today',
             'project_id'                => 'nullable|exists:projects,id',
-            'reason'                    => 'nullable|string|max:1000',
+            'reason'                    => 'required|string|max:1000',
             'items'                     => 'required|array|min:1',
             'items.*.product_id'        => 'required|exists:products,id',
             'items.*.quantity'          => 'required|numeric|min:0.01',
@@ -61,6 +65,8 @@ class PurchaseRequestController extends Controller
             $pr = PurchaseRequest::create([
                 'requested_by'  => Auth::id(),
                 'priority'      => $request->priority,
+                'purchase_type' => $request->purchase_type,
+                'department_id' => $request->department_id,
                 'required_date' => $request->required_date,
                 'project_id'    => $request->project_id,
                 'reason'        => $request->reason,
@@ -83,7 +89,7 @@ class PurchaseRequestController extends Controller
 
     public function show(PurchaseRequest $purchaseRequest)
     {
-        $purchaseRequest->load(['requester', 'approver', 'items.product', 'project', 'purchaseOrder']);
+        $purchaseRequest->load(['requester', 'approver', 'items.product', 'project', 'department', 'purchaseOrder']);
 
         return view('purchasing.requests.show', compact('purchaseRequest'));
     }
@@ -97,9 +103,10 @@ class PurchaseRequestController extends Controller
         $purchaseRequest->load('items');
 
         return view('purchasing.requests.form', [
-            'pr'       => $purchaseRequest,
-            'products' => Product::active()->orderBy('name')->get(),
-            'projects' => Project::orderBy('name')->get(),
+            'pr'          => $purchaseRequest,
+            'products'    => Product::active()->orderBy('name')->get(),
+            'projects'    => Project::orderBy('name')->get(),
+            'departments' => Department::active()->orderBy('name')->get(),
         ]);
     }
 
@@ -111,9 +118,11 @@ class PurchaseRequestController extends Controller
 
         $request->validate([
             'priority'                  => 'required|in:low,normal,high,urgent',
+            'purchase_type'             => 'required|in:operational,project_sales,project_capex',
+            'department_id'             => 'required|exists:departments,id',
             'required_date'             => 'nullable|date|after_or_equal:today',
             'project_id'                => 'nullable|exists:projects,id',
-            'reason'                    => 'nullable|string|max:1000',
+            'reason'                    => 'required|string|max:1000',
             'items'                     => 'required|array|min:1',
             'items.*.product_id'        => 'required|exists:products,id',
             'items.*.quantity'          => 'required|numeric|min:0.01',
@@ -124,11 +133,13 @@ class PurchaseRequestController extends Controller
 
         DB::transaction(function () use ($request, $purchaseRequest) {
             $purchaseRequest->update([
-                'priority'      => $request->priority,
-                'required_date' => $request->required_date,
-                'project_id'    => $request->project_id,
-                'reason'        => $request->reason,
-                'status'        => 'draft',
+                'priority'         => $request->priority,
+                'purchase_type'    => $request->purchase_type,
+                'department_id'    => $request->department_id,
+                'required_date'    => $request->required_date,
+                'project_id'       => $request->project_id,
+                'reason'           => $request->reason,
+                'status'           => 'draft',
                 'rejection_reason' => null,
             ]);
 
@@ -183,21 +194,54 @@ class PurchaseRequestController extends Controller
             return back()->with('error', __('messages.pr_must_be_approved'));
         }
 
-        $purchaseRequest->load('items.product');
+        // Duplicate prevention: if already converted (has linked PO)
+        if ($purchaseRequest->purchaseOrder) {
+            return back()->with('error', __('messages.pr_already_converted'));
+        }
 
-        $suppliers  = Supplier::where('status', 'active')->orderBy('name')->get();
-        $warehouses = Warehouse::where('is_active', true)->orderBy('name')->get();
+        $purchaseRequest->load('items.product', 'department');
 
-        return view('purchasing.requests.convert', compact('purchaseRequest', 'suppliers', 'warehouses'));
+        $suppliers   = Supplier::where('status', 'active')->orderBy('name')->get();
+        $warehouses  = Warehouse::where('is_active', true)->orderBy('name')->get();
+        $departments = Department::active()->orderBy('name')->get();
+
+        // HMAC signature for conversion integrity (F-14)
+        $conversionSig = PurchaseRequest::conversionHmac($purchaseRequest->id);
+
+        return view('purchasing.requests.convert', compact(
+            'purchaseRequest', 'suppliers', 'warehouses', 'departments', 'conversionSig'
+        ));
     }
 
     public function storeConversion(Request $request, PurchaseRequest $purchaseRequest)
     {
+        // Status guard
+        if ($purchaseRequest->status !== 'approved') {
+            return back()->with('error', __('messages.pr_must_be_approved'));
+        }
+
+        // Duplicate conversion guard
+        if ($purchaseRequest->purchaseOrder) {
+            return back()->with('error', __('messages.pr_already_converted'));
+        }
+
+        // HMAC integrity check (F-14 audit finding)
+        $expectedSig = PurchaseRequest::conversionHmac($purchaseRequest->id);
+        if (! hash_equals($expectedSig, $request->input('conversion_sig', ''))) {
+            abort(403, 'Financial data integrity check failed (F-14).');
+        }
+
         $request->validate([
-            'supplier_id'  => 'required|exists:suppliers,id',
-            'warehouse_id' => 'required|exists:warehouses,id',
-            'expected_date' => 'nullable|date|after_or_equal:today',
+            'supplier_id'       => 'required|exists:suppliers,id',
+            'warehouse_id'      => 'required|exists:warehouses,id',
+            'department_id'     => 'required|exists:departments,id',
+            'payment_terms'     => 'required|in:cash,cod,net_15,net_30,net_60,net_90',
+            'shipping_address'  => 'nullable|string|max:500',
+            'expected_date'     => 'nullable|date|after_or_equal:today',
+            'budget_override'   => 'nullable|boolean',
         ]);
+
+        $purchaseRequest->load('items');
 
         $po = DB::transaction(function () use ($request, $purchaseRequest) {
             $po = PurchaseOrder::create([
@@ -205,6 +249,11 @@ class PurchaseRequestController extends Controller
                 'supplier_id'         => $request->supplier_id,
                 'warehouse_id'        => $request->warehouse_id,
                 'project_id'          => $purchaseRequest->project_id,
+                'purchase_type'       => $purchaseRequest->purchase_type ?? 'operational',
+                'department_id'       => $request->department_id,
+                'priority'            => $purchaseRequest->priority,
+                'payment_terms'       => $request->payment_terms,
+                'shipping_address'    => $request->shipping_address,
                 'status'              => 'draft',
                 'order_date'          => now()->toDateString(),
                 'expected_date'       => $request->expected_date,
@@ -225,6 +274,12 @@ class PurchaseRequestController extends Controller
 
             return $po;
         });
+
+        // Audit log for conversion action
+        $this->logAction($purchaseRequest, 'convert_to_po',
+            "PR #{$purchaseRequest->number} converted to PO #{$po->number}",
+            ['pr_id' => $purchaseRequest->id, 'pr_number' => $purchaseRequest->number]
+        );
 
         return redirect()->route('purchasing.show', $po)
             ->with('success', __('messages.pr_converted_to_po', ['po' => $po->number]));

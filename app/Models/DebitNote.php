@@ -4,11 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class DebitNote extends Model
 {
     protected $fillable = [
-        'debit_note_number', 'supplier_bill_id', 'supplier_id', 'date',
+        'debit_note_number', 'supplier_bill_id', 'supplier_id', 'warehouse_id', 'date',
         'amount', 'tax_amount', 'total_amount', 'reason', 'notes',
         'status', 'journal_entry_id', 'created_by',
     ];
@@ -38,9 +39,19 @@ class DebitNote extends Model
         return $this->belongsTo(JournalEntry::class);
     }
 
+    public function warehouse(): BelongsTo
+    {
+        return $this->belongsTo(Warehouse::class);
+    }
+
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function items(): HasMany
+    {
+        return $this->hasMany(DebitNoteItem::class);
     }
 
     public function isDraft(): bool

@@ -80,7 +80,12 @@
                             <strong>Total Due:</strong> {{ \App\Services\PDFService::formatCurrency($invoice->total_amount - $invoice->paid_amount, $company->currency) }}<br>
                             <strong>Payment Terms:</strong> Net {{ $invoice->due_date->diffInDays($invoice->invoice_date) }} days<br>
                             @if($invoice->paid_amount > 0)
-                                <strong>Paid:</strong> {{ \App\Services\PDFService::formatCurrency($invoice->paid_amount, $company->currency) }}
+                                <strong>Paid:</strong> {{ \App\Services\PDFService::formatCurrency($invoice->paid_amount, $company->currency) }}<br>
+                            @endif
+                            @if($company->bank_name)
+                                <br><strong>Bank:</strong> {{ $company->bank_name }}<br>
+                                @if($company->bank_account_number)<strong>Account No:</strong> {{ $company->bank_account_number }}<br>@endif
+                                @if($company->bank_account_name)<strong>Account Name:</strong> {{ $company->bank_account_name }}@endif
                             @endif
                         </div>
                     </div>
@@ -140,7 +145,11 @@
                         </div>
                         @if($invoice->tax_amount > 0)
                         <div class="totals-row">
-                            <span class="label">Tax</span>
+                            <span class="label">DPP (Tax Base)</span>
+                            <span class="value">{{ \App\Services\PDFService::formatCurrency($invoice->subtotal - ($invoice->discount ?? 0), $company->currency) }}</span>
+                        </div>
+                        <div class="totals-row">
+                            <span class="label">PPN {{ $invoice->tax_rate ?? 11 }}%</span>
                             <span class="value">{{ \App\Services\PDFService::formatCurrency($invoice->tax_amount, $company->currency) }}</span>
                         </div>
                         @endif

@@ -18,7 +18,7 @@ class Invoice extends Model
         'invoice_date', 'due_date',
         'subtotal', 'tax_amount', 'tax_rate', 'dpp', 'faktur_pajak_number',
         'discount', 'total_amount', 'total_amount_base', 'paid_amount',
-        'status', 'notes', 'created_by',
+        'status', 'sent_at', 'notes', 'created_by',
     ];
 
     protected function casts(): array
@@ -26,6 +26,7 @@ class Invoice extends Model
         return [
             'invoice_date' => 'date',
             'due_date' => 'date',
+            'sent_at' => 'datetime',
             'subtotal' => 'decimal:2',
             'tax_amount' => 'decimal:2',
             'discount' => 'decimal:2',
@@ -43,13 +44,15 @@ class Invoice extends Model
         static::creating(function (Invoice $invoice) {
             if (empty($invoice->invoice_number)) {
                 $year = now()->year;
+                $month = now()->format('m');
+                $prefix = "INV/{$year}/{$month}/";
                 $last = static::withTrashed()
-                    ->where('invoice_number', 'like', "INV-{$year}-%")
+                    ->where('invoice_number', 'like', "{$prefix}%")
                     ->orderByDesc('invoice_number')
                     ->value('invoice_number');
 
                 $sequence = $last ? (int) substr($last, -5) + 1 : 1;
-                $invoice->invoice_number = sprintf("INV-%s-%05d", $year, $sequence);
+                $invoice->invoice_number = sprintf("%s%05d", $prefix, $sequence);
             }
 
             if (empty($invoice->created_by)) {
@@ -90,11 +93,38 @@ class Invoice extends Model
         return $this->hasMany(Payment::class);
     }
 
+    public function creditNotes(): HasMany
+    {
+        return $this->hasMany(CreditNote::class);
+    }
+
     // ── Helpers ─────────────────────────────────────────────────
 
     public function getRemainingBalanceAttribute(): float
     {
         return round((float) $this->total_amount - (float) $this->paid_amount, 2);
+    }
+
+    /**
+     * Maximum amount that can be claimed via credit notes (anti-overclaim).
+     */
+    public function getMaxCreditableAmountAttribute(): float
+    {
+        $totalCredited = $this->creditNotes()
+            ->where('status', '!=', 'cancelled')
+            ->sum('total_amount');
+
+        return round((float) $this->total_amount - (float) $totalCredited, 2);
+    }
+
+    public function isEditable(): bool
+    {
+        return $this->status === 'draft';
+    }
+
+    public function isCancellable(): bool
+    {
+        return !in_array($this->status, ['paid', 'cancelled']);
     }
 
     public function recalculateStatus(): void
@@ -115,13 +145,14 @@ class Invoice extends Model
 
     public static function statusOptions(): array
     {
-        return ['draft', 'unpaid', 'partial', 'paid', 'cancelled'];
+        return ['draft', 'sent', 'unpaid', 'partial', 'paid', 'cancelled'];
     }
 
     public static function statusColors(): array
     {
         return [
             'draft'     => 'bg-gray-100 text-gray-700 ring-gray-300',
+            'sent'      => 'bg-blue-50 text-blue-700 ring-blue-300',
             'unpaid'    => 'bg-red-50 text-red-700 ring-red-300',
             'partial'   => 'bg-amber-50 text-amber-700 ring-amber-300',
             'paid'      => 'bg-green-50 text-green-700 ring-green-300',
@@ -132,7 +163,8 @@ class Invoice extends Model
     public static function statusTransitions(): array
     {
         return [
-            'draft'     => ['unpaid', 'cancelled'],
+            'draft'     => ['sent', 'unpaid', 'cancelled'],
+            'sent'      => ['unpaid', 'partial', 'paid', 'cancelled'],
             'unpaid'    => ['partial', 'paid', 'cancelled'],
             'partial'   => ['paid', 'cancelled'],
             'paid'      => [],

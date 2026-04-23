@@ -30,6 +30,8 @@ class PurchaseOrderRequest extends FormRequest
             'tax_amount'         => ['nullable', 'numeric', 'min:0'],
             'justification'      => ['nullable', 'string', 'max:2000'],
             'notes'              => ['nullable', 'string', 'max:2000'],
+            'payment_terms'      => ['nullable', Rule::in(PurchaseOrder::paymentTermsOptions())],
+            'shipping_address'   => ['nullable', 'string', 'max:500'],
 
             'items'              => ['required', 'array', 'min:1'],
             'items.*.product_id' => ['required', 'exists:products,id'],

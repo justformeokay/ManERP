@@ -81,6 +81,17 @@
                     @if($purchaseRequest->project)
                         <div><dt class="text-gray-500">{{ __('messages.project_label') }}</dt><dd class="font-medium text-gray-900 mt-0.5">{{ $purchaseRequest->project->name }}</dd></div>
                     @endif
+                    @if($purchaseRequest->department)
+                        <div><dt class="text-gray-500">{{ __('messages.pr_department_label') }}</dt><dd class="font-medium text-gray-900 mt-0.5">{{ $purchaseRequest->department->name }}</dd></div>
+                    @endif
+                    @if($purchaseRequest->purchase_type)
+                        <div><dt class="text-gray-500">{{ __('messages.pr_purchase_type_label') }}</dt>
+                            <dd class="mt-0.5">
+                                @php $ptColors = ['operational'=>'gray','project_sales'=>'blue','project_capex'=>'violet']; $ptc = $ptColors[$purchaseRequest->purchase_type] ?? 'gray'; @endphp
+                                <span class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium bg-{{ $ptc }}-50 text-{{ $ptc }}-700 ring-1 ring-{{ $ptc }}-600/20">{{ __('messages.po_purchase_type_' . $purchaseRequest->purchase_type) }}</span>
+                            </dd>
+                        </div>
+                    @endif
                     @if($purchaseRequest->approved_by)
                         <div><dt class="text-gray-500">{{ __('messages.approved_by_label') }}</dt><dd class="font-medium text-gray-900 mt-0.5">{{ $purchaseRequest->approver->name ?? '—' }} ({{ $purchaseRequest->approved_at?->format('d M Y H:i') }})</dd></div>
                     @endif

@@ -16,6 +16,7 @@ class PurchaseRequest extends Model
 
     protected $fillable = [
         'number', 'requested_by', 'approved_by', 'project_id',
+        'department_id', 'purchase_type',
         'status', 'priority', 'required_date', 'reason',
         'rejection_reason', 'approved_at', 'rejected_at',
     ];
@@ -59,6 +60,11 @@ class PurchaseRequest extends Model
         return $this->belongsTo(Project::class);
     }
 
+    public function department(): BelongsTo
+    {
+        return $this->belongsTo(Department::class);
+    }
+
     public function items(): HasMany
     {
         return $this->hasMany(PurchaseRequestItem::class);
@@ -92,6 +98,19 @@ class PurchaseRequest extends Model
     public static function priorityOptions(): array
     {
         return ['low', 'normal', 'high', 'urgent'];
+    }
+
+    public static function purchaseTypeOptions(): array
+    {
+        return ['operational', 'project_sales', 'project_capex'];
+    }
+
+    /**
+     * Generate HMAC signature for PR→PO conversion (F-14 audit compliance).
+     */
+    public static function conversionHmac(int $prId): string
+    {
+        return hash_hmac('sha256', 'pr-conversion:' . $prId, config('app.key'));
     }
 
     protected static function booted(): void

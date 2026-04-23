@@ -20,11 +20,37 @@
             </span>
         </div>
         <div class="flex items-center gap-2">
-            @if(!in_array($invoice->status, ['paid', 'cancelled']))
-                <form method="POST" action="{{ route('finance.invoices.cancel', $invoice) }}"
-                      onsubmit="return confirm('Cancel invoice {{ $invoice->invoice_number }}? All payments will be voided.')">
+            {{-- PDF Download --}}
+            <a href="{{ route('pdf.invoice', $invoice->id) }}" target="_blank"
+               class="inline-flex items-center gap-1.5 rounded-xl bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 transition">
+                <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                PDF
+            </a>
+
+            {{-- Approve (draft → unpaid) --}}
+            @if($invoice->status === 'draft')
+                <form method="POST" action="{{ route('finance.invoices.approve', $invoice) }}"
+                      onsubmit="return confirm('{{ __('messages.inv_confirm_approve') }}')">
                     @csrf
-                    @include('components.button', ['label' => 'Cancel Invoice', 'type' => 'danger', 'buttonType' => 'submit'])
+                    @include('components.button', ['label' => __('messages.inv_approve'), 'type' => 'primary', 'buttonType' => 'submit'])
+                </form>
+            @endif
+
+            {{-- Send to Client --}}
+            @if(in_array($invoice->status, ['draft', 'unpaid']))
+                <form method="POST" action="{{ route('finance.invoices.send', $invoice) }}"
+                      onsubmit="return confirm('{{ __('messages.inv_confirm_send') }}')">
+                    @csrf
+                    @include('components.button', ['label' => __('messages.inv_send'), 'type' => 'secondary', 'buttonType' => 'submit'])
+                </form>
+            @endif
+
+            {{-- Cancel --}}
+            @if($invoice->isCancellable())
+                <form method="POST" action="{{ route('finance.invoices.cancel', $invoice) }}"
+                      onsubmit="return confirm('{{ __('messages.inv_confirm_cancel', ['number' => $invoice->invoice_number]) }}')">
+                    @csrf
+                    @include('components.button', ['label' => __('messages.inv_cancel'), 'type' => 'danger', 'buttonType' => 'submit'])
                 </form>
             @endif
             @include('components.button', ['label' => '← Back', 'type' => 'ghost', 'href' => route('finance.invoices.index')])
@@ -61,6 +87,12 @@
                             </a>
                         </dd>
                     </div>
+                    @if($invoice->sent_at)
+                        <div class="flex justify-between">
+                            <dt class="text-sm text-gray-500">{{ __('messages.inv_sent_at') }}</dt>
+                            <dd class="text-sm font-medium text-gray-900">{{ $invoice->sent_at->format('M d, Y H:i') }}</dd>
+                        </div>
+                    @endif
                     <div class="flex justify-between">
                         <dt class="text-sm text-gray-500">Created By</dt>
                         <dd class="text-sm font-medium text-gray-900">{{ $invoice->creator->name ?? '—' }}</dd>
@@ -132,6 +164,31 @@
                 <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
                     <h3 class="text-base font-semibold text-gray-900 mb-2">Notes</h3>
                     <p class="text-sm text-gray-600 whitespace-pre-line">{{ $invoice->notes }}</p>
+                </div>
+            @endif
+
+            {{-- Credit Notes --}}
+            @if($invoice->creditNotes->count() > 0)
+                <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+                    <h3 class="text-base font-semibold text-gray-900 mb-4">{{ __('messages.inv_credit_notes') }}</h3>
+                    <div class="space-y-2">
+                        @foreach($invoice->creditNotes as $cn)
+                            <div class="flex items-center justify-between rounded-lg border border-gray-100 px-4 py-2">
+                                <div>
+                                    <a href="{{ route('finance.credit-notes.show', $cn) }}" class="text-sm font-medium text-primary-600 hover:text-primary-700">{{ $cn->credit_note_number }}</a>
+                                    <p class="text-xs text-gray-500">{{ $cn->credit_note_date ? $cn->credit_note_date->format('M d, Y') : '—' }}</p>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-sm font-semibold text-red-600">-{{ format_currency($cn->total_amount) }}</span>
+                                    <span class="ml-2 inline-flex rounded-full px-2 py-0.5 text-xs {{ $cn->status === 'cancelled' ? 'bg-gray-100 text-gray-500 line-through' : 'bg-red-50 text-red-700' }}">{{ ucfirst($cn->status) }}</span>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                    <div class="mt-3 flex justify-between border-t border-gray-100 pt-3">
+                        <span class="text-sm font-medium text-gray-700">{{ __('messages.inv_max_creditable') }}</span>
+                        <span class="text-sm font-bold text-gray-900">{{ format_currency($invoice->max_creditable_amount) }}</span>
+                    </div>
                 </div>
             @endif
         </div>

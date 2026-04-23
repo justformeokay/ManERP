@@ -25,6 +25,12 @@
                 <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 {{ $statusColors[$order->status] ?? '' }}">
                     {{ ucfirst($order->status) }}
                 </span>
+                @if(!in_array($order->status, ['draft']))
+                    <span class="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium bg-gray-100 text-gray-600 ring-1 ring-gray-300/50" title="{{ __('messages.po_locked_tooltip') }}">
+                        <svg class="h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                        {{ __('messages.po_locked_label') }}
+                    </span>
+                @endif
                 <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset {{ $purchaseTypeColors[$order->purchase_type] ?? $purchaseTypeColors['operational'] }}">
                     {{ $order->purchaseTypeLabel() }}
                 </span>
@@ -114,8 +120,30 @@
                             <dd class="font-medium text-gray-900">{{ $order->expected_date->format('M d, Y') }}</dd>
                         </div>
                     @endif
+                    @if($order->payment_terms)
+                        <div class="flex justify-between">
+                            <dt class="text-gray-500">{{ __('messages.convert_payment_terms') }}</dt>
+                            <dd class="font-medium text-gray-900">{{ __('messages.payment_term_' . $order->payment_terms) }}</dd>
+                        </div>
+                    @endif
                 </dl>
             </div>
+
+            @if($order->purchaseRequest)
+                <div class="rounded-2xl bg-primary-50 p-6 shadow-sm ring-1 ring-primary-100">
+                    <h3 class="text-sm font-semibold text-primary-900 mb-2">{{ __('messages.po_source_pr_label') }}</h3>
+                    <a href="{{ route('purchase-requests.show', $order->purchaseRequest) }}" class="text-sm font-medium text-primary-700 hover:underline">
+                        {{ $order->purchaseRequest->number }}
+                    </a>
+                </div>
+            @endif
+
+            @if($order->shipping_address)
+                <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+                    <h3 class="text-sm font-semibold text-gray-900 mb-2">{{ __('messages.convert_shipping_address') }}</h3>
+                    <p class="text-sm text-gray-600 whitespace-pre-line">{{ $order->shipping_address }}</p>
+                </div>
+            @endif
 
             {{-- Totals --}}
             <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">

@@ -108,6 +108,11 @@ class SupplierBill extends Model
         return $this->hasMany(SupplierPayment::class);
     }
 
+    public function debitNotes(): HasMany
+    {
+        return $this->hasMany(DebitNote::class);
+    }
+
     // ── Scopes ──────────────────────────────────────────────────────
 
     public function scopeSearch($query, ?string $term)
